@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Velorie Market — Katalog ogłoszeń</title>
-  <meta name="description" content="Velorie Market — katalog ogłoszeń freelancerów. Filtry i panel użytkownika." />
+  <meta name="description" content="Velorie Market — katalog ogłoszeń freelancerów. Filtry, wyszukiwarka, modal profilu i panel użytkownika." />
   <meta name="keywords" content="velorie market, freelancer, ogłoszenia, portfolio, katalog" />
   <meta name="theme-color" content="#0a1030" />
 
@@ -18,13 +18,16 @@
       --accent:#ff0354;
       --bg0:#00010f;
       --bg1:#0a1030;
+
       --glass: rgba(255,255,255,.06);
       --glass2: rgba(255,255,255,.08);
       --border: rgba(255,255,255,.10);
-      --muted: rgba(255,255,255,.68);
+
+      --muted: rgba(255,255,255,.70);
       --muted2: rgba(255,255,255,.56);
-      --shadow: 0 10px 50px rgba(0,0,0,.45);
-      --shadow2: 0 10px 40px rgba(255,3,84,.28);
+
+      --shadow: 0 12px 60px rgba(0,0,0,.55);
+      --shadow2: 0 12px 50px rgba(255,3,84,.24);
       --ring: 0 0 0 1px rgba(255,255,255,.10) inset;
     }
 
@@ -33,8 +36,8 @@
       background-color: var(--bg0);
       background-image:
         radial-gradient(1200px 600px at 80% -10%, var(--bg1) 0%, #050919 35%, var(--bg0) 65%, #000000 100%),
-        radial-gradient(900px 500px at 15% 110%, rgba(255,3,84,.20) 0%, rgba(255,3,84,0) 60%),
-        radial-gradient(800px 500px at 95% 90%, rgba(79,70,229,.20) 0%, rgba(79,70,229,0) 60%);
+        radial-gradient(900px 500px at 15% 110%, rgba(255,3,84,.18) 0%, rgba(255,3,84,0) 60%),
+        radial-gradient(800px 500px at 95% 90%, rgba(79,70,229,.16) 0%, rgba(79,70,229,0) 60%);
     }
 
     /* scrollbars */
@@ -49,8 +52,8 @@
       height: 2px;
       width: 0%;
       background: var(--accent);
-      z-index: 70;
-      box-shadow: 0 10px 30px rgba(255,3,84,.35);
+      z-index: 80;
+      box-shadow: 0 12px 40px rgba(255,3,84,.35);
     }
 
     /* subtle noise */
@@ -59,7 +62,7 @@
       position:absolute;
       inset:0;
       pointer-events:none;
-      opacity:.06;
+      opacity:.065;
       mix-blend-mode: overlay;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='190' height='190'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='190' height='190' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
       background-size: 190px 190px;
@@ -101,11 +104,11 @@
       -webkit-backdrop-filter: blur(18px);
     }
     .glass-soft{
-      background: rgba(0,0,0,.35);
+      background: rgba(0,0,0,.38);
       border: 1px solid rgba(255,255,255,.08);
-      box-shadow: 0 10px 40px rgba(0,0,0,.45);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 12px 55px rgba(0,0,0,.55);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
 
     /* chips */
@@ -113,15 +116,22 @@
       display:inline-flex;
       align-items:center;
       gap:.5rem;
-      padding: .35rem .6rem;
+      padding: .45rem .7rem;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.05);
-      color: rgba(255,255,255,.78);
+      color: rgba(255,255,255,.82);
       font-size: 12px;
       line-height: 1;
       white-space: nowrap;
       user-select:none;
+      transition: background .15s ease, border-color .15s ease, transform .15s ease;
+    }
+    .chip:hover{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); }
+    .chip:active{ transform: translateY(1px); }
+    .chip[data-active="true"]{
+      background: rgba(255,3,84,.16);
+      border-color: rgba(255,3,84,.45);
     }
 
     /* buttons */
@@ -129,29 +139,29 @@
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      gap:.5rem;
-      border-radius: 14px;
-      padding: .8rem 1rem;
-      font-weight: 700;
-      transition: transform .15s ease, filter .15s ease, background .15s ease;
+      gap:.55rem;
+      border-radius: 16px;
+      padding: .85rem 1.05rem;
+      font-weight: 800;
+      transition: transform .15s ease, filter .15s ease, background .15s ease, border-color .15s ease;
       user-select:none;
     }
     .btn:active{ transform: translateY(1px); }
     .btn-primary{
-      background: var(--accent);
+      background: linear-gradient(180deg, rgba(255,3,84,1) 0%, rgba(255,3,84,.86) 100%);
       color: #0b0010;
-      box-shadow: 0 10px 40px rgba(255,3,84,.35);
+      box-shadow: 0 16px 70px rgba(255,3,84,.25);
     }
-    .btn-primary:hover{ filter: brightness(1.08); }
+    .btn-primary:hover{ filter: brightness(1.07); }
     .btn-ghost{
       background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.12);
       color: rgba(255,255,255,.92);
     }
-    .btn-ghost:hover{ background: rgba(255,255,255,.10); }
+    .btn-ghost:hover{ background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.16); }
     .btn-outline{
       background: transparent;
-      border: 1px solid rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.18);
       color: rgba(255,255,255,.92);
     }
     .btn-outline:hover{ background: rgba(255,255,255,.06); }
@@ -162,33 +172,33 @@
       align-items:center;
       gap:.35rem;
       font-size: 12px;
-      font-weight: 800;
-      padding: .25rem .55rem;
+      font-weight: 900;
+      padding: .25rem .6rem;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,.12);
-      background: rgba(79,70,229,.14);
-      color: rgba(255,255,255,.92);
+      background: rgba(79,70,229,.16);
+      color: rgba(255,255,255,.94);
     }
     .badge-premium{
       display:inline-flex;
       align-items:center;
       gap:.35rem;
       font-size: 12px;
-      font-weight: 800;
-      padding: .25rem .55rem;
+      font-weight: 900;
+      padding: .25rem .6rem;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,3,84,.16);
-      color: rgba(255,255,255,.92);
+      background: rgba(255,3,84,.18);
+      color: rgba(255,255,255,.94);
     }
 
     /* portfolio thumbs */
     .thumb{
-      border-radius: 14px;
+      border-radius: 16px;
       overflow:hidden;
       border: 1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
-      box-shadow: 0 10px 30px rgba(0,0,0,.28);
+      box-shadow: 0 12px 38px rgba(0,0,0,.28);
     }
     .thumb img{
       width: 100%;
@@ -202,12 +212,12 @@
 
     /* horizontal profile card */
     .profile-card{
-      border-radius: 22px;
+      border-radius: 24px;
       border: 1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.05);
-      box-shadow: 0 10px 45px rgba(0,0,0,.40);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 14px 60px rgba(0,0,0,.45);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       transition: transform .15s ease, background .15s ease, border-color .15s ease;
     }
     .profile-card:hover{
@@ -215,13 +225,14 @@
       background: rgba(255,255,255,.06);
       border-color: rgba(255,255,255,.14);
     }
+
     .avatar{
-      width: 54px;
-      height: 54px;
+      width: 56px;
+      height: 56px;
       border-radius: 18px;
       overflow:hidden;
       border: 1px solid rgba(255,255,255,.12);
-      box-shadow: 0 10px 25px rgba(0,0,0,.35);
+      box-shadow: 0 12px 28px rgba(0,0,0,.35);
       flex: 0 0 auto;
       background: rgba(255,255,255,.06);
     }
@@ -232,14 +243,14 @@
       display:block;
     }
 
-    /* overlay + drawer */
+    /* overlay + drawer + modal */
     .overlay{
       position: fixed;
       inset: 0;
-      z-index: 80;
-      background: rgba(0,0,0,.55);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      z-index: 90;
+      background: rgba(0,0,0,.62);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       display: none;
     }
     .overlay[data-open="true"]{ display: block; }
@@ -247,8 +258,8 @@
     .drawer{
       position: fixed;
       inset: 0 0 0 auto;
-      width: min(560px, 92vw);
-      z-index: 95;
+      width: min(600px, 94vw);
+      z-index: 98;
       transform: translateX(110%);
       transition: transform .26s ease;
       display: flex;
@@ -256,16 +267,34 @@
     }
     .drawer[data-open="true"]{ transform: translateX(0%); }
 
-    .divider{
-      height: 1px;
-      background: rgba(255,255,255,.10);
+    .modal{
+      position: fixed;
+      inset: 0;
+      z-index: 99;
+      display: none;
+      place-items: center;
+      padding: 18px;
     }
+    .modal[data-open="true"]{ display: grid; }
+    .modal-card{
+      width: min(980px, 96vw);
+      max-height: min(86vh, 820px);
+      overflow: hidden;
+      border-radius: 26px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(5,6,10,.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 20px 90px rgba(0,0,0,.65);
+    }
+
+    .divider{ height: 1px; background: rgba(255,255,255,.10); }
 
     /* inputs */
     .input{
       width: 100%;
-      border-radius: 14px;
-      padding: .75rem .9rem;
+      border-radius: 16px;
+      padding: .8rem .95rem;
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.06);
       color: rgba(255,255,255,.92);
@@ -275,12 +304,13 @@
       appearance:none;
     }
     .input:focus{
-      border-color: rgba(255,3,84,.55);
+      border-color: rgba(255,3,84,.60);
       background: rgba(255,255,255,.08);
+      box-shadow: 0 0 0 4px rgba(255,3,84,.12);
     }
     .label{
       font-size: 12px;
-      color: rgba(255,255,255,.65);
+      color: rgba(255,255,255,.68);
       margin-bottom: .35rem;
       display:block;
     }
@@ -288,17 +318,44 @@
     /* sticky filters bar */
     #filters-bar{
       position: sticky;
-      top: 64px; /* header height-ish */
-      z-index: 40;
+      top: 64px;
+      z-index: 45;
+    }
+
+    /* skeleton */
+    .skel{
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      overflow: hidden;
+      position: relative;
+    }
+    .skel::after{
+      content:"";
+      position:absolute;
+      inset:-40% -60%;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.10) 50%, transparent 100%);
+      transform: rotate(8deg);
+      animation: shimmer 1.2s infinite;
+    }
+    @keyframes shimmer{
+      0%{ transform: translateX(-40%) rotate(8deg); }
+      100%{ transform: translateX(40%) rotate(8deg); }
+    }
+
+    /* focus */
+    :focus-visible{
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(255,3,84,.16);
+      border-radius: 16px;
     }
   </style>
 
   <script>
-    // (opcjonalnie) Tailwind extend — bez logiki
     tailwind.config = {
       theme: {
         extend: {
-          boxShadow: { glow: "0 10px 40px rgba(255,3,84,0.45)" }
+          boxShadow: { glow: "0 16px 70px rgba(255,3,84,0.35)" }
         }
       }
     };
@@ -314,18 +371,24 @@
   </div>
 
   <!-- HEADER -->
-  <header class="sticky top-0 z-50 backdrop-blur-xl bg-black/20 border-b border-white/10">
+  <header class="sticky top-0 z-[70] backdrop-blur-xl bg-black/20 border-b border-white/10">
     <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-3">
       <a href="#katalog" class="flex items-center gap-3">
         <img src="https://i.imgur.com/ikYb7tH.png" alt="Velorie" class="h-10 w-10 rounded-xl ring-1 ring-white/10" />
         <div class="leading-tight">
-          <div class="text-lg font-semibold tracking-tight">Velorie Market</div>
-          <div class="text-xs text-white/60">Katalog ogłoszeń • Panel użytkownika</div>
+          <div class="text-lg font-black tracking-tight">Velorie Market</div>
+          <div class="text-xs text-white/60">Katalog ogłoszeń • Panel • Zapisane • Modal profilu</div>
         </div>
       </a>
 
       <div class="flex items-center gap-2">
-        <button id="btn-open-panel" class="inline-flex items-center gap-2 rounded-xl bg-white/5 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition border border-white/10">
+        <button id="btn-open-saved" class="btn btn-ghost px-4 py-2 text-sm" type="button" aria-label="Pokaż zapisane">
+          <i data-lucide="bookmark" class="h-4 w-4"></i>
+          <span>Zapisane</span>
+          <span id="saved-pill" class="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs font-black">0</span>
+        </button>
+
+        <button id="btn-open-panel" class="btn btn-ghost px-4 py-2 text-sm" type="button" aria-label="Otwórz panel użytkownika">
           <i data-lucide="user" class="h-4 w-4"></i>
           <span>Panel</span>
         </button>
@@ -339,21 +402,60 @@
   <main id="katalog" class="relative py-10">
     <div class="mx-auto max-w-7xl px-4">
 
-      <!-- TOP BAR: title -->
+      <!-- TOP -->
       <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
         <div>
-          <h1 class="text-3xl md:text-4xl font-black">Katalog ogłoszeń</h1>
+          <h1 class="text-3xl md:text-4xl font-black tracking-tight">Katalog ogłoszeń</h1>
           <p class="text-white/60 mt-2 max-w-2xl">
-            Poziome kafelki: nick/imię, avatar, branża oraz mini-portfolio. Panel (drawer) służy do edycji Twojego profilu i ogłoszenia.
+            Wyszukuj, filtruj, zapisuj i otwieraj profile w modalu. Panel (drawer) służy do edycji Twojego profilu i ogłoszenia (demo).
           </p>
+
+          <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/60">
+            <span class="chip"><i data-lucide="shield" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Bez escrow</span>
+            <span class="chip"><i data-lucide="sparkles" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Premium = wyróżnienie</span>
+            <span class="chip"><i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Verified = zaufanie</span>
+          </div>
+        </div>
+
+        <!-- quick stats -->
+        <div class="glass rounded-2xl p-4 min-w-[260px]">
+          <div class="text-xs text-white/60">Status katalogu</div>
+          <div class="mt-2 grid grid-cols-3 gap-2">
+            <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+              <div class="text-xs text-white/60">Wyniki</div>
+              <div class="text-xl font-black" id="stat-results">0</div>
+            </div>
+            <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+              <div class="text-xs text-white/60">Zapisane</div>
+              <div class="text-xl font-black" id="stat-saved">0</div>
+            </div>
+            <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+              <div class="text-xs text-white/60">Filtry</div>
+              <div class="text-xl font-black" id="stat-filters">0</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- FILTERS BAR (sticky, without search) -->
+      <!-- FILTERS BAR -->
       <div id="filters-bar" class="mt-6">
         <div class="glass rounded-2xl p-4">
           <div class="grid lg:grid-cols-12 gap-3 items-end">
+
+            <!-- search -->
             <div class="lg:col-span-4">
+              <label class="label">Szukaj</label>
+              <div class="relative">
+                <input id="search-input" class="input pr-10" placeholder="np. React, Branding, DevOps, Klaudia..." />
+                <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/55">
+                  <i data-lucide="search" class="h-4 w-4"></i>
+                </div>
+              </div>
+              <div class="mt-1 text-xs text-white/45">Szukamy w: nazwie, tagach, tagline i opisie.</div>
+            </div>
+
+            <!-- industry -->
+            <div class="lg:col-span-3">
               <label class="label">Branża</label>
               <select id="industry-select" class="input">
                 <option value="all">Wszystkie</option>
@@ -365,218 +467,196 @@
               </select>
             </div>
 
-            <div class="lg:col-span-4">
+            <!-- sort -->
+            <div class="lg:col-span-3">
               <label class="label">Sortowanie</label>
               <select id="sort-select" class="input">
-                <option value="recommended">Polecane (Premium + aktywność)</option>
+                <option value="recommended">Polecane (Premium/Verified/ocena/świeżość)</option>
                 <option value="newest">Najnowsze</option>
                 <option value="rating">Najlepsza ocena</option>
                 <option value="verified">Zweryfikowani</option>
               </select>
             </div>
 
-            <div class="lg:col-span-4">
+            <!-- filters -->
+            <div class="lg:col-span-2">
               <label class="label">Filtry</label>
               <div class="flex flex-wrap gap-2">
-                <button id="filter-premium" class="chip hover:bg-white/10 transition" type="button">
+                <button id="filter-premium" class="chip" type="button" aria-pressed="false">
                   <i data-lucide="zap" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Premium
                 </button>
-                <button id="filter-verified" class="chip hover:bg-white/10 transition" type="button">
-                  <i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Weryfikacja
+                <button id="filter-verified" class="chip" type="button" aria-pressed="false">
+                  <i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Verified
                 </button>
-                <button id="filter-available" class="chip hover:bg-white/10 transition" type="button">
-                  <i data-lucide="clock-3" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny
-                </button>
-                <button id="btn-reset-filters" class="chip hover:bg-white/10 transition" type="button">
-                  <i data-lucide="rotate-ccw" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Reset
+                <button id="filter-available" class="chip" type="button" aria-pressed="false">
+                  <i data-lucide="clock-3" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ≤72h
                 </button>
               </div>
             </div>
           </div>
 
-          <div class="mt-3 flex items-center justify-between text-xs text-white/55">
+          <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-white/55">
             <div class="flex items-center gap-2">
               <i data-lucide="info" class="h-4 w-4"></i>
               <span>Kontakt i rozliczenia poza platformą (bez escrow).</span>
             </div>
-            <button id="btn-open-panel-inline" class="text-white/80 hover:text-white underline decoration-white/20 hover:decoration-white/50 transition" type="button">
-              Otwórz panel
-            </button>
+
+            <div class="flex items-center gap-2">
+              <button id="btn-reset-filters" class="btn btn-outline px-3 py-2 text-xs" type="button">
+                <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+                Reset
+              </button>
+              <button id="btn-open-panel-inline" class="btn btn-primary px-3 py-2 text-xs" type="button">
+                <i data-lucide="sliders-horizontal" class="h-4 w-4"></i>
+                Otwórz panel
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- RESULTS -->
       <div class="mt-8 space-y-4" id="profiles-list">
-        <!-- Template cards (demo) -->
-        <article class="profile-card animate-on-scroll p-4 md:p-5" data-profile-id="p1">
-          <div class="flex flex-col md:flex-row md:items-center gap-4">
-            <div class="flex items-center gap-3 min-w-[260px]">
-              <div class="avatar">
-                <img src="https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop" alt="Avatar" />
-              </div>
-              <div class="leading-tight">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <div class="text-lg font-extrabold tracking-tight">zxq0</div>
-                  <span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>
-                  <span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>
-                </div>
-                <div class="text-sm text-white/70 font-semibold">Programista</div>
-                <div class="text-xs text-white/55">React • Node • API • Automatyzacje</div>
-              </div>
-            </div>
-
-            <div class="flex-1">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena 4.9</span>
-                <span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: 48h</span>
-                <span class="chip"><i data-lucide="map-pin" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Online</span>
-                <span class="chip"><i data-lucide="wallet" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Budżet: od 300 PLN</span>
-              </div>
-
-              <div class="mt-3 grid grid-cols-3 gap-2">
-                <div class="thumb aspect-[4/3]">
-                  <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=900&auto=format&fit=crop" alt="Portfolio 1" />
-                </div>
-                <div class="thumb aspect-[4/3]">
-                  <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=900&auto=format&fit=crop" alt="Portfolio 2" />
-                </div>
-                <div class="thumb aspect-[4/3]">
-                  <img src="https://images.unsplash.com/photo-1526378722484-bd91ca387e72?q=80&w=900&auto=format&fit=crop" alt="Portfolio 3" />
-                </div>
-              </div>
-            </div>
-
-            <div class="flex md:flex-col gap-2 md:items-end">
-              <button class="btn btn-ghost px-4 py-3 w-full md:w-auto btn-save" type="button">
-                <i data-lucide="bookmark" class="h-4 w-4"></i>
-                <span>Zapisz</span>
-              </button>
-            </div>
-          </div>
-        </article>
-
-        <article class="profile-card animate-on-scroll p-4 md:p-5" data-profile-id="p2">
-          <div class="flex flex-col md:flex-row md:items-center gap-4">
-            <div class="flex items-center gap-3 min-w-[260px]">
-              <div class="avatar">
-                <img src="https://images.unsplash.com/photo-1548142813-c348350df52b?q=80&w=512&auto=format&fit=crop" alt="Avatar" />
-              </div>
-              <div class="leading-tight">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <div class="text-lg font-extrabold tracking-tight">Klaudia</div>
-                  <span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>
-                </div>
-                <div class="text-sm text-white/70 font-semibold">Grafik</div>
-                <div class="text-xs text-white/55">Branding • UI • Miniatury • Packi</div>
-              </div>
-            </div>
-
-            <div class="flex-1">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena 4.7</span>
-                <span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: 24h</span>
-              </div>
-
-              <div class="mt-3 grid grid-cols-3 gap-2">
-                <div class="thumb aspect-[4/3]">
-                  <img src="https://images.unsplash.com/photo-1526498460520-4c246339dccb?q=80&w=900&auto=format&fit=crop" alt="Portfolio 1" />
-                </div>
-                <div class="thumb aspect-[4/3]">
-                  <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=900&auto=format&fit=crop" alt="Portfolio 2" />
-                </div>
-                <div class="thumb aspect-[4/3]">
-                  <img src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=900&auto=format&fit=crop" alt="Portfolio 3" />
-                </div>
-              </div>
-            </div>
-
-            <div class="flex md:flex-col gap-2 md:items-end">
-              <button class="btn btn-ghost px-4 py-3 w-full md:w-auto btn-save" type="button">
-                <i data-lucide="bookmark" class="h-4 w-4"></i>
-                <span>Zapisz</span>
-              </button>
-            </div>
-          </div>
-        </article>
-
-        <article class="profile-card animate-on-scroll p-4 md:p-5" data-profile-id="p3">
-          <div class="flex flex-col md:flex-row md:items-center gap-4">
-            <div class="flex items-center gap-3 min-w-[260px]">
-              <div class="avatar">
-                <img src="https://images.unsplash.com/photo-1603415526960-f7e0328b7cf6?q=80&w=512&auto=format&fit=crop" alt="Avatar" />
-              </div>
-              <div class="leading-tight">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <div class="text-lg font-extrabold tracking-tight">kubus</div>
-                  <span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>
-                </div>
-                <div class="text-sm text-white/70 font-semibold">Technik / DevOps</div>
-                <div class="text-xs text-white/55">Linux • Proxy • Security • Optymalizacja</div>
-              </div>
-            </div>
-
-            <div class="flex-1">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena 4.8</span>
-                <span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: 72h</span>
-              </div>
-
-              <div class="mt-3 grid grid-cols-3 gap-2">
-                <div class="thumb aspect-[4/3]">
-                  <img src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=900&auto=format&fit=crop" alt="Portfolio 1" />
-                </div>
-                <div class="thumb aspect-[4/3]">
-                  <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=900&auto=format&fit=crop" alt="Portfolio 2" />
-                </div>
-                <div class="thumb aspect-[4/3]">
-                  <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=900&auto=format&fit=crop" alt="Portfolio 3" />
-                </div>
-              </div>
-            </div>
-
-            <div class="flex md:flex-col gap-2 md:items-end">
-              <button class="btn btn-ghost px-4 py-3 w-full md:w-auto btn-save" type="button">
-                <i data-lucide="bookmark" class="h-4 w-4"></i>
-                <span>Zapisz</span>
-              </button>
-            </div>
-          </div>
-        </article>
+        <!-- filled by JS -->
       </div>
 
-      <!-- Pagination shell -->
+      <!-- Pagination -->
       <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-white/70">
         <div class="flex items-center gap-2">
           <i data-lucide="layers" class="h-4 w-4 text-[var(--accent)]"></i>
-          <span>Wyświetlane: <b id="shown-count">3</b> / <b id="total-count">3</b> (demo)</span>
+          <span>Wyświetlane: <b id="shown-count">0</b> / <b id="total-count">0</b></span>
+          <span class="ml-2 text-white/45" id="results-hint"></span>
         </div>
         <div class="flex items-center gap-2">
-          <button id="btn-load-more" class="btn btn-ghost px-4 py-2">
+          <button id="btn-load-more" class="btn btn-ghost px-4 py-2" type="button">
             <i data-lucide="plus" class="h-4 w-4"></i>
             <span>Wczytaj więcej</span>
           </button>
         </div>
       </div>
 
+      <!-- FOOTER -->
+      <footer class="mt-10 pb-8 text-xs text-white/50">
+        <div class="glass rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <i data-lucide="sparkles" class="h-4 w-4 text-[var(--accent)]"></i>
+            <span>Velorie Market • demo front-only (localStorage)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="footer-year"></span>
+            <span>•</span>
+            <span class="text-white/60">Made for fast MVP</span>
+          </div>
+        </div>
+      </footer>
+
     </div>
   </main>
+
+  <!-- PROFILE MODAL -->
+  <section id="profile-modal" class="modal" data-open="false" aria-label="Profil" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="p-4 flex items-center justify-between gap-3 border-b border-white/10">
+        <div class="flex items-center gap-3">
+          <div class="avatar">
+            <img id="modal-avatar" src="" alt="Avatar profilu" />
+          </div>
+          <div class="leading-tight">
+            <div class="flex items-center gap-2 flex-wrap">
+              <div class="text-lg font-black tracking-tight" id="modal-name">Profil</div>
+              <span id="modal-badges" class="flex items-center gap-2"></span>
+            </div>
+            <div class="text-xs text-white/60" id="modal-sub">—</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="modal-prev" class="btn btn-ghost px-3 py-2" type="button" aria-label="Poprzedni profil">
+            <i data-lucide="chevron-left" class="h-4 w-4"></i>
+          </button>
+          <button id="modal-next" class="btn btn-ghost px-3 py-2" type="button" aria-label="Następny profil">
+            <i data-lucide="chevron-right" class="h-4 w-4"></i>
+          </button>
+          <button id="modal-close" class="btn btn-outline px-3 py-2" type="button" aria-label="Zamknij modal">
+            <i data-lucide="x" class="h-4 w-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-12 gap-0">
+        <div class="lg:col-span-7 p-4 border-b lg:border-b-0 lg:border-r border-white/10">
+          <div class="flex flex-wrap items-center gap-2" id="modal-chips"></div>
+
+          <div class="mt-4 grid grid-cols-3 gap-2" id="modal-portfolio"></div>
+
+          <div class="mt-4 glass rounded-2xl p-4">
+            <div class="text-sm font-black flex items-center gap-2">
+              <i data-lucide="file-text" class="h-4 w-4 text-[var(--accent)]"></i>
+              Opis
+            </div>
+            <p class="mt-2 text-sm text-white/75 leading-relaxed whitespace-pre-line" id="modal-about"></p>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 p-4">
+          <div class="glass rounded-2xl p-4">
+            <div class="text-sm font-black flex items-center gap-2">
+              <i data-lucide="message-circle" class="h-4 w-4 text-[var(--accent)]"></i>
+              Kontakt (demo)
+            </div>
+            <p class="mt-2 text-sm text-white/70">
+              Tu w realu podpinasz kanały: Discord/e-mail/IG. W demie pokażemy przyciski “kopiuj”.
+            </p>
+
+            <div class="mt-3 grid sm:grid-cols-2 gap-2">
+              <button id="btn-copy-name" class="btn btn-primary px-4 py-3" type="button">
+                <i data-lucide="copy" class="h-4 w-4"></i>
+                Kopiuj nick
+              </button>
+              <button id="btn-save-from-modal" class="btn btn-ghost px-4 py-3" type="button">
+                <i data-lucide="bookmark" class="h-4 w-4"></i>
+                Zapisz
+              </button>
+            </div>
+
+            <div class="mt-4 divider"></div>
+
+            <div class="mt-4 text-xs text-white/55">
+              Tip: Otwieranie profilu zapisuje się w URL jako <span class="text-white/70 font-semibold">#profile=ID</span>.
+            </div>
+          </div>
+
+          <div class="mt-3 glass rounded-2xl p-4">
+            <div class="text-sm font-black flex items-center gap-2">
+              <i data-lucide="shield-alert" class="h-4 w-4 text-[var(--accent)]"></i>
+              Bezpieczeństwo
+            </div>
+            <ul class="mt-2 text-sm text-white/70 list-disc pl-5 space-y-1">
+              <li>Weryfikuj ofertę i ustalaj warunki na piśmie.</li>
+              <li>Nie wysyłaj kodów/hasła przed ustaleniem współpracy.</li>
+              <li>W razie podejrzeń — zgłaszaj.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- USER PANEL (drawer) -->
   <aside id="user-panel" class="drawer glass-soft" data-open="false" aria-label="Panel użytkownika">
     <div class="p-4 flex items-center justify-between gap-3 border-b border-white/10">
       <div class="flex items-center gap-3">
         <div class="avatar">
-          <img id="panel-avatar" src="https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop" alt="Ty" />
+          <img id="panel-avatar" src="" alt="Ty" />
         </div>
         <div class="leading-tight">
-          <div class="font-extrabold tracking-tight">Panel użytkownika</div>
+          <div class="font-black tracking-tight">Panel użytkownika</div>
           <div class="text-xs text-white/60">
-            <span id="panel-username">zxq0</span> • <span id="panel-status">Zalogowany (demo)</span>
+            <span id="panel-username"></span> • <span id="panel-status">Zalogowany (demo)</span>
           </div>
         </div>
       </div>
-      <button id="btn-close-panel" class="btn btn-outline px-3 py-2">
+      <button id="btn-close-panel" class="btn btn-outline px-3 py-2" type="button">
         <i data-lucide="x" class="h-4 w-4"></i>
         <span class="hidden sm:inline">Zamknij</span>
       </button>
@@ -585,19 +665,19 @@
     <!-- tabs -->
     <div class="p-4">
       <div class="grid grid-cols-2 gap-2">
-        <button class="btn btn-ghost px-4 py-3" data-tab="edit">
+        <button class="btn btn-ghost px-4 py-3" data-tab="edit" type="button">
           <i data-lucide="pencil" class="h-4 w-4"></i>
           <span>Edytuj profil</span>
         </button>
-        <button class="btn btn-ghost px-4 py-3" data-tab="preview">
+        <button class="btn btn-ghost px-4 py-3" data-tab="preview" type="button">
           <i data-lucide="eye" class="h-4 w-4"></i>
           <span>Podgląd</span>
         </button>
-        <button class="btn btn-ghost px-4 py-3" data-tab="listing">
+        <button class="btn btn-ghost px-4 py-3" data-tab="listing" type="button">
           <i data-lucide="file-plus" class="h-4 w-4"></i>
           <span>Ogłoszenie</span>
         </button>
-        <button class="btn btn-primary px-4 py-3" data-tab="shop">
+        <button class="btn btn-primary px-4 py-3" data-tab="shop" type="button">
           <i data-lucide="shopping-bag" class="h-4 w-4"></i>
           <span>Sklep</span>
         </button>
@@ -608,10 +688,11 @@
 
     <!-- tab content -->
     <div class="p-4 space-y-4 overflow-auto" style="height: calc(100vh - 190px);">
+
       <!-- EDIT PROFILE -->
       <section id="tab-edit" class="space-y-4">
         <div class="glass rounded-2xl p-5">
-          <div class="font-bold flex items-center gap-2">
+          <div class="font-black flex items-center gap-2">
             <i data-lucide="pencil" class="h-5 w-5 text-[var(--accent)]"></i>
             Edytuj profil
           </div>
@@ -619,12 +700,13 @@
           <div class="mt-4 grid sm:grid-cols-2 gap-3">
             <div>
               <label class="label">Nick / Imię</label>
-              <input id="edit-name" class="input" value="zxq0" />
+              <input id="edit-name" class="input" />
+              <div class="mt-1 text-xs text-white/45">Min. 2 znaki.</div>
             </div>
             <div>
               <label class="label">Branża</label>
               <select id="edit-industry" class="input">
-                <option value="dev" selected>Programista</option>
+                <option value="dev">Programista</option>
                 <option value="gfx">Grafik</option>
                 <option value="video">Montażysta / Content</option>
                 <option value="tech">Technik / DevOps</option>
@@ -641,7 +723,7 @@
               <label class="label">Dostępność</label>
               <select id="edit-availability" class="input">
                 <option>24h</option>
-                <option selected>48h</option>
+                <option>48h</option>
                 <option>72h</option>
                 <option>Tydzień</option>
               </select>
@@ -649,42 +731,48 @@
 
             <div>
               <label class="label">Budżet minimalny (PLN)</label>
-              <input id="edit-budget" class="input" type="number" value="300" />
+              <input id="edit-budget" class="input" type="number" min="0" step="1" />
             </div>
 
             <div class="sm:col-span-2">
               <label class="label">Tagi (oddziel przecinkami)</label>
-              <input id="edit-tags" class="input" value="React, Node, API, Automatyzacje" />
+              <input id="edit-tags" class="input" placeholder="React, Node, API..." />
+              <div class="mt-1 text-xs text-white/45">Max 12 tagów.</div>
             </div>
 
             <div class="sm:col-span-2">
               <label class="label">Link do avatara (URL)</label>
               <input id="edit-avatar-url" class="input" placeholder="https://..." />
+              <div class="mt-1 text-xs text-white/45">Zostaw puste aby zachować obecny.</div>
             </div>
           </div>
 
-          <div class="mt-4 flex items-center gap-2">
-            <button id="btn-save-profile" class="btn btn-primary px-4 py-3">
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <button id="btn-save-profile" class="btn btn-primary px-4 py-3" type="button">
               <i data-lucide="save" class="h-4 w-4"></i>
               <span>Zapisz zmiany</span>
             </button>
-            <button id="btn-reset-profile" class="btn btn-ghost px-4 py-3">
+            <button id="btn-reset-profile" class="btn btn-ghost px-4 py-3" type="button">
               <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
-              <span>Przywróć</span>
+              <span>Przywróć demo</span>
+            </button>
+            <button id="btn-open-me-modal" class="btn btn-outline px-4 py-3" type="button">
+              <i data-lucide="external-link" class="h-4 w-4"></i>
+              <span>Zobacz mnie w modalu</span>
             </button>
           </div>
         </div>
 
         <div class="glass rounded-2xl p-5">
-          <div class="font-bold flex items-center gap-2">
+          <div class="font-black flex items-center gap-2">
             <i data-lucide="images" class="h-5 w-5 text-[var(--accent)]"></i>
             Portfolio (3 zdjęcia)
           </div>
           <p class="mt-2 text-sm text-white/70">
-            2–3 zdjęcia widoczne w kafelku (mini-portfolio).
+            Widoczne w kafelku i w modalu profilu.
           </p>
 
-          <div class="mt-4 grid grid-cols-3 gap-3">
+          <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label class="label">Zdjęcie 1 URL</label>
               <input id="edit-portfolio-1" class="input" placeholder="https://..." />
@@ -704,50 +792,27 @@
       <!-- PREVIEW -->
       <section id="tab-preview" class="space-y-4 hidden">
         <div class="glass rounded-2xl p-5">
-          <div class="font-bold flex items-center gap-2">
+          <div class="font-black flex items-center gap-2">
             <i data-lucide="eye" class="h-5 w-5 text-[var(--accent)]"></i>
             Podgląd profilu (kafelek)
           </div>
           <p class="mt-2 text-sm text-white/70">
-            Podgląd Twojego kafelka w katalogu (bez modala — mamy tylko katalog + panel).
+            To jest live preview na podstawie Twoich danych (me).
           </p>
 
-          <div class="mt-4 profile-card p-4">
-            <div class="flex items-center justify-between gap-3">
-              <div class="flex items-center gap-3">
-                <div class="avatar">
-                  <img src="https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop" alt="Ty" />
-                </div>
-                <div>
-                  <div class="font-extrabold">zxq0</div>
-                  <div class="text-sm text-white/70 font-semibold">Programista</div>
-                  <div class="text-xs text-white/55">React • Node • API</div>
-                </div>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>
-                <span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>
-              </div>
-            </div>
-
-            <div class="mt-3 grid grid-cols-3 gap-2">
-              <div class="thumb aspect-[4/3]"></div>
-              <div class="thumb aspect-[4/3]"></div>
-              <div class="thumb aspect-[4/3]"></div>
-            </div>
-          </div>
+          <div class="mt-4" id="preview-card"></div>
         </div>
       </section>
 
       <!-- LISTING -->
       <section id="tab-listing" class="space-y-4 hidden">
         <div class="glass rounded-2xl p-5">
-          <div class="font-bold flex items-center gap-2">
+          <div class="font-black flex items-center gap-2">
             <i data-lucide="file-plus" class="h-5 w-5 text-[var(--accent)]"></i>
             Twoje ogłoszenie (wizytówka)
           </div>
           <p class="mt-2 text-sm text-white/70">
-            Ogłoszenie = Twój wpis w katalogu.
+            Ogłoszenie = Twój wpis w katalogu. Możesz opublikować lub ukryć.
           </p>
 
           <div class="mt-4 grid sm:grid-cols-2 gap-3">
@@ -771,17 +836,17 @@
             </div>
 
             <div class="sm:col-span-2">
-              <label class="label">Dłuższy opis (w profilu/panelu)</label>
+              <label class="label">Dłuższy opis (w profilu)</label>
               <textarea id="listing-long" class="input" rows="6" placeholder="Szczegóły usług, proces, terminy, zasady..."></textarea>
             </div>
           </div>
 
-          <div class="mt-4 flex items-center gap-2">
-            <button id="btn-publish" class="btn btn-primary px-4 py-3">
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <button id="btn-publish" class="btn btn-primary px-4 py-3" type="button">
               <i data-lucide="rocket" class="h-4 w-4"></i>
               <span>Opublikuj / Zaktualizuj</span>
             </button>
-            <button id="btn-unpublish" class="btn btn-outline px-4 py-3">
+            <button id="btn-unpublish" class="btn btn-outline px-4 py-3" type="button">
               <i data-lucide="trash-2" class="h-4 w-4"></i>
               <span>Ukryj z katalogu</span>
             </button>
@@ -792,12 +857,12 @@
       <!-- SHOP -->
       <section id="tab-shop" class="space-y-4">
         <div class="glass rounded-2xl p-5">
-          <div class="font-bold flex items-center gap-2">
+          <div class="font-black flex items-center gap-2">
             <i data-lucide="shopping-bag" class="h-5 w-5 text-[var(--accent)]"></i>
             Sklep usług
           </div>
           <p class="mt-2 text-sm text-white/70">
-            Subskrypcje miesięczne (logika demo w JS).
+            Subskrypcje miesięczne (logika demo). Aktywacja wpływa na pozycjonowanie i badge w katalogu.
           </p>
 
           <div class="mt-4 space-y-3">
@@ -810,17 +875,17 @@
                   <p class="mt-2 text-sm text-white/70">Wyżej w wynikach i wyróżnienie.</p>
                 </div>
                 <div class="text-right">
-                  <div class="text-2xl font-extrabold">23.99 PLN</div>
+                  <div class="text-2xl font-black">23.99 PLN</div>
                   <div class="text-xs text-white/55">/ miesiąc</div>
                 </div>
               </div>
 
               <div class="mt-3 flex flex-col sm:flex-row gap-2">
-                <button id="buy-premium" class="btn btn-primary px-4 py-3">
+                <button id="buy-premium" class="btn btn-primary px-4 py-3" type="button">
                   <i data-lucide="credit-card" class="h-4 w-4"></i>
                   <span>Kup premium</span>
                 </button>
-                <button id="cancel-premium" class="btn btn-outline px-4 py-3">
+                <button id="cancel-premium" class="btn btn-outline px-4 py-3" type="button">
                   <i data-lucide="x-circle" class="h-4 w-4"></i>
                   <span>Anuluj</span>
                 </button>
@@ -836,17 +901,17 @@
                   <p class="mt-2 text-sm text-white/70">Znaczek Verified w katalogu.</p>
                 </div>
                 <div class="text-right">
-                  <div class="text-2xl font-extrabold">19.55 PLN</div>
+                  <div class="text-2xl font-black">19.55 PLN</div>
                   <div class="text-xs text-white/55">/ miesiąc</div>
                 </div>
               </div>
 
               <div class="mt-3 flex flex-col sm:flex-row gap-2">
-                <button id="buy-verify" class="btn btn-primary px-4 py-3">
+                <button id="buy-verify" class="btn btn-primary px-4 py-3" type="button">
                   <i data-lucide="badge-check" class="h-4 w-4"></i>
                   <span>Kup weryfikację</span>
                 </button>
-                <button id="cancel-verify" class="btn btn-outline px-4 py-3">
+                <button id="cancel-verify" class="btn btn-outline px-4 py-3" type="button">
                   <i data-lucide="x-circle" class="h-4 w-4"></i>
                   <span>Anuluj</span>
                 </button>
@@ -854,20 +919,25 @@
             </div>
 
             <div class="text-xs text-white/55">
-              (To jest layout — logika w JS będzie w następnym kroku.)
+              (To jest demo — w realu tu podpinasz Stripe/BLIK/P24.)
             </div>
           </div>
         </div>
       </section>
     </div>
   </aside>
+
 <script>
 /**
- * Velorie Market (lite): tylko Katalog + Panel
- * - bez wyszukiwarki, bez sekcji "jak to działa/funkcje/faq/footer", bez modala profilu
- * - filtry na górze: branża + premium/verified/dostępny + sort
- * - zapis (bookmark) do localStorage
- * - panel (drawer) z zakładkami + edycją profilu + portfolio + ogłoszenie + sklep (subskrypcje demo)
+ * Velorie Market (v2) — Katalog + Panel + Modal profilu
+ * Ulepszenia:
+ * - wyszukiwarka (debounce)
+ * - modal profilu (hash #profile=ID + next/prev + ESC)
+ * - zapisane (zakładka)
+ * - lepsze sortowanie + filtrowanie
+ * - skeleton loading + lepsze toasty
+ * - a11y: focus, aria, klawiatura
+ * - preview w panelu (live)
  */
 
 (() => {
@@ -876,37 +946,12 @@
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
   const safeJSON = {
-    parse(v, fallback) {
-      try { return JSON.parse(v); } catch { return fallback; }
-    },
-    stringify(v, fallback = "{}") {
-      try { return JSON.stringify(v); } catch { return fallback; }
-    }
+    parse(v, fallback) { try { return JSON.parse(v); } catch { return fallback; } },
+    stringify(v, fallback = "{}") { try { return JSON.stringify(v); } catch { return fallback; } }
   };
 
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
-
-  function toast(message) {
-    // ultra-prosty toast bez zależności
-    let wrap = $("#toast-wrap");
-    if (!wrap) {
-      wrap = document.createElement("div");
-      wrap.id = "toast-wrap";
-      wrap.className = "fixed bottom-5 left-1/2 -translate-x-1/2 z-[120] space-y-2";
-      document.body.appendChild(wrap);
-    }
-    const el = document.createElement("div");
-    el.className =
-      "glass rounded-2xl px-4 py-3 text-sm text-white/90 border border-white/10 shadow-glow max-w-[92vw]";
-    el.textContent = message;
-    wrap.appendChild(el);
-    setTimeout(() => {
-      el.style.opacity = "0";
-      el.style.transform = "translateY(6px)";
-      el.style.transition = "opacity .25s ease, transform .25s ease";
-      setTimeout(() => el.remove(), 260);
-    }, 1800);
-  }
+  const now = () => Date.now();
 
   function escapeHTML(str) {
     return String(str ?? "")
@@ -916,6 +961,65 @@
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
   }
+
+  function debounce(fn, delay = 250) {
+    let t = null;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), delay);
+    };
+  }
+
+  /* ------------------------------ toast ------------------------------ */
+  const Toast = (() => {
+    let wrap = null;
+    let queue = [];
+    let showing = false;
+
+    function ensure() {
+      if (wrap) return wrap;
+      wrap = document.createElement("div");
+      wrap.id = "toast-wrap";
+      wrap.className = "fixed bottom-5 left-1/2 -translate-x-1/2 z-[120] space-y-2";
+      document.body.appendChild(wrap);
+      return wrap;
+    }
+
+    function showNext() {
+      if (showing) return;
+      const item = queue.shift();
+      if (!item) return;
+
+      showing = true;
+      ensure();
+
+      const el = document.createElement("div");
+      el.className = "glass rounded-2xl px-4 py-3 text-sm text-white/90 border border-white/10 shadow-glow max-w-[92vw] flex items-center gap-2";
+      el.innerHTML = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white/5 border border-white/10">
+        <i data-lucide="${item.icon || "sparkles"}" class="h-4 w-4 text-[var(--accent)]"></i>
+      </span><span>${escapeHTML(item.message)}</span>`;
+      wrap.appendChild(el);
+      try { lucide.createIcons(); } catch {}
+
+      setTimeout(() => {
+        el.style.opacity = "0";
+        el.style.transform = "translateY(6px)";
+        el.style.transition = "opacity .25s ease, transform .25s ease";
+        setTimeout(() => {
+          el.remove();
+          showing = false;
+          showNext();
+        }, 260);
+      }, item.ms || 1700);
+    }
+
+    return {
+      push(message, icon = "sparkles", ms = 1700) {
+        queue.push({ message, icon, ms });
+        showNext();
+      }
+    };
+  })();
 
   /* ----------------------------- storage ----------------------------- */
   const LS = {
@@ -962,20 +1066,20 @@
       industry: "dev",
       industryLabel: "Programista",
       tagline: "React • Node • API • Automatyzacje",
+      about: "Buduję szybkie MVP, integracje i automatyzacje. Działam konkretnie: zakres → prototyp → wdrożenie.\n\nPreferuję: React, Node, API, deployment, dashboardy.",
       rating: 4.9,
       availableIn: "48h",
       minBudget: 300,
       location: "Online",
       premium: true,
       verified: true,
-      avatar:
-        "https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop",
+      avatar: "https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop",
       portfolio: [
         "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=900&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=900&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?q=80&w=900&auto=format&fit=crop"
       ],
-      createdAt: Date.now() - 1000 * 60 * 60 * 24 * 10
+      createdAt: now() - 1000 * 60 * 60 * 24 * 10
     },
     {
       id: "p2",
@@ -983,20 +1087,20 @@
       industry: "gfx",
       industryLabel: "Grafik",
       tagline: "Branding • UI • Miniatury • Packi",
+      about: "Robię branding, UI i grafiki pod social. Lubię mocny kontrast i clean systemy.\n\nDostarczam pliki + guideline (opcjonalnie).",
       rating: 4.7,
       availableIn: "24h",
       minBudget: 200,
       location: "Online",
       premium: true,
       verified: false,
-      avatar:
-        "https://images.unsplash.com/photo-1548142813-c348350df52b?q=80&w=512&auto=format&fit=crop",
+      avatar: "https://images.unsplash.com/photo-1548142813-c348350df52b?q=80&w=512&auto=format&fit=crop",
       portfolio: [
         "https://images.unsplash.com/photo-1526498460520-4c246339dccb?q=80&w=900&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=900&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=900&auto=format&fit=crop"
       ],
-      createdAt: Date.now() - 1000 * 60 * 60 * 24 * 4
+      createdAt: now() - 1000 * 60 * 60 * 24 * 4
     },
     {
       id: "p3",
@@ -1004,28 +1108,26 @@
       industry: "tech",
       industryLabel: "Technik / DevOps",
       tagline: "Linux • Proxy • Security • Optymalizacja",
+      about: "Pomagam z serwerami, bezpieczeństwem i optymalizacją. Ustawiam proxy, monitoring, backupy.\n\nW cenie: checklist + rekomendacje.",
       rating: 4.8,
       availableIn: "72h",
       minBudget: 250,
       location: "Online",
       premium: false,
       verified: true,
-      avatar:
-        "https://images.unsplash.com/photo-1603415526960-f7e0328b7cf6?q=80&w=512&auto=format&fit=crop",
+      avatar: "https://images.unsplash.com/photo-1603415526960-f7e0328b7cf6?q=80&w=512&auto=format&fit=crop",
       portfolio: [
         "https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=900&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=900&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=900&auto=format&fit=crop"
       ],
-      createdAt: Date.now() - 1000 * 60 * 60 * 24 * 7
+      createdAt: now() - 1000 * 60 * 60 * 24 * 7
     }
   ];
 
   function ensureInit() {
-    // profiles
     if (!LS.getProfiles()) LS.setProfiles(FALLBACK_PROFILES);
 
-    // me
     if (!LS.getMe()) {
       LS.setMe({
         id: "me",
@@ -1035,8 +1137,7 @@
         availability: "48h",
         minBudget: 300,
         tags: ["React", "Node", "API", "Automatyzacje"],
-        avatar:
-          "https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop",
+        avatar: "https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop",
         portfolio: ["", "", ""],
         listing: {
           title: "",
@@ -1048,24 +1149,28 @@
       });
     }
 
-    // saved (set)
-    const s = localStorage.getItem(LS.keySaved);
-    if (!s) LS.setSaved([]);
-
-    // subs
-    const sub = localStorage.getItem(LS.keySubs);
-    if (!sub) LS.setSubs({ premium: false, verified: false });
+    if (!localStorage.getItem(LS.keySaved)) LS.setSaved([]);
+    if (!localStorage.getItem(LS.keySubs)) LS.setSubs({ premium: false, verified: false });
   }
 
   /* ----------------------------- state ------------------------------ */
   const state = {
+    q: "",
     industry: "all",
     premiumOnly: false,
     verifiedOnly: false,
     availableOnly: false,
+    savedOnly: false,
     sort: "recommended",
     pageSize: 6,
-    shown: 0
+    shown: 0,
+    lastRenderToken: 0,
+
+    // modal
+    modalOpen: false,
+    modalList: [],
+    modalIndex: -1,
+    lastFocus: null
   };
 
   /* ------------------------- progress + reveal ------------------------ */
@@ -1087,16 +1192,14 @@
     if (!els.length) return;
     const io = new IntersectionObserver(
       (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) e.target.classList.add("is-visible");
-        });
+        entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("is-visible"); });
       },
       { threshold: 0.12 }
     );
     els.forEach((el) => io.observe(el));
   }
 
-  /* --------------------------- drawer/panel --------------------------- */
+  /* ------------------------------ modal ------------------------------ */
   function setOverlay(open) {
     const ov = $("#overlay");
     if (!ov) return;
@@ -1108,10 +1211,101 @@
     const panel = $("#user-panel");
     if (!panel) return;
     panel.dataset.open = open ? "true" : "false";
-    setOverlay(open);
-    document.body.style.overflow = open ? "hidden" : "";
+    setOverlay(open || state.modalOpen);
+    document.body.style.overflow = (open || state.modalOpen) ? "hidden" : "";
   }
 
+  function setModalOpen(open) {
+    const modal = $("#profile-modal");
+    if (!modal) return;
+    state.modalOpen = open;
+
+    if (open) state.lastFocus = document.activeElement;
+    modal.dataset.open = open ? "true" : "false";
+
+    setOverlay(open || ($("#user-panel")?.dataset.open === "true"));
+    document.body.style.overflow = (open || $("#user-panel")?.dataset.open === "true") ? "hidden" : "";
+
+    // focus management
+    if (open) {
+      setTimeout(() => $("#modal-close")?.focus(), 0);
+    } else {
+      // restore focus
+      const el = state.lastFocus;
+      if (el && typeof el.focus === "function") el.focus();
+    }
+  }
+
+  function getHashProfileId() {
+    const h = location.hash || "";
+    const m = h.match(/profile=([^&]+)/);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  function setHashProfileId(id) {
+    if (!id) {
+      if (location.hash.includes("profile=")) {
+        history.replaceState(null, "", location.pathname + location.search + "#katalog");
+      }
+      return;
+    }
+    history.replaceState(null, "", location.pathname + location.search + `#profile=${encodeURIComponent(id)}`);
+  }
+
+  function openProfileModalById(id, list) {
+    const profiles = list || getFilteredProfiles(true); // use full list (not paginated) for prev/next
+    const idx = profiles.findIndex(p => p.id === id);
+    if (idx === -1) {
+      Toast.push("Nie znaleziono profilu.", "alert-triangle");
+      return;
+    }
+    state.modalList = profiles;
+    state.modalIndex = idx;
+    renderModal();
+    setModalOpen(true);
+    setHashProfileId(id);
+  }
+
+  function closeProfileModal() {
+    setModalOpen(false);
+    setHashProfileId(null);
+  }
+
+  function moveModal(delta) {
+    if (!state.modalOpen) return;
+    const len = state.modalList.length;
+    if (!len) return;
+    state.modalIndex = (state.modalIndex + delta + len) % len;
+    renderModal();
+    setHashProfileId(state.modalList[state.modalIndex].id);
+  }
+
+  function modalTrapFocus(e) {
+    if (!state.modalOpen) return;
+    if (e.key !== "Tab") return;
+
+    const modal = $("#profile-modal");
+    if (!modal) return;
+
+    const focusables = $$(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      modal
+    ).filter(el => !el.disabled && el.offsetParent !== null);
+
+    if (!focusables.length) return;
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  /* --------------------------- drawer/panel --------------------------- */
   function switchTab(tab) {
     const ids = ["edit", "preview", "listing", "shop"];
     ids.forEach((id) => {
@@ -1124,13 +1318,31 @@
     $("#btn-open-panel")?.addEventListener("click", () => setPanelOpen(true));
     $("#btn-open-panel-inline")?.addEventListener("click", () => setPanelOpen(true));
     $("#btn-close-panel")?.addEventListener("click", () => setPanelOpen(false));
-    $("#overlay")?.addEventListener("click", () => setPanelOpen(false));
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") setPanelOpen(false);
+    $("#overlay")?.addEventListener("click", () => {
+      // if modal open, close modal first
+      if (state.modalOpen) closeProfileModal();
+      else setPanelOpen(false);
     });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (state.modalOpen) closeProfileModal();
+        else if ($("#user-panel")?.dataset.open === "true") setPanelOpen(false);
+      }
+      if (state.modalOpen && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+        moveModal(e.key === "ArrowLeft" ? -1 : 1);
+      }
+    });
+
+    document.addEventListener("keydown", modalTrapFocus);
 
     $$("[data-tab]").forEach((btn) => {
       btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+    });
+
+    $("#btn-open-me-modal")?.addEventListener("click", () => {
+      setPanelOpen(false);
+      openProfileModalById("me");
     });
   }
 
@@ -1148,13 +1360,21 @@
       render();
     });
 
+    const onSearch = debounce(() => {
+      state.q = ($("#search-input")?.value || "").trim();
+      resetPagination();
+      render();
+    }, 220);
+
+    $("#search-input")?.addEventListener("input", onSearch);
+
     const toggleChip = (id, key) => {
       const el = $(id);
       if (!el) return;
       el.addEventListener("click", () => {
         state[key] = !state[key];
-        el.style.background = state[key] ? "rgba(255,255,255,.10)" : "rgba(255,255,255,.05)";
-        el.style.borderColor = state[key] ? "rgba(255,255,255,.18)" : "rgba(255,255,255,.10)";
+        el.dataset.active = state[key] ? "true" : "false";
+        el.setAttribute("aria-pressed", state[key] ? "true" : "false");
         resetPagination();
         render();
       });
@@ -1165,32 +1385,43 @@
     toggleChip("#filter-available", "availableOnly");
 
     $("#btn-reset-filters")?.addEventListener("click", () => {
+      state.q = "";
       state.industry = "all";
       state.premiumOnly = false;
       state.verifiedOnly = false;
       state.availableOnly = false;
+      state.savedOnly = false;
       state.sort = "recommended";
 
       const industry = $("#industry-select");
       const sort = $("#sort-select");
+      const q = $("#search-input");
       if (industry) industry.value = "all";
       if (sort) sort.value = "recommended";
+      if (q) q.value = "";
 
       ["#filter-premium", "#filter-verified", "#filter-available"].forEach((id) => {
         const el = $(id);
         if (!el) return;
-        el.style.background = "rgba(255,255,255,.05)";
-        el.style.borderColor = "rgba(255,255,255,.10)";
+        el.dataset.active = "false";
+        el.setAttribute("aria-pressed", "false");
       });
 
       resetPagination();
       render();
-      toast("Zresetowano filtry.");
+      Toast.push("Zresetowano filtry.", "rotate-ccw");
     });
 
     $("#btn-load-more")?.addEventListener("click", () => {
       state.shown += state.pageSize;
       renderList();
+    });
+
+    $("#btn-open-saved")?.addEventListener("click", () => {
+      state.savedOnly = !state.savedOnly;
+      resetPagination();
+      render();
+      Toast.push(state.savedOnly ? "Pokażę tylko zapisane." : "Wrócono do wszystkich.", "bookmark");
     });
   }
 
@@ -1198,13 +1429,19 @@
     state.shown = 0;
   }
 
-  /* --------------------------- list rendering -------------------------- */
+  /* --------------------------- list logic ----------------------------- */
   function parseAvailableHours(str) {
-    // "24h" -> 24; "Tydzień" -> 168
     const s = String(str || "").toLowerCase();
     if (s.includes("tydz")) return 168;
     const m = s.match(/(\d+)\s*h/);
     return m ? Number(m[1]) : 9999;
+  }
+
+  function normalizeText(s) {
+    return String(s || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "");
   }
 
   function scoreRecommended(p) {
@@ -1212,18 +1449,38 @@
     const verified = p.verified ? 1 : 0;
     const rating = Number(p.rating || 0);
     const recency = typeof p.createdAt === "number" ? p.createdAt : 0;
-    // prosty score: premium + verified + rating + recency (z małą wagą)
-    return premium * 3 + verified * 2 + rating + recency / 1e12;
+
+    // wagi (bardziej sensowne)
+    return premium * 4 + verified * 2.2 + rating * 1.2 + recency / 1e12;
   }
 
-  function getFilteredProfiles() {
+  function getFilteredProfiles(ignorePagination = false) {
     const profiles = LS.getProfiles() || [];
+    const savedSet = LS.getSaved();
     let out = profiles.slice();
 
+    // saved only
+    if (state.savedOnly) out = out.filter(p => savedSet.has(p.id));
+
+    // industry
     if (state.industry !== "all") out = out.filter((p) => p.industry === state.industry);
+
+    // quick filters
     if (state.premiumOnly) out = out.filter((p) => !!p.premium);
     if (state.verifiedOnly) out = out.filter((p) => !!p.verified);
     if (state.availableOnly) out = out.filter((p) => parseAvailableHours(p.availableIn) <= 72);
+
+    // search
+    if (state.q) {
+      const nq = normalizeText(state.q);
+      out = out.filter(p => {
+        const blob = [
+          p.name, p.tagline, (p.tags || []).join(" "),
+          p.industryLabel, p.about, (p.listing?.title || ""), (p.listing?.short || ""), (p.listing?.long || "")
+        ].join(" ");
+        return normalizeText(blob).includes(nq);
+      });
+    }
 
     // sorting
     if (state.sort === "newest") {
@@ -1236,65 +1493,63 @@
       out.sort((a, b) => scoreRecommended(b) - scoreRecommended(a));
     }
 
-    return out;
+    if (ignorePagination) return out;
+
+    // pagination
+    if (state.shown <= 0) state.shown = state.pageSize;
+    return out.slice(0, state.shown);
   }
 
-  function profileCardHTML(p, savedSet) {
+  function badgesHTML(p) {
     const verified = p.verified
       ? `<span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>`
       : "";
     const premium = p.premium
       ? `<span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>`
       : "";
+    return `${verified}${premium}`;
+  }
 
-    const tags = [
-      `<span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena ${escapeHTML(
-        (p.rating ?? 0).toFixed(1)
-      )}</span>`,
-      `<span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: ${escapeHTML(
-        p.availableIn || "-"
-      )}</span>`,
-      `<span class="chip"><i data-lucide="map-pin" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(
-        p.location || "Online"
-      )}</span>`,
-      `<span class="chip"><i data-lucide="wallet" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Budżet: od ${escapeHTML(
-        p.minBudget ?? "-"
-      )} PLN</span>`
-    ].join("");
-
-    const port = (p.portfolio || []).slice(0, 3);
-    const thumbs = [0, 1, 2]
-      .map((i) => {
-        const src = port[i] || "";
-        return `<div class="thumb aspect-[4/3]">${src ? `<img src="${escapeHTML(src)}" alt="Portfolio" />` : ""}</div>`;
-      })
-      .join("");
-
+  function profileCardHTML(p, savedSet) {
     const isSaved = savedSet.has(p.id);
     const saveLabel = isSaved ? "Zapisano" : "Zapisz";
     const saveIcon = isSaved ? "bookmark-check" : "bookmark";
 
+    const chips = [
+      `<span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena ${(p.rating ?? 0).toFixed(1)}</span>`,
+      `<span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: ${escapeHTML(p.availableIn || "-")}</span>`,
+      `<span class="chip"><i data-lucide="map-pin" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(p.location || "Online")}</span>`,
+      `<span class="chip"><i data-lucide="wallet" class="h-3.5 w-3.5 text-[var(--accent)]"></i> od ${escapeHTML(p.minBudget ?? "-")} PLN</span>`
+    ].join("");
+
+    const port = (p.portfolio || []).slice(0, 3);
+    const thumbs = [0,1,2].map(i => {
+      const src = port[i] || "";
+      return `<div class="thumb aspect-[4/3]">${src ? `<img src="${escapeHTML(src)}" alt="Portfolio" loading="lazy" />` : ""}</div>`;
+    }).join("");
+
+    const short = (p.listing?.short || p.tagline || "").trim();
+
     return `
       <article class="profile-card animate-on-scroll p-4 md:p-5" data-profile-id="${escapeHTML(p.id)}">
         <div class="flex flex-col md:flex-row md:items-center gap-4">
-          <div class="flex items-center gap-3 min-w-[260px]">
+          <button class="text-left flex items-center gap-3 min-w-[260px] group" type="button" data-open="${escapeHTML(p.id)}" aria-label="Otwórz profil ${escapeHTML(p.name)}">
             <div class="avatar">
-              <img src="${escapeHTML(p.avatar || "")}" alt="Avatar" />
+              <img src="${escapeHTML(p.avatar || "")}" alt="Avatar" loading="lazy" />
             </div>
             <div class="leading-tight">
               <div class="flex items-center gap-2 flex-wrap">
-                <div class="text-lg font-extrabold tracking-tight">${escapeHTML(p.name || "Anon")}</div>
-                ${verified}
-                ${premium}
+                <div class="text-lg font-black tracking-tight group-hover:text-white">${escapeHTML(p.name || "Anon")}</div>
+                ${badgesHTML(p)}
               </div>
               <div class="text-sm text-white/70 font-semibold">${escapeHTML(p.industryLabel || "")}</div>
-              <div class="text-xs text-white/55">${escapeHTML(p.tagline || "")}</div>
+              <div class="text-xs text-white/55">${escapeHTML(short)}</div>
             </div>
-          </div>
+          </button>
 
           <div class="flex-1">
             <div class="flex flex-wrap items-center gap-2">
-              ${tags}
+              ${chips}
             </div>
 
             <div class="mt-3 grid grid-cols-3 gap-2">
@@ -1303,11 +1558,13 @@
           </div>
 
           <div class="flex md:flex-col gap-2 md:items-end">
-            <button class="btn btn-ghost px-4 py-3 w-full md:w-auto btn-save" type="button" data-save="${escapeHTML(
-              p.id
-            )}">
+            <button class="btn btn-ghost px-4 py-3 w-full md:w-auto btn-save" type="button" data-save="${escapeHTML(p.id)}">
               <i data-lucide="${saveIcon}" class="h-4 w-4"></i>
               <span>${saveLabel}</span>
+            </button>
+            <button class="btn btn-outline px-4 py-3 w-full md:w-auto" type="button" data-open="${escapeHTML(p.id)}">
+              <i data-lucide="external-link" class="h-4 w-4"></i>
+              <span>Profil</span>
             </button>
           </div>
         </div>
@@ -1315,62 +1572,182 @@
     `;
   }
 
+  function skeletonHTML(count = 3) {
+    return Array.from({ length: count }).map(() => `
+      <div class="skel p-5">
+        <div class="flex items-center gap-3">
+          <div class="rounded-2xl bg-white/10 w-14 h-14"></div>
+          <div class="flex-1">
+            <div class="h-4 bg-white/10 rounded-full w-40"></div>
+            <div class="mt-2 h-3 bg-white/10 rounded-full w-56"></div>
+            <div class="mt-2 h-3 bg-white/10 rounded-full w-32"></div>
+          </div>
+        </div>
+        <div class="mt-4 grid grid-cols-3 gap-2">
+          <div class="rounded-2xl bg-white/10 aspect-[4/3]"></div>
+          <div class="rounded-2xl bg-white/10 aspect-[4/3]"></div>
+          <div class="rounded-2xl bg-white/10 aspect-[4/3]"></div>
+        </div>
+      </div>
+    `).join("");
+  }
+
   function renderList() {
     const listEl = $("#profiles-list");
     if (!listEl) return;
 
-    const saved = LS.getSaved();
-    const all = getFilteredProfiles();
-    const total = all.length;
+    const token = ++state.lastRenderToken;
+    listEl.innerHTML = skeletonHTML(3);
 
-    if (state.shown <= 0) state.shown = state.pageSize;
-    const shownList = all.slice(0, state.shown);
+    // emulate tiny render delay (makes skeleton feel real, also prevents jank)
+    setTimeout(() => {
+      if (token !== state.lastRenderToken) return;
 
-    $("#total-count") && ($("#total-count").textContent = String(total));
-    $("#shown-count") && ($("#shown-count").textContent = String(shownList.length));
+      const saved = LS.getSaved();
+      const full = getFilteredProfiles(true);
+      const shownList = getFilteredProfiles(false);
+      const total = full.length;
 
-    if (!shownList.length) {
-      listEl.innerHTML = `
-        <div class="glass rounded-2xl p-6 text-white/80">
-          Brak wyników dla wybranych filtrów.
-        </div>
-      `;
-      try { lucide.createIcons(); } catch {}
-      return;
-    }
+      $("#total-count") && ($("#total-count").textContent = String(total));
+      $("#shown-count") && ($("#shown-count").textContent = String(shownList.length));
 
-    listEl.innerHTML = shownList.map((p) => profileCardHTML(p, saved)).join("");
+      // stats
+      const filtersCount =
+        Number(!!state.q) +
+        Number(state.industry !== "all") +
+        Number(state.premiumOnly) +
+        Number(state.verifiedOnly) +
+        Number(state.availableOnly) +
+        Number(state.savedOnly);
 
-    // re-bind save buttons
-    $$(".btn-save", listEl).forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.dataset.save;
-        if (!id) return;
-        const set = LS.getSaved();
-        if (set.has(id)) {
-          set.delete(id);
-          toast("Usunięto z zapisanych.");
-        } else {
-          set.add(id);
-          toast("Dodano do zapisanych.");
-        }
-        LS.setSaved(set);
-        renderList();
+      $("#stat-results") && ($("#stat-results").textContent = String(total));
+      $("#stat-saved") && ($("#stat-saved").textContent = String(saved.size));
+      $("#stat-filters") && ($("#stat-filters").textContent = String(filtersCount));
+
+      $("#saved-pill") && ($("#saved-pill").textContent = String(saved.size));
+
+      $("#results-hint") && ($("#results-hint").textContent = state.savedOnly ? "• tryb: zapisane" : "");
+
+      if (!shownList.length) {
+        listEl.innerHTML = `
+          <div class="glass rounded-2xl p-6 text-white/80">
+            <div class="flex items-center gap-2 text-white/90 font-black">
+              <i data-lucide="search-x" class="h-5 w-5 text-[var(--accent)]"></i>
+              Brak wyników
+            </div>
+            <p class="mt-2 text-sm text-white/70">Spróbuj zmienić filtry albo wyszukiwane hasło.</p>
+          </div>
+        `;
+        try { lucide.createIcons(); } catch {}
+        return;
+      }
+
+      listEl.innerHTML = shownList.map((p) => profileCardHTML(p, saved)).join("");
+
+      // bind save buttons
+      $$(".btn-save", listEl).forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.save;
+          if (!id) return;
+          const set = LS.getSaved();
+          if (set.has(id)) {
+            set.delete(id);
+            Toast.push("Usunięto z zapisanych.", "bookmark-minus");
+          } else {
+            set.add(id);
+            Toast.push("Dodano do zapisanych.", "bookmark-plus");
+          }
+          LS.setSaved(set);
+          renderList();
+        });
       });
+
+      // bind open profile
+      $$("[data-open]", listEl).forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.open;
+          if (!id) return;
+          openProfileModalById(id, full);
+        });
+      });
+
+      // load more button
+      const loadMore = $("#btn-load-more");
+      if (loadMore) loadMore.style.display = (state.shown < total) ? "inline-flex" : "none";
+
+      initReveal();
+      try { lucide.createIcons(); } catch {}
+    }, 110);
+  }
+
+  /* ------------------------------ modal render ------------------------ */
+  function renderModal() {
+    const p = state.modalList[state.modalIndex];
+    if (!p) return;
+
+    $("#modal-avatar") && ($("#modal-avatar").src = p.avatar || "");
+    $("#modal-name") && ($("#modal-name").textContent = p.name || "Profil");
+    $("#modal-sub") && ($("#modal-sub").textContent = `${p.industryLabel || ""} • ${p.tagline || ""}`);
+
+    const badges = [];
+    if (p.verified) badges.push(`<span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>`);
+    if (p.premium) badges.push(`<span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>`);
+    $("#modal-badges") && ($("#modal-badges").innerHTML = badges.join(""));
+
+    const chips = [
+      `<span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena ${(p.rating ?? 0).toFixed(1)}</span>`,
+      `<span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: ${escapeHTML(p.availableIn || "-")}</span>`,
+      `<span class="chip"><i data-lucide="wallet" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Budżet: od ${escapeHTML(p.minBudget ?? "-")} PLN</span>`,
+      `<span class="chip"><i data-lucide="map-pin" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(p.location || "Online")}</span>`
+    ];
+    $("#modal-chips") && ($("#modal-chips").innerHTML = chips.join(""));
+
+    const port = (p.portfolio || []).slice(0, 3);
+    const thumbs = [0,1,2].map(i => {
+      const src = port[i] || "";
+      return `
+        <div class="thumb aspect-[4/3]">
+          ${src ? `<img src="${escapeHTML(src)}" alt="Portfolio" loading="lazy" />` : ""}
+        </div>`;
+    }).join("");
+    $("#modal-portfolio") && ($("#modal-portfolio").innerHTML = thumbs);
+
+    const about = (p.about || p.listing?.long || p.listing?.short || p.tagline || "Brak opisu.").trim();
+    $("#modal-about") && ($("#modal-about").textContent = about);
+
+    // buttons
+    $("#btn-copy-name")?.addEventListener("click", () => {
+      navigator.clipboard?.writeText(p.name || "").then(
+        () => Toast.push("Skopiowano nick.", "copy"),
+        () => Toast.push("Nie udało się skopiować.", "alert-triangle")
+      );
     });
 
-    // load more button state
-    const loadMore = $("#btn-load-more");
-    if (loadMore) {
-      const canMore = state.shown < total;
-      loadMore.style.display = canMore ? "inline-flex" : "none";
+    const saveBtn = $("#btn-save-from-modal");
+    if (saveBtn) {
+      const set = LS.getSaved();
+      const isSaved = set.has(p.id);
+      saveBtn.innerHTML = `<i data-lucide="${isSaved ? "bookmark-check" : "bookmark"}" class="h-4 w-4"></i><span>${isSaved ? "Zapisano" : "Zapisz"}</span>`;
+      saveBtn.onclick = () => {
+        const s = LS.getSaved();
+        if (s.has(p.id)) { s.delete(p.id); Toast.push("Usunięto z zapisanych.", "bookmark-minus"); }
+        else { s.add(p.id); Toast.push("Dodano do zapisanych.", "bookmark-plus"); }
+        LS.setSaved(s);
+        renderList();
+        renderModal();
+      };
     }
 
-    // reveal again + icons
-    initReveal();
     try { lucide.createIcons(); } catch {}
   }
 
+  function bindModal() {
+    $("#modal-close")?.addEventListener("click", closeProfileModal);
+    $("#modal-prev")?.addEventListener("click", () => moveModal(-1));
+    $("#modal-next")?.addEventListener("click", () => moveModal(1));
+  }
+
+  /* ------------------------------ panel render ------------------------ */
   function renderPanelFromMe() {
     const me = LS.getMe();
     if (!me) return;
@@ -1400,7 +1777,6 @@
 
     // subs (shop)
     const subs = LS.getSubs();
-    // (tu tylko toasty/disable w UI ogarniemy prosto)
     const buyP = $("#buy-premium");
     const cancelP = $("#cancel-premium");
     const buyV = $("#buy-verify");
@@ -1411,12 +1787,14 @@
     if (buyV) buyV.disabled = !!subs.verified;
     if (cancelV) cancelV.disabled = !subs.verified;
 
-    // wizualnie przygaszaj disabled
     [buyP, cancelP, buyV, cancelV].forEach((b) => {
       if (!b) return;
       b.classList.toggle("opacity-60", b.disabled);
       b.classList.toggle("pointer-events-none", b.disabled);
     });
+
+    // preview
+    renderPreviewCard();
   }
 
   function upsertMeIntoProfiles() {
@@ -1425,7 +1803,6 @@
 
     const subs = LS.getSubs();
 
-    // mapping
     const industryLabelMap = {
       dev: "Programista",
       gfx: "Grafik",
@@ -1434,12 +1811,15 @@
       mc: "Budowniczy Minecraft"
     };
 
+    const published = me.listing?.published !== false;
+
     const p = {
       id: "me",
       name: me.name || "Ja",
       industry: me.industry || "dev",
       industryLabel: industryLabelMap[me.industry] || "Freelancer",
       tagline: (me.tags || []).slice(0, 6).join(" • "),
+      about: (me.about || me.listing?.long || "").trim(),
       rating: 5.0,
       availableIn: me.availability || "48h",
       minBudget: Number(me.minBudget || 0),
@@ -1448,17 +1828,13 @@
       verified: !!subs.verified,
       avatar: me.avatar || "",
       portfolio: (me.portfolio || ["", "", ""]).slice(0, 3),
-      createdAt: Date.now()
+      createdAt: now()
     };
 
     const profiles = LS.getProfiles() || [];
     const idx = profiles.findIndex((x) => x.id === "me");
 
-    // publikacja ogłoszenia kontroluje widoczność
-    const published = me.listing?.published !== false;
-
     if (!published) {
-      // jeśli ma być ukryty, usuń "me" z listy
       if (idx !== -1) {
         profiles.splice(idx, 1);
         LS.setProfiles(profiles);
@@ -1472,20 +1848,71 @@
     LS.setProfiles(profiles);
   }
 
+  function renderPreviewCard() {
+    const me = LS.getMe();
+    if (!me) return;
+
+    const subs = LS.getSubs();
+    const mock = {
+      id: "me",
+      name: me.name || "Użytkownik",
+      industryLabel: ({
+        dev: "Programista",
+        gfx: "Grafik",
+        video: "Montażysta / Content",
+        tech: "Technik / DevOps",
+        mc: "Budowniczy Minecraft"
+      })[me.industry] || "Freelancer",
+      tagline: (me.tags || []).slice(0, 6).join(" • "),
+      rating: 5.0,
+      availableIn: me.availability || "48h",
+      minBudget: me.minBudget || 0,
+      location: "Online",
+      premium: !!subs.premium,
+      verified: !!subs.verified,
+      avatar: me.avatar || "",
+      portfolio: (me.portfolio || ["","",""]).slice(0,3),
+      listing: { short: me.listing?.short || "" }
+    };
+
+    const saved = LS.getSaved();
+    const html = profileCardHTML(mock, saved);
+    const wrap = $("#preview-card");
+    if (wrap) {
+      wrap.innerHTML = html;
+      // bind
+      $$("[data-open]", wrap).forEach(btn => btn.addEventListener("click", () => openProfileModalById("me")));
+      $$(".btn-save", wrap).forEach(btn => btn.addEventListener("click", () => {
+        const set = LS.getSaved();
+        if (set.has("me")) set.delete("me");
+        else set.add("me");
+        LS.setSaved(set);
+        Toast.push("Zaktualizowano zapisane.", "bookmark");
+        renderPreviewCard();
+        renderList();
+      }));
+      try { lucide.createIcons(); } catch {}
+    }
+  }
+
   function bindProfileSave() {
     $("#btn-save-profile")?.addEventListener("click", () => {
       const me = LS.getMe() || {};
-      const name = $("#edit-name")?.value?.trim() || me.name || "Użytkownik";
+
+      const name = ($("#edit-name")?.value || "").trim();
+      if (name.length < 2) {
+        Toast.push("Nick jest za krótki (min. 2 znaki).", "alert-triangle");
+        $("#edit-name")?.focus();
+        return;
+      }
+
       const industry = $("#edit-industry")?.value || me.industry || "dev";
       const about = $("#edit-about")?.value || "";
       const availability = $("#edit-availability")?.value || "48h";
       const minBudget = clamp(Number($("#edit-budget")?.value || 0), 0, 10_000_000);
+
       const tagsRaw = $("#edit-tags")?.value || "";
-      const tags = tagsRaw
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .slice(0, 12);
+      const tags = tagsRaw.split(",").map(s => s.trim()).filter(Boolean).slice(0, 12);
 
       const avatarURLInput = ($("#edit-avatar-url")?.value || "").trim();
       const avatar = avatarURLInput || me.avatar || "";
@@ -1510,8 +1937,9 @@
       LS.setMe(next);
       renderPanelFromMe();
       upsertMeIntoProfiles();
+      resetPagination();
       renderList();
-      toast("Zapisano profil.");
+      Toast.push("Zapisano profil.", "save");
     });
 
     $("#btn-reset-profile")?.addEventListener("click", () => {
@@ -1520,8 +1948,8 @@
       renderPanelFromMe();
       upsertMeIntoProfiles();
       resetPagination();
-      render();
-      toast("Przywrócono domyślne dane profilu (demo).");
+      renderList();
+      Toast.push("Przywrócono domyślne dane (demo).", "rotate-ccw");
     });
   }
 
@@ -1535,32 +1963,26 @@
       const short = ($("#listing-short")?.value || "").trim();
       const long = ($("#listing-long")?.value || "").trim();
 
-      me.listing = {
-        ...(me.listing || {}),
-        title,
-        contactMain,
-        short,
-        long,
-        published: true
-      };
-
+      me.listing = { ...(me.listing || {}), title, contactMain, short, long, published: true };
       LS.setMe(me);
+
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      toast("Ogłoszenie opublikowane / zaktualizowane.");
+      Toast.push("Ogłoszenie opublikowane / zaktualizowane.", "rocket");
     });
 
     $("#btn-unpublish")?.addEventListener("click", () => {
       const me = LS.getMe();
       if (!me) return;
+
       me.listing = { ...(me.listing || {}), published: false };
       LS.setMe(me);
 
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      toast("Ogłoszenie ukryte w katalogu.");
+      Toast.push("Ogłoszenie ukryte w katalogu.", "trash-2");
     });
   }
 
@@ -1571,8 +1993,9 @@
       LS.setSubs(subs);
       renderPanelFromMe();
       upsertMeIntoProfiles();
+      resetPagination();
       renderList();
-      toast("Premium aktywowane (demo).");
+      Toast.push("Premium aktywowane (demo).", "zap");
     });
 
     $("#cancel-premium")?.addEventListener("click", () => {
@@ -1581,8 +2004,9 @@
       LS.setSubs(subs);
       renderPanelFromMe();
       upsertMeIntoProfiles();
+      resetPagination();
       renderList();
-      toast("Premium anulowane (demo).");
+      Toast.push("Premium anulowane (demo).", "x-circle");
     });
 
     $("#buy-verify")?.addEventListener("click", () => {
@@ -1591,8 +2015,9 @@
       LS.setSubs(subs);
       renderPanelFromMe();
       upsertMeIntoProfiles();
+      resetPagination();
       renderList();
-      toast("Weryfikacja aktywowana (demo).");
+      Toast.push("Weryfikacja aktywowana (demo).", "badge-check");
     });
 
     $("#cancel-verify")?.addEventListener("click", () => {
@@ -1601,8 +2026,9 @@
       LS.setSubs(subs);
       renderPanelFromMe();
       upsertMeIntoProfiles();
+      resetPagination();
       renderList();
-      toast("Weryfikacja anulowana (demo).");
+      Toast.push("Weryfikacja anulowana (demo).", "x-circle");
     });
   }
 
@@ -1611,6 +2037,9 @@
     renderPanelFromMe();
     upsertMeIntoProfiles();
     renderList();
+
+    // footer year
+    $("#footer-year") && ($("#footer-year").textContent = String(new Date().getFullYear()));
   }
 
   /* ------------------------------- boot ------------------------------- */
@@ -1623,20 +2052,26 @@
     bindProfileSave();
     bindListing();
     bindShop();
+    bindModal();
 
-    // domyślnie pokaż zakładkę "shop" bo w HTML przycisk jest primary
+    // default tab: shop
     switchTab("shop");
+
+    // initial chip states
+    ["#filter-premium", "#filter-verified", "#filter-available"].forEach(id => {
+      const el = $(id);
+      if (el) el.dataset.active = "false";
+    });
 
     render();
 
-    // icons
     try { lucide.createIcons(); } catch {}
 
-    // focus: jeśli user wraca, przewiń do katalogu
-    // (nie wymuszam, tylko jeśli hash)
-    if (location.hash && location.hash.includes("katalog")) {
-      const el = $("#katalog");
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    // open modal if hash provided
+    const pid = getHashProfileId();
+    if (pid) {
+      // wait one tick so list is ready
+      setTimeout(() => openProfileModalById(pid), 150);
     }
   });
 })();
