@@ -1615,19 +1615,1363 @@
     </div>
   </footer>
 
-  <!--
-    STOP — CZĘŚĆ 1/2 ZAKOŃCZONA.
-    Napisz "2", a dam Ci CZĘŚĆ 2/2: cały <script> z logiką:
-    - data modeli profili
-    - render kafelków + infinite/load more
-    - otwieranie profilu (modal) + next/prev
-    - panel drawer + zakładki
-    - edycja profilu i zapis w localStorage
-    - dodawanie ogłoszenia o sobie
-    - sklep: zakup/anulowanie premium i weryfikacji (statusy + badge)
-    - filtry/sort/search + ulubione
-    - scroll progress, particles, reveal, lucide init
-  -->
+ <script>
+/**
+ * Velorie Market — market.html (SCRIPT)
+ * - Render profili (poziome kafelki)
+ * - Wyszukiwarka, filtry, sortowanie
+ * - Modal profilu (pełny profil + kontakt w prawym górnym rogu)
+ * - Panel użytkownika (drawer): edycja profilu, podgląd, ogłoszenie o sobie, sklep (premium + weryfikacja)
+ * - Ulubione, kopiowanie linku, zgłoszenie
+ * - Scroll progress, particles, reveal animations
+ *
+ * Wersja: front-only demo (localStorage)
+ */
+
+(() => {
+  "use strict";
+
+  /* ----------------------------- Helpers ----------------------------- */
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+  const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+  const debounce = (fn, delay = 180) => {
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), delay);
+    };
+  };
+
+  const STORAGE_KEYS = {
+    user: "vm_user_profile_v1",
+    listing: "vm_user_listing_v1",
+    subs: "vm_user_subscriptions_v1",
+    saved: "vm_saved_profiles_v1",
+    ui: "vm_ui_state_v1",
+  };
+
+  const currencyPLN = (n) => {
+    try {
+      return new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" }).format(n);
+    } catch {
+      return `${Number(n).toFixed(2)} PLN`;
+    }
+  };
+
+  const industryLabel = (v) => {
+    const map = {
+      dev: "Programista",
+      gfx: "Grafik",
+      video: "Montażysta / Content",
+      tech: "Technik / DevOps",
+      mc: "Budowniczy Minecraft",
+    };
+    return map[v] || "Freelancer";
+  };
+
+  const safeJsonParse = (str, fallback) => {
+    try { return JSON.parse(str); } catch { return fallback; }
+  };
+
+  const readLS = (key, fallback) => safeJsonParse(localStorage.getItem(key), fallback);
+  const writeLS = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+
+  const toast = (msg) => {
+    // Minimalny toast bez dodatkowego HTML — tworzymy w locie
+    const el = document.createElement("div");
+    el.className =
+      "fixed bottom-5 left-1/2 -translate-x-1/2 z-[120] px-4 py-3 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl text-sm text-white shadow-[0_20px_80px_rgba(0,0,0,0.55)]";
+    el.innerHTML = `<div class="flex items-center gap-2">
+      <span class="inline-flex h-2 w-2 rounded-full bg-[var(--accent)]"></span>
+      <span>${msg}</span>
+    </div>`;
+    document.body.appendChild(el);
+    setTimeout(() => {
+      el.style.opacity = "0";
+      el.style.transform = "translate(-50%, 6px)";
+      el.style.transition = "opacity .25s ease, transform .25s ease";
+    }, 1600);
+    setTimeout(() => el.remove(), 2100);
+  };
+
+  const setOpen = (el, open) => {
+    if (!el) return;
+    el.dataset.open = open ? "true" : "false";
+  };
+
+  /* -------------------------- Static DOM refs ------------------------- */
+
+  const progressBar = $("#scroll-progress");
+  const particlesContainer = $("#particles-container");
+
+  const overlay = $("#overlay");
+  const mobileDrawer = $("#mobile-drawer");
+  const userPanel = $("#user-panel");
+  const profileModal = $("#profile-modal");
+
+  // Buttons (Header + hero + footer)
+  const btnOpenMobile = $("#btn-open-mobile");
+  const btnCloseMobile = $("#btn-close-mobile");
+  const btnOpenPanel = $("#btn-open-panel");
+  const btnOpenPanelMobile = $("#btn-open-panel-mobile");
+  const btnOpenPanelHero = $("#btn-open-panel-hero");
+  const btnOpenPanelFooter = $("#btn-open-panel-footer");
+  const btnClosePanel = $("#btn-close-panel");
+
+  // Catalog controls
+  const searchInput = $("#search-input");
+  const industrySelect = $("#industry-select");
+  const sortSelect = $("#sort-select");
+  const filterPremium = $("#filter-premium");
+  const filterVerified = $("#filter-verified");
+  const filterAvailable = $("#filter-available");
+  const btnResetFilters = $("#btn-reset-filters");
+  const btnLoadMore = $("#btn-load-more");
+
+  const profilesList = $("#profiles-list");
+  const shownCountEl = $("#shown-count");
+  const totalCountEl = $("#total-count");
+
+  // Modal refs
+  const btnCloseProfile = $("#btn-close-profile");
+  const btnPrevProfile = $("#btn-prev-profile");
+  const btnNextProfile = $("#btn-next-profile");
+  const modalAvatar = $("#modal-avatar");
+  const modalName = $("#modal-name");
+  const modalVerified = $("#modal-verified");
+  const modalPremium = $("#modal-premium");
+  const modalIndustry = $("#modal-industry");
+  const modalSub = $("#modal-sub");
+  const modalAbout = $("#modal-about");
+  const modalTags = $("#modal-tags");
+  const modalPortfolio = $("#modal-portfolio");
+  const modalRating = $("#modal-rating");
+  const modalAvailability = $("#modal-availability");
+  const modalBudget = $("#modal-budget");
+  const modalLocation = $("#modal-location");
+  const modalContactDiscord = $("#modal-contact-discord");
+  const modalContactMail = $("#modal-contact-mail");
+  const btnSaveFromModal = $("#btn-save-from-modal");
+  const btnCopyLink = $("#btn-copy-link");
+  const btnReport = $("#btn-report");
+  const btnOpenPanelFromModal = $("#btn-open-panel-from-modal");
+
+  // Panel elements
+  const panelAvatar = $("#panel-avatar");
+  const panelUsername = $("#panel-username");
+  const panelStatus = $("#panel-status");
+
+  const tabEdit = $("#tab-edit");
+  const tabPreview = $("#tab-preview");
+  const tabListing = $("#tab-listing");
+  const tabShop = $("#tab-shop");
+
+  // Panel form fields
+  const editName = $("#edit-name");
+  const editIndustry = $("#edit-industry");
+  const editAbout = $("#edit-about");
+  const editAvailability = $("#edit-availability");
+  const editBudget = $("#edit-budget");
+  const editTags = $("#edit-tags");
+  const editAvatarUrl = $("#edit-avatar-url");
+
+  const editP1 = $("#edit-portfolio-1");
+  const editP2 = $("#edit-portfolio-2");
+  const editP3 = $("#edit-portfolio-3");
+
+  const btnSaveProfile = $("#btn-save-profile");
+  const btnResetProfile = $("#btn-reset-profile");
+
+  // Listing fields
+  const listingTitle = $("#listing-title");
+  const listingContactMain = $("#listing-contact-main");
+  const listingShort = $("#listing-short");
+  const listingLong = $("#listing-long");
+  const btnPublish = $("#btn-publish");
+  const btnUnpublish = $("#btn-unpublish");
+
+  // Shop
+  const buyPremium = $("#buy-premium");
+  const cancelPremium = $("#cancel-premium");
+  const buyVerify = $("#buy-verify");
+  const cancelVerify = $("#cancel-verify");
+
+  // Preview
+  const btnOpenMyProfile = $("#btn-open-my-profile");
+  const btnCopyMyLink = $("#btn-copy-my-link");
+
+  /* ----------------------------- Data Model -------------------------- */
+
+  // Demo profiles (na produkcji -> API)
+  const DEMO_PROFILES = [
+    {
+      id: "p1",
+      name: "zxq0",
+      fullName: "zxq0 (demo)",
+      avatar: "https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop",
+      industry: "dev",
+      subtitle: "React • Node • API • Automatyzacje",
+      tags: ["React", "Node", "API", "Automatyzacje", "Discord", "UI"],
+      about:
+        "Buduję szybkie MVP, panele, integracje i automatyzacje. Pracuję z React/Node, dbam o UX i wydajność. Jeśli potrzebujesz wdrożenia od zera lub poprawy istniejącej aplikacji — odezwij się.",
+      portfolio: [
+        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?q=80&w=900&auto=format&fit=crop",
+      ],
+      rating: 4.9,
+      availability: "48h",
+      budgetMin: 300,
+      location: "Online",
+      verified: true,
+      premium: true,
+      createdAt: Date.now() - 1000 * 60 * 60 * 24 * 2,
+      discord: "zxq#0000",
+      email: "kontakt@velorie.market",
+    },
+    {
+      id: "p2",
+      name: "Klaudia",
+      fullName: "Klaudia (demo)",
+      avatar: "https://images.unsplash.com/photo-1548142813-c348350df52b?q=80&w=512&auto=format&fit=crop",
+      industry: "gfx",
+      subtitle: "Branding • UI • Miniatury • Packi",
+      tags: ["Branding", "UI", "Logo", "GFX", "Thumbnails"],
+      about:
+        "Projektuję nowoczesne identyfikacje i UI. Robię miniatury i grafiki pod social media. Stawiam na czytelność, styl i szybkie poprawki. Podsyłam propozycje w kilku wariantach.",
+      portfolio: [
+        "https://images.unsplash.com/photo-1526498460520-4c246339dccb?q=80&w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=900&auto=format&fit=crop",
+      ],
+      rating: 4.7,
+      availability: "24h",
+      budgetMin: 200,
+      location: "Online",
+      verified: false,
+      premium: true,
+      createdAt: Date.now() - 1000 * 60 * 60 * 24 * 6,
+      discord: "klaudia#1234",
+      email: "klaudia@example.com",
+    },
+    {
+      id: "p3",
+      name: "kubus",
+      fullName: "kubus (demo)",
+      avatar: "https://images.unsplash.com/photo-1603415526960-f7e0328b7cf6?q=80&w=512&auto=format&fit=crop",
+      industry: "tech",
+      subtitle: "Linux • Proxy • Optymalizacja • Security",
+      tags: ["Linux", "DevOps", "Proxy", "Security", "DDoS", "Optymalizacja"],
+      about:
+        "Pomagam w konfiguracji serwerów, proxy, zabezpieczeniach i optymalizacji. Audytuję ustawienia, poprawiam wydajność i stabilność. Najczęściej działam w środowiskach Linux + popularne panele/hosting.",
+      portfolio: [
+        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=900&auto=format&fit=crop",
+      ],
+      rating: 4.8,
+      availability: "72h",
+      budgetMin: 250,
+      location: "Online",
+      verified: true,
+      premium: false,
+      createdAt: Date.now() - 1000 * 60 * 60 * 24 * 10,
+      discord: "kubus#9000",
+      email: "kubus@example.com",
+    },
+  ];
+
+  // User profile (edytowalny w panelu)
+  const DEFAULT_USER = {
+    id: "me",
+    name: "zxq0",
+    avatar: "https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop",
+    industry: "dev",
+    about: "",
+    availability: "48h",
+    budgetMin: 300,
+    tags: ["React", "Node", "API", "Automatyzacje"],
+    portfolio: ["", "", ""],
+    discord: "twoj-discord#0000",
+    email: "twoj-mail@example.com",
+  };
+
+  const DEFAULT_SUBS = {
+    premiumActive: false,  // 23.99 PLN/mies.
+    verifyActive: false,   // 19.55 PLN/mies.
+    premiumSince: null,
+    verifySince: null,
+  };
+
+  const DEFAULT_UI = {
+    filterPremium: false,
+    filterVerified: false,
+    filterAvailable: false,
+    sort: "recommended",
+    industry: "all",
+    search: "",
+    visibleCount: 6,
+  };
+
+  /* ------------------------------ State ------------------------------ */
+
+  const state = {
+    // Full set in memory
+    profiles: [],
+    // Filtered and sorted list
+    view: [],
+    // UI
+    ui: { ...DEFAULT_UI },
+    // Saved bookmarks
+    saved: new Set(),
+    // Current selected profile index within state.view
+    currentIndex: 0,
+    // User data
+    user: { ...DEFAULT_USER },
+    listing: null,
+    subs: { ...DEFAULT_SUBS },
+  };
+
+  /* --------------------------- Initialization ------------------------- */
+
+  function initSchema() {
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Velorie Market",
+      url: window.location.href,
+      inLanguage: "PL",
+      description:
+        "Platforma ogłoszeniowa dla freelancerów i zleceniodawców. Bez escrow – kontakt i płatność poza platformą.",
+    };
+    const el = $("#schema-json");
+    if (el) el.textContent = JSON.stringify(schema);
+  }
+
+  function initFooterYear() {
+    const y = $("#footer-year");
+    if (y) y.textContent = new Date().getFullYear();
+  }
+
+  function initParticles() {
+    if (!particlesContainer) return;
+    const ACCENT = "#ff0354";
+
+    particlesContainer.innerHTML = "";
+    for (let i = 0; i < 28; i++) {
+      const particle = document.createElement("span");
+      const size = 24 + (i % 5) * 12;
+      particle.className = "absolute rounded-full opacity-20 blur-2xl particle";
+      particle.style.cssText = `
+        width:${size}px;
+        height:${size}px;
+        background:${i % 3 ? ACCENT : "#4f46e5"};
+        left:${Math.random() * 100}%;
+        top:${Math.random() * 100}%;
+        animation-duration:${10 + (i % 5)}s;
+        animation-delay:${i * 0.2}s;
+      `;
+      particlesContainer.appendChild(particle);
+    }
+  }
+
+  function updateScrollProgress() {
+    if (!progressBar) return;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const p = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = `${p}%`;
+  }
+
+  let revealObserver = null;
+  function initRevealObserver() {
+    if (revealObserver) revealObserver.disconnect();
+    revealObserver = new IntersectionObserver(
+      (entries, obs) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-visible");
+            obs.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+    $$(".animate-on-scroll").forEach((el) => revealObserver.observe(el));
+  }
+
+  function loadPersisted() {
+    state.user = { ...DEFAULT_USER, ...(readLS(STORAGE_KEYS.user, {}) || {}) };
+    state.listing = readLS(STORAGE_KEYS.listing, null);
+    state.subs = { ...DEFAULT_SUBS, ...(readLS(STORAGE_KEYS.subs, {}) || {}) };
+
+    const savedArr = readLS(STORAGE_KEYS.saved, []);
+    state.saved = new Set(Array.isArray(savedArr) ? savedArr : []);
+
+    state.ui = { ...DEFAULT_UI, ...(readLS(STORAGE_KEYS.ui, {}) || {}) };
+  }
+
+  function persistAll() {
+    writeLS(STORAGE_KEYS.user, state.user);
+    writeLS(STORAGE_KEYS.listing, state.listing);
+    writeLS(STORAGE_KEYS.subs, state.subs);
+    writeLS(STORAGE_KEYS.saved, Array.from(state.saved));
+    writeLS(STORAGE_KEYS.ui, state.ui);
+  }
+
+  function mergeProfiles() {
+    // bazowo demo
+    const base = [...DEMO_PROFILES];
+
+    // user listing (jeśli opublikowane) tworzy/aktualizuje profil w katalogu
+    const me = buildProfileFromUser();
+    const existingIdx = base.findIndex((p) => p.id === me.id);
+    if (existingIdx >= 0) base[existingIdx] = me;
+    else base.unshift(me);
+
+    // Jeżeli user ma "ogłoszenie" nieaktywne, nie pokazujemy w katalogu
+    if (state.listing && state.listing.active === false) {
+      const idx = base.findIndex((p) => p.id === "me");
+      if (idx >= 0) base.splice(idx, 1);
+    }
+
+    state.profiles = base;
+  }
+
+  function buildProfileFromUser() {
+    const premium = !!state.subs.premiumActive;
+    const verified = !!state.subs.verifyActive;
+
+    // listing może nadpisać części profilu
+    const l = state.listing;
+
+    const title = l?.title?.trim();
+    const short = l?.short?.trim();
+    const long = l?.long?.trim();
+    const contactMain = l?.contactMain || "Discord";
+
+    const subtitle = state.user.tags?.slice(0, 4).join(" • ") || "Portfolio • Kontakt";
+    const about = long || state.user.about || "Uzupełnij opis w panelu, aby zwiększyć wiarygodność.";
+
+    const ratingBase = 4.6;
+    const ratingBoost = (verified ? 0.15 : 0) + (premium ? 0.1 : 0);
+    const rating = clamp(Math.round((ratingBase + ratingBoost) * 10) / 10, 1, 5);
+
+    const createdAt = l?.updatedAt || Date.now() - 1000 * 60 * 60 * 24;
+
+    return {
+      id: "me",
+      name: state.user.name || "Ty",
+      fullName: state.user.name || "Ty",
+      avatar: state.user.avatar || DEFAULT_USER.avatar,
+      industry: state.user.industry || "dev",
+      subtitle: title ? title : subtitle,
+      tags: Array.isArray(state.user.tags) ? state.user.tags : [],
+      about,
+      portfolio: Array.isArray(state.user.portfolio) ? state.user.portfolio.filter(Boolean) : [],
+      rating,
+      availability: state.user.availability || "48h",
+      budgetMin: Number(state.user.budgetMin || 0) || 0,
+      location: "Online",
+      verified,
+      premium,
+      createdAt,
+      discord: contactMain === "Discord" ? (state.user.discord || "twoj-discord") : (state.user.discord || "twoj-discord"),
+      email: state.user.email || "twoj-mail@example.com",
+      isMe: true,
+    };
+  }
+
+  /* ------------------------ Catalog Rendering ------------------------ */
+
+  function profileCardHTML(p) {
+    const badges = `
+      ${p.verified ? `<span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>` : ""}
+      ${p.premium ? `<span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>` : ""}
+    `;
+
+    const chips = `
+      <span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena ${p.rating?.toFixed(1) ?? "—"}</span>
+      <span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: ${p.availability || "—"}</span>
+      <span class="chip"><i data-lucide="map-pin" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${p.location || "Online"}</span>
+      <span class="chip"><i data-lucide="wallet" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Budżet: od ${Number(p.budgetMin || 0).toLocaleString("pl-PL")} PLN</span>
+    `;
+
+    const thumbs = (p.portfolio && p.portfolio.length ? p.portfolio : [
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=900&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=900&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?q=80&w=900&auto=format&fit=crop",
+    ]).slice(0, 3);
+
+    const thumbsHTML = thumbs.map((src, i) => `
+      <div class="thumb aspect-[4/3]">
+        <img src="${src}" alt="Portfolio ${i + 1}" />
+      </div>
+    `).join("");
+
+    const saved = state.saved.has(p.id);
+
+    return `
+      <article class="profile-card animate-on-scroll p-4 md:p-5" data-profile-id="${p.id}">
+        <div class="flex flex-col md:flex-row md:items-center gap-4">
+          <div class="flex items-center gap-3 min-w-[260px]">
+            <div class="avatar">
+              <img src="${p.avatar}" alt="Avatar" />
+            </div>
+            <div class="leading-tight">
+              <div class="flex items-center gap-2 flex-wrap">
+                <div class="text-lg font-extrabold tracking-tight">${escapeHtml(p.name)}</div>
+                ${badges}
+              </div>
+              <div class="text-sm text-white/70 font-semibold">${escapeHtml(industryLabel(p.industry))}</div>
+              <div class="text-xs text-white/55">${escapeHtml(p.subtitle || "")}</div>
+            </div>
+          </div>
+
+          <div class="flex-1">
+            <div class="flex flex-wrap items-center gap-2">
+              ${chips}
+            </div>
+            <div class="mt-3 grid grid-cols-3 gap-2">
+              ${thumbsHTML}
+            </div>
+          </div>
+
+          <div class="flex md:flex-col gap-2 md:items-end">
+            <button class="btn btn-primary px-4 py-3 w-full md:w-auto btn-open-profile" type="button">
+              <i data-lucide="arrow-right" class="h-4 w-4"></i>
+              <span>Otwórz profil</span>
+            </button>
+            <button class="btn btn-ghost px-4 py-3 w-full md:w-auto btn-save" type="button" data-saved="${saved ? "1" : "0"}">
+              <i data-lucide="${saved ? "bookmark-check" : "bookmark"}" class="h-4 w-4"></i>
+              <span>${saved ? "Zapisano" : "Zapisz"}</span>
+            </button>
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
+  function escapeHtml(str) {
+    return String(str || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function computeScoreRecommended(p) {
+    // premium + verified + rating + świeżość
+    const now = Date.now();
+    const daysOld = (now - (p.createdAt || now)) / (1000 * 60 * 60 * 24);
+    const freshness = clamp(1.5 - daysOld * 0.06, 0.6, 1.5);
+    const base = (p.rating || 4.5) * 10;
+    const prem = p.premium ? 14 : 0;
+    const ver = p.verified ? 8 : 0;
+    const me = p.id === "me" ? 3 : 0; // delikatnie podbijamy, żeby user widział swój profil
+    return base * freshness + prem + ver + me;
+  }
+
+  function applyFilters() {
+    const search = (state.ui.search || "").trim().toLowerCase();
+    const industry = state.ui.industry || "all";
+    const fPrem = !!state.ui.filterPremium;
+    const fVer = !!state.ui.filterVerified;
+    const fAvail = !!state.ui.filterAvailable;
+
+    let list = [...state.profiles];
+
+    // Industry filter
+    if (industry !== "all") list = list.filter((p) => p.industry === industry);
+
+    // Premium/Verified/Availability
+    if (fPrem) list = list.filter((p) => !!p.premium);
+    if (fVer) list = list.filter((p) => !!p.verified);
+    if (fAvail) {
+      // prosta reguła: 24/48/72h traktujemy jako "dostępny", reszta mniej
+      list = list.filter((p) => ["24h", "48h", "72h"].includes(String(p.availability || "")));
+    }
+
+    // Search
+    if (search) {
+      list = list.filter((p) => {
+        const hay = [
+          p.name,
+          p.fullName,
+          industryLabel(p.industry),
+          p.subtitle,
+          ...(p.tags || []),
+          p.about,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return hay.includes(search);
+      });
+    }
+
+    // Sort
+    const sort = state.ui.sort || "recommended";
+    if (sort === "newest") {
+      list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    } else if (sort === "rating") {
+      list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    } else if (sort === "verified") {
+      list.sort((a, b) => (Number(!!b.verified) - Number(!!a.verified)) || (b.rating || 0) - (a.rating || 0));
+    } else {
+      // recommended
+      list.sort((a, b) => computeScoreRecommended(b) - computeScoreRecommended(a));
+    }
+
+    state.view = list;
+  }
+
+  function renderCatalog() {
+    if (!profilesList) return;
+
+    applyFilters();
+
+    const total = state.view.length;
+    totalCountEl && (totalCountEl.textContent = String(total));
+
+    const visible = clamp(state.ui.visibleCount || 6, 0, total);
+    const slice = state.view.slice(0, visible);
+
+    profilesList.innerHTML = slice.map(profileCardHTML).join("");
+
+    shownCountEl && (shownCountEl.textContent = String(slice.length));
+
+    // Hide load more if not needed
+    if (btnLoadMore) btnLoadMore.style.display = slice.length >= total ? "none" : "inline-flex";
+
+    // Re-init icons + reveals
+    lucide.createIcons();
+    initRevealObserver();
+
+    // Attach card handlers
+    bindCardEvents();
+  }
+
+  function bindCardEvents() {
+    // open profile
+    $$(".btn-open-profile", profilesList).forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const card = e.currentTarget.closest("[data-profile-id]");
+        if (!card) return;
+        const id = card.getAttribute("data-profile-id");
+        openProfileById(id);
+      });
+    });
+
+    // save
+    $$(".btn-save", profilesList).forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const card = e.currentTarget.closest("[data-profile-id]");
+        if (!card) return;
+        const id = card.getAttribute("data-profile-id");
+        toggleSaved(id);
+        renderCatalog(); // quick refresh
+      });
+    });
+
+    // clicking on card itself opens profile (optional)
+    $$(".profile-card", profilesList).forEach((card) => {
+      card.addEventListener("click", (e) => {
+        // don't hijack button clicks
+        if (e.target.closest("button, a, input, select, textarea")) return;
+        const id = card.getAttribute("data-profile-id");
+        if (id) openProfileById(id);
+      });
+    });
+  }
+
+  function toggleSaved(id) {
+    if (!id) return;
+    if (state.saved.has(id)) {
+      state.saved.delete(id);
+      toast("Usunięto z zapisanych.");
+    } else {
+      state.saved.add(id);
+      toast("Zapisano profil.");
+    }
+    persistAll();
+  }
+
+  /* ----------------------------- Profile Modal ----------------------- */
+
+  function openProfileById(id) {
+    const idx = state.view.findIndex((p) => p.id === id);
+    if (idx === -1) return;
+    state.currentIndex = idx;
+    const p = state.view[idx];
+    fillProfileModal(p);
+    openModal();
+    updateUrlHash(p.id);
+  }
+
+  function fillProfileModal(p) {
+    if (!p) return;
+
+    if (modalAvatar) modalAvatar.src = p.avatar || DEFAULT_USER.avatar;
+    if (modalName) modalName.textContent = p.name || "";
+    if (modalIndustry) modalIndustry.textContent = industryLabel(p.industry);
+    if (modalSub) modalSub.textContent = p.subtitle || "";
+
+    // badges
+    if (modalVerified) modalVerified.style.display = p.verified ? "inline-flex" : "none";
+    if (modalPremium) modalPremium.style.display = p.premium ? "inline-flex" : "none";
+
+    // about
+    if (modalAbout) modalAbout.textContent = p.about || "";
+
+    // tags
+    if (modalTags) {
+      const tags = (p.tags || []).slice(0, 10);
+      modalTags.innerHTML = tags.map((t) => `
+        <span class="chip"><i data-lucide="tag" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHtml(t)}</span>
+      `).join("");
+    }
+
+    // portfolio
+    if (modalPortfolio) {
+      const imgs = (p.portfolio || []).slice(0, 6);
+      modalPortfolio.innerHTML = imgs.map((src, i) => `
+        <div class="thumb aspect-[4/3]">
+          <img src="${src}" alt="Portfolio ${i + 1}" />
+        </div>
+      `).join("");
+    }
+
+    // info
+    if (modalRating) modalRating.textContent = (p.rating != null ? p.rating.toFixed(1) : "—");
+    if (modalAvailability) modalAvailability.textContent = p.availability || "—";
+    if (modalBudget) modalBudget.textContent = `od ${Number(p.budgetMin || 0).toLocaleString("pl-PL")}`;
+    if (modalLocation) modalLocation.textContent = p.location || "Online";
+
+    // contact
+    if (modalContactDiscord) {
+      // no real discord link; we show pseudo and copy on click later
+      modalContactDiscord.setAttribute("href", "#");
+      modalContactDiscord.dataset.discord = p.discord || "";
+    }
+    if (modalContactMail) {
+      modalContactMail.setAttribute("href", `mailto:${encodeURIComponent(p.email || "kontakt@velorie.market")}`);
+    }
+
+    // actions
+    if (btnSaveFromModal) {
+      const saved = state.saved.has(p.id);
+      btnSaveFromModal.innerHTML = `
+        <i data-lucide="${saved ? "bookmark-check" : "bookmark"}" class="h-4 w-4"></i>
+        <span>${saved ? "Zapisano" : "Zapisz profil"}</span>
+      `;
+      btnSaveFromModal.dataset.profileId = p.id;
+    }
+
+    if (btnCopyLink) btnCopyLink.dataset.profileId = p.id;
+    if (btnReport) btnReport.dataset.profileId = p.id;
+
+    if (btnOpenPanelFromModal) {
+      btnOpenPanelFromModal.dataset.profileId = p.id;
+      // jeśli profil nie jest mój, przycisk nadal otwiera panel (demo)
+    }
+
+    lucide.createIcons();
+  }
+
+  function openModal() {
+    setOpen(overlay, true);
+    setOpen(profileModal, true);
+    // lock scroll
+    document.documentElement.style.overflow = "hidden";
+  }
+
+  function closeModal() {
+    setOpen(profileModal, false);
+    // jeśli panel otwarty, overlay zostaje
+    if (userPanel?.dataset.open !== "true" && mobileDrawer?.dataset.open !== "true") {
+      setOpen(overlay, false);
+      document.documentElement.style.overflow = "";
+    }
+    removeProfileHash();
+  }
+
+  function nextProfile() {
+    if (!state.view.length) return;
+    state.currentIndex = (state.currentIndex + 1) % state.view.length;
+    const p = state.view[state.currentIndex];
+    fillProfileModal(p);
+    updateUrlHash(p.id);
+  }
+
+  function prevProfile() {
+    if (!state.view.length) return;
+    state.currentIndex = (state.currentIndex - 1 + state.view.length) % state.view.length;
+    const p = state.view[state.currentIndex];
+    fillProfileModal(p);
+    updateUrlHash(p.id);
+  }
+
+  function updateUrlHash(id) {
+    // Używamy #profile=ID (zostawiamy resztę nawigacji)
+    // żeby nie psuć anchorów, trzymamy to jako param w hash (prosto).
+    // Jeśli hash jest normalnym anchor (#katalog), nie nadpisujemy — dopiszemy na końcu.
+    const base = window.location.hash || "";
+    // jeśli user jest na #katalog itd., zachowaj
+    const anchor = base.split("&").filter(Boolean)[0] || "";
+    const next = anchor ? `${anchor}&profile=${encodeURIComponent(id)}` : `#profile=${encodeURIComponent(id)}`;
+    window.history.replaceState(null, "", next);
+  }
+
+  function removeProfileHash() {
+    const h = window.location.hash || "";
+    if (!h.includes("profile=")) return;
+    const parts = h.replace("#", "").split("&").filter(Boolean);
+    const filtered = parts.filter((x) => !x.startsWith("profile="));
+    const next = filtered.length ? `#${filtered.join("&")}` : "#";
+    window.history.replaceState(null, "", next);
+  }
+
+  function tryOpenProfileFromHash() {
+    const h = (window.location.hash || "").replace("#", "");
+    if (!h) return;
+    const parts = h.split("&");
+    const prof = parts.find((p) => p.startsWith("profile="));
+    if (!prof) return;
+    const id = decodeURIComponent(prof.split("=")[1] || "");
+    if (!id) return;
+    // Ensure view is ready
+    const idx = state.view.findIndex((p) => p.id === id);
+    if (idx >= 0) {
+      state.currentIndex = idx;
+      fillProfileModal(state.view[idx]);
+      openModal();
+    }
+  }
+
+  /* ------------------------------ Panel ------------------------------ */
+
+  function openPanel() {
+    setOpen(overlay, true);
+    setOpen(userPanel, true);
+    document.documentElement.style.overflow = "hidden";
+    // default tab: shop (zgodnie z HTML)
+    setPanelTab("shop");
+  }
+
+  function closePanel() {
+    setOpen(userPanel, false);
+    // jeśli modal otwarty, overlay zostaje
+    if (profileModal?.dataset.open !== "true" && mobileDrawer?.dataset.open !== "true") {
+      setOpen(overlay, false);
+      document.documentElement.style.overflow = "";
+    }
+  }
+
+  function setPanelTab(tab) {
+    // Hide all
+    if (tabEdit) tabEdit.classList.add("hidden");
+    if (tabPreview) tabPreview.classList.add("hidden");
+    if (tabListing) tabListing.classList.add("hidden");
+    if (tabShop) tabShop.classList.add("hidden");
+
+    if (tab === "edit" && tabEdit) tabEdit.classList.remove("hidden");
+    if (tab === "preview" && tabPreview) tabPreview.classList.remove("hidden");
+    if (tab === "listing" && tabListing) tabListing.classList.remove("hidden");
+    if (tab === "shop" && tabShop) tabShop.classList.remove("hidden");
+  }
+
+  function syncPanelHeader() {
+    if (panelAvatar) panelAvatar.src = state.user.avatar || DEFAULT_USER.avatar;
+    if (panelUsername) panelUsername.textContent = state.user.name || "Użytkownik";
+    if (panelStatus) panelStatus.textContent = "Zalogowany (demo)";
+  }
+
+  function fillEditFormFromUser() {
+    if (editName) editName.value = state.user.name || "";
+    if (editIndustry) editIndustry.value = state.user.industry || "dev";
+    if (editAbout) editAbout.value = state.user.about || "";
+    if (editAvailability) editAvailability.value = state.user.availability || "48h";
+    if (editBudget) editBudget.value = String(state.user.budgetMin ?? 0);
+    if (editTags) editTags.value = (state.user.tags || []).join(", ");
+    if (editAvatarUrl) editAvatarUrl.value = state.user.avatar || "";
+
+    if (editP1) editP1.value = state.user.portfolio?.[0] || "";
+    if (editP2) editP2.value = state.user.portfolio?.[1] || "";
+    if (editP3) editP3.value = state.user.portfolio?.[2] || "";
+  }
+
+  function readUserFromEditForm() {
+    const tags = (editTags?.value || "")
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean)
+      .slice(0, 20);
+
+    const portfolio = [editP1?.value, editP2?.value, editP3?.value]
+      .map((x) => (x || "").trim())
+      .filter((x) => x.length > 0)
+      .slice(0, 6);
+
+    state.user = {
+      ...state.user,
+      name: (editName?.value || "").trim() || "Użytkownik",
+      industry: editIndustry?.value || "dev",
+      about: (editAbout?.value || "").trim(),
+      availability: editAvailability?.value || "48h",
+      budgetMin: Number(editBudget?.value || 0) || 0,
+      tags,
+      avatar: (editAvatarUrl?.value || "").trim() || state.user.avatar || DEFAULT_USER.avatar,
+      portfolio,
+    };
+
+    persistAll();
+  }
+
+  function fillListingFromState() {
+    const l = state.listing;
+    if (!l) return;
+    if (listingTitle) listingTitle.value = l.title || "";
+    if (listingContactMain) listingContactMain.value = l.contactMain || "Discord";
+    if (listingShort) listingShort.value = l.short || "";
+    if (listingLong) listingLong.value = l.long || "";
+  }
+
+  function publishListing() {
+    const title = (listingTitle?.value || "").trim();
+    const contactMain = listingContactMain?.value || "Discord";
+    const short = (listingShort?.value || "").trim();
+    const long = (listingLong?.value || "").trim();
+
+    state.listing = {
+      active: true,
+      title,
+      contactMain,
+      short,
+      long,
+      updatedAt: Date.now(),
+    };
+
+    persistAll();
+    toast("Ogłoszenie zapisane / zaktualizowane.");
+    // rebuild catalog
+    mergeProfiles();
+    renderCatalog();
+  }
+
+  function unpublishListing() {
+    state.listing = {
+      ...(state.listing || {}),
+      active: false,
+      updatedAt: Date.now(),
+    };
+    persistAll();
+    toast("Ogłoszenie usunięte (ukryte z katalogu).");
+    mergeProfiles();
+    renderCatalog();
+  }
+
+  /* ------------------------------ Shop ------------------------------- */
+
+  const PREMIUM_PRICE = 23.99;
+  const VERIFY_PRICE = 19.55;
+
+  function updateShopButtons() {
+    const prem = !!state.subs.premiumActive;
+    const ver = !!state.subs.verifyActive;
+
+    if (buyPremium) {
+      buyPremium.disabled = prem;
+      buyPremium.style.opacity = prem ? "0.6" : "1";
+    }
+    if (cancelPremium) {
+      cancelPremium.disabled = !prem;
+      cancelPremium.style.opacity = !prem ? "0.6" : "1";
+    }
+
+    if (buyVerify) {
+      buyVerify.disabled = ver;
+      buyVerify.style.opacity = ver ? "0.6" : "1";
+    }
+    if (cancelVerify) {
+      cancelVerify.disabled = !ver;
+      cancelVerify.style.opacity = !ver ? "0.6" : "1";
+    }
+  }
+
+  function buySub(type) {
+    if (type === "premium") {
+      if (state.subs.premiumActive) return;
+      state.subs.premiumActive = true;
+      state.subs.premiumSince = Date.now();
+      toast(`Kupiono Premium pozycjonowanie (${currencyPLN(PREMIUM_PRICE)}/mies.) — DEMO`);
+    } else if (type === "verify") {
+      if (state.subs.verifyActive) return;
+      state.subs.verifyActive = true;
+      state.subs.verifySince = Date.now();
+      toast(`Kupiono Weryfikację (${currencyPLN(VERIFY_PRICE)}/mies.) — DEMO`);
+    }
+    persistAll();
+    updateShopButtons();
+    // update catalog + modal (badges)
+    mergeProfiles();
+    renderCatalog();
+    // jeśli modal otwarty i dotyczy "me", odśwież
+    refreshModalIfMe();
+  }
+
+  function cancelSub(type) {
+    if (type === "premium") {
+      if (!state.subs.premiumActive) return;
+      state.subs.premiumActive = false;
+      toast("Anulowano Premium (DEMO).");
+    } else if (type === "verify") {
+      if (!state.subs.verifyActive) return;
+      state.subs.verifyActive = false;
+      toast("Anulowano Weryfikację (DEMO).");
+    }
+    persistAll();
+    updateShopButtons();
+    mergeProfiles();
+    renderCatalog();
+    refreshModalIfMe();
+  }
+
+  function refreshModalIfMe() {
+    if (profileModal?.dataset.open !== "true") return;
+    const current = state.view[state.currentIndex];
+    if (!current) return;
+    if (current.id === "me") {
+      // rebuild view is already refreshed in renderCatalog -> but modal uses current view
+      applyFilters();
+      const idx = state.view.findIndex((p) => p.id === "me");
+      if (idx >= 0) {
+        state.currentIndex = idx;
+        fillProfileModal(state.view[idx]);
+      }
+    }
+  }
+
+  /* --------------------------- Controls binding ----------------------- */
+
+  function bindGlobalEvents() {
+    // scroll progress
+    window.addEventListener("scroll", updateScrollProgress, { passive: true });
+    updateScrollProgress();
+
+    // overlay click closes active surfaces (priority: mobile -> panel -> modal)
+    overlay?.addEventListener("click", () => {
+      if (mobileDrawer?.dataset.open === "true") closeMobileMenu();
+      else if (userPanel?.dataset.open === "true") closePanel();
+      else if (profileModal?.dataset.open === "true") closeModal();
+    });
+
+    // mobile drawer
+    btnOpenMobile?.addEventListener("click", () => openMobileMenu());
+    btnCloseMobile?.addEventListener("click", () => closeMobileMenu());
+
+    // panel open/close
+    [btnOpenPanel, btnOpenPanelMobile, btnOpenPanelHero, btnOpenPanelFooter].forEach((b) => {
+      b?.addEventListener("click", () => {
+        closeMobileMenu();
+        openPanel();
+      });
+    });
+    btnClosePanel?.addEventListener("click", closePanel);
+
+    // profile modal close
+    btnCloseProfile?.addEventListener("click", closeModal);
+    btnPrevProfile?.addEventListener("click", prevProfile);
+    btnNextProfile?.addEventListener("click", nextProfile);
+
+    // ESC key closes topmost
+    window.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      if (mobileDrawer?.dataset.open === "true") closeMobileMenu();
+      else if (userPanel?.dataset.open === "true") closePanel();
+      else if (profileModal?.dataset.open === "true") closeModal();
+    });
+
+    // catalog controls
+    if (searchInput) {
+      searchInput.value = state.ui.search || "";
+      searchInput.addEventListener(
+        "input",
+        debounce((e) => {
+          state.ui.search = String(e.target.value || "");
+          state.ui.visibleCount = 6;
+          persistAll();
+          renderCatalog();
+        }, 200)
+      );
+    }
+
+    if (industrySelect) {
+      industrySelect.value = state.ui.industry || "all";
+      industrySelect.addEventListener("change", (e) => {
+        state.ui.industry = e.target.value || "all";
+        state.ui.visibleCount = 6;
+        persistAll();
+        renderCatalog();
+      });
+    }
+
+    if (sortSelect) {
+      sortSelect.value = state.ui.sort || "recommended";
+      sortSelect.addEventListener("change", (e) => {
+        state.ui.sort = e.target.value || "recommended";
+        persistAll();
+        renderCatalog();
+      });
+    }
+
+    filterPremium?.addEventListener("click", () => {
+      state.ui.filterPremium = !state.ui.filterPremium;
+      persistAll();
+      syncFilterChips();
+      renderCatalog();
+    });
+
+    filterVerified?.addEventListener("click", () => {
+      state.ui.filterVerified = !state.ui.filterVerified;
+      persistAll();
+      syncFilterChips();
+      renderCatalog();
+    });
+
+    filterAvailable?.addEventListener("click", () => {
+      state.ui.filterAvailable = !state.ui.filterAvailable;
+      persistAll();
+      syncFilterChips();
+      renderCatalog();
+    });
+
+    btnResetFilters?.addEventListener("click", () => {
+      state.ui = { ...DEFAULT_UI, visibleCount: 6 };
+      persistAll();
+      // sync selects/inputs
+      if (searchInput) searchInput.value = "";
+      if (industrySelect) industrySelect.value = "all";
+      if (sortSelect) sortSelect.value = "recommended";
+      syncFilterChips();
+      renderCatalog();
+      toast("Zresetowano filtry.");
+    });
+
+    btnLoadMore?.addEventListener("click", () => {
+      state.ui.visibleCount = (state.ui.visibleCount || 6) + 6;
+      persistAll();
+      renderCatalog();
+    });
+
+    // modal actions
+    btnSaveFromModal?.addEventListener("click", () => {
+      const id = btnSaveFromModal.dataset.profileId;
+      toggleSaved(id);
+      // update modal button state
+      const p = state.view[state.currentIndex];
+      fillProfileModal(p);
+    });
+
+    btnCopyLink?.addEventListener("click", async () => {
+      const id = btnCopyLink.dataset.profileId;
+      if (!id) return;
+      const url = buildProfileLink(id);
+      await copyText(url);
+      toast("Skopiowano link do profilu.");
+    });
+
+    btnReport?.addEventListener("click", () => {
+      toast("Zgłoszenie wysłane (DEMO).");
+    });
+
+    btnOpenPanelFromModal?.addEventListener("click", () => {
+      openPanel();
+    });
+
+    // contact discord in modal -> copy
+    modalContactDiscord?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const p = state.view[state.currentIndex];
+      const handle = p?.discord || "discord#0000";
+      await copyText(handle);
+      toast("Skopiowano Discord.");
+    });
+
+    // panel tabs
+    $$("[data-tab]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const t = btn.getAttribute("data-tab");
+        setPanelTab(t);
+      });
+    });
+
+    // panel edit actions
+    btnSaveProfile?.addEventListener("click", () => {
+      readUserFromEditForm();
+      syncPanelHeader();
+      toast("Zapisano profil (DEMO).");
+      mergeProfiles();
+      renderCatalog();
+      // update preview card quickly (by re-opening catalog render)
+    });
+
+    btnResetProfile?.addEventListener("click", () => {
+      // revert to last saved (reload from LS)
+      state.user = { ...DEFAULT_USER, ...(readLS(STORAGE_KEYS.user, {}) || {}) };
+      fillEditFormFromUser();
+      syncPanelHeader();
+      toast("Przywrócono ostatnio zapisane dane.");
+    });
+
+    // preview actions
+    btnOpenMyProfile?.addEventListener("click", () => openProfileById("me"));
+    btnCopyMyLink?.addEventListener("click", async () => {
+      await copyText(buildProfileLink("me"));
+      toast("Skopiowano link do Twojego profilu.");
+    });
+
+    // listing actions
+    btnPublish?.addEventListener("click", publishListing);
+    btnUnpublish?.addEventListener("click", unpublishListing);
+
+    // shop actions
+    buyPremium?.addEventListener("click", () => buySub("premium"));
+    cancelPremium?.addEventListener("click", () => cancelSub("premium"));
+    buyVerify?.addEventListener("click", () => buySub("verify"));
+    cancelVerify?.addEventListener("click", () => cancelSub("verify"));
+
+    // hash changes (open modal from link)
+    window.addEventListener("hashchange", () => {
+      // if profile hash exists, open it
+      applyFilters();
+      tryOpenProfileFromHash();
+    });
+  }
+
+  function syncFilterChips() {
+    // visualize active chips
+    const activeClass = "ring-1 ring-[var(--accent)]/40 bg-white/10";
+    const inactiveClass = "bg-white/5";
+
+    const setChip = (el, on) => {
+      if (!el) return;
+      el.classList.toggle("ring-1", on);
+      el.classList.toggle("ring-[var(--accent)]/40", on);
+      // we keep base chip classes from CSS; add subtle active
+      if (on) el.classList.add("bg-white/10");
+      else el.classList.remove("bg-white/10");
+    };
+
+    setChip(filterPremium, !!state.ui.filterPremium);
+    setChip(filterVerified, !!state.ui.filterVerified);
+    setChip(filterAvailable, !!state.ui.filterAvailable);
+  }
+
+  function openMobileMenu() {
+    setOpen(overlay, true);
+    setOpen(mobileDrawer, true);
+    document.documentElement.style.overflow = "hidden";
+  }
+
+  function closeMobileMenu() {
+    setOpen(mobileDrawer, false);
+    if (userPanel?.dataset.open !== "true" && profileModal?.dataset.open !== "true") {
+      setOpen(overlay, false);
+      document.documentElement.style.overflow = "";
+    }
+  }
+
+  /* ----------------------------- Utilities --------------------------- */
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand("copy");
+        ta.remove();
+        return true;
+      } catch {
+        ta.remove();
+        return false;
+      }
+    }
+  }
+
+  function buildProfileLink(id) {
+    const base = window.location.href.split("#")[0];
+    return `${base}#katalog&profile=${encodeURIComponent(id)}`;
+  }
+
+  /* --------------------------- Startup sequence ---------------------- */
+
+  function hydrateUIFromState() {
+    syncFilterChips();
+    syncPanelHeader();
+    fillEditFormFromUser();
+    fillListingFromState();
+    updateShopButtons();
+
+    // sync catalog control values
+    if (searchInput) searchInput.value = state.ui.search || "";
+    if (industrySelect) industrySelect.value = state.ui.industry || "all";
+    if (sortSelect) sortSelect.value = state.ui.sort || "recommended";
+  }
+
+  function ensureListingDefaults() {
+    if (!state.listing) {
+      state.listing = {
+        active: true,
+        title: "",
+        contactMain: "Discord",
+        short: "",
+        long: "",
+        updatedAt: Date.now(),
+      };
+      persistAll();
+    }
+  }
+
+  function boot() {
+    initSchema();
+    initFooterYear();
+    initParticles();
+
+    loadPersisted();
+    ensureListingDefaults();
+    hydrateUIFromState();
+
+    mergeProfiles();
+    renderCatalog();
+    bindGlobalEvents();
+
+    // initial lucide init (some icons in static HTML)
+    lucide.createIcons();
+    initRevealObserver();
+
+    // open profile from hash if present
+    applyFilters();
+    tryOpenProfileFromHash();
+  }
+
+  document.addEventListener("DOMContentLoaded", boot);
+})();
+</script>
 </body>
 </html>
 
