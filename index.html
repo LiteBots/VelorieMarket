@@ -1,42 +1,53 @@
+<!-- market.html (CZĘŚĆ 1/2) -->
 <!DOCTYPE html>
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Velorie Market – Platforma ogłoszeniowa dla freelancerów</title>
-  <meta name="description" content="Velorie Market to platforma ogłoszeniowa dla freelancerów: programistów, grafików, techników, budowniczych Minecraft, content creatorów i montażystów. Bez escrow – kontakt i płatność poza platformą." />
-  <meta name="keywords" content="freelancer, ogłoszenia, zlecenia, programista, grafik, montażysta, minecraft builder, content creator, velorie market" />
+  <title>Velorie Market – Market (Ogłoszenia)</title>
+  <meta name="description" content="Platforma ogłoszeniowa dla freelancerów i zleceniodawców. Przeglądaj profile, portfolio i kontakt. Panel: edycja profilu, dodaj ogłoszenie, sklep (promowanie, weryfikacja)." />
   <meta name="theme-color" content="#0a1030" />
 
   <link rel="icon" type="image/png" href="favicon.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script type="application/ld+json" id="schema-json"></script>
 
   <style>
     :root { --accent: #ff0354; }
     html { scroll-behavior: smooth; }
     body {
       background-color: #00010f;
-      background-image: radial-gradient(1200px 600px at 80% -10%, #0a1030 0%, #050919 35%, #00010f 65%, #000000 100%);
+      background-image:
+        radial-gradient(1200px 600px at 80% -10%, #0a1030 0%, #050919 35%, #00010f 65%, #000000 100%);
     }
 
-    /* wejścia */
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 999px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,.08); }
+
+    /* Scroll progress */
+    #scroll-progress {
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: 2px;
+      width: 0%;
+      background: var(--accent);
+      z-index: 80;
+      box-shadow: 0 10px 30px rgba(255,3,84,.35);
+    }
+
+    /* Reveal */
     .animate-on-scroll {
       opacity: 0;
-      transform: translateY(24px);
+      transform: translateY(18px);
       transition: opacity .6s ease-out, transform .6s ease-out;
       will-change: opacity, transform;
     }
     .animate-on-scroll.is-visible { opacity: 1; transform: translateY(0); }
 
-    /* scrollbar */
-    ::-webkit-scrollbar { width: 10px; height: 10px; }
-    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 999px; }
-    ::-webkit-scrollbar-track { background: rgba(255,255,255,.08); }
-
-    /* particles */
+    /* Particles */
     @keyframes particle-animation {
       0%,100% { transform: translateY(0%) translateX(0%) rotate(0deg); }
       50% { transform: translateY(-10%) translateX(5%) rotate(20deg); }
@@ -47,28 +58,49 @@
       animation-iteration-count: infinite;
     }
 
-    /* 3D card */
-    .perspective-container { perspective: 1500px; }
-    @keyframes subtle-3d-rotate {
-      0%,100% { transform: rotateX(5deg) rotateY(-8deg); }
-      50% { transform: rotateX(-5deg) rotateY(8deg); }
-    }
-    #market-mockup {
-      transform-style: preserve-3d;
-      animation: subtle-3d-rotate 15s ease-in-out infinite;
-      transform: rotateX(5deg) rotateY(-8deg);
+    /* Focus ring-ish for glass */
+    .glass {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 10px 50px rgba(0,0,0,0.40);
     }
 
-    /* progress bar */
-    #scroll-progress {
-      position: fixed;
-      inset: 0 0 auto 0;
-      height: 2px;
-      width: 0%;
-      background: var(--accent);
-      z-index: 60;
-      box-shadow: 0 10px 30px rgba(255,3,84,.35);
+    /* Simple clamp for text */
+    .clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
+
+    /* Modal backdrop */
+    .backdrop {
+      background: radial-gradient(900px 500px at 50% 0%, rgba(255,3,84,.18), transparent 60%),
+                  rgba(0,0,0,0.65);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Subtle 3D tilt (thumbnail group) */
+    .perspective { perspective: 1000px; }
+    .tilt {
+      transform: rotateX(4deg) rotateY(-6deg);
+      transform-style: preserve-3d;
+      transition: transform .35s ease;
+    }
+    .tilt:hover { transform: rotateX(0deg) rotateY(0deg) translateY(-2px); }
+
+    /* Pill active */
+    .pill-active {
+      background: rgba(255,3,84,0.16);
+      color: var(--accent);
+      border-color: rgba(255,3,84,0.35) !important;
+    }
+
+    /* Hide until ready (prevents flash) */
+    [data-cloak] { display: none !important; }
   </style>
 
   <script>
@@ -86,740 +118,1493 @@
 </head>
 
 <body class="min-h-screen text-white selection:bg-[#ff0354]/40 selection:text-white">
-
   <div id="scroll-progress" aria-hidden="true"></div>
 
+  <!-- floating particles -->
+  <div id="particles-container" aria-hidden="true" class="pointer-events-none fixed inset-0 overflow-hidden -z-10"></div>
+
   <!-- HEADER -->
-  <header class="sticky top-0 z-40 backdrop-blur-xl bg-black/20 border-b border-white/10">
-    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-      <a href="#hero" class="flex items-center gap-3">
-        <!-- To samo logo co w Velorie.pl -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-black/25 border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-3">
+      <a href="#top" class="flex items-center gap-3">
         <img src="https://i.imgur.com/ikYb7tH.png" alt="Velorie" class="h-10 w-10 rounded-xl ring-1 ring-white/10" />
         <div class="leading-tight">
           <div class="text-lg font-semibold tracking-tight">Velorie Market</div>
-          <div class="text-xs text-white/60">Platforma ogłoszeniowa • Freelancerzy</div>
+          <div class="text-xs text-white/60">Market • Ogłoszenia freelancerów</div>
         </div>
       </a>
 
-      <nav class="hidden md:flex items-center gap-2 text-sm text-white/70">
-        <a href="#o-platformie" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">O platformie</a>
-        <a href="#dla-kogo" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">Dla kogo</a>
-        <a href="#jak-to-dziala" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">Jak to działa</a>
-        <a href="#statystyki" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">Statystyki</a>
-        <a href="#faq" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">FAQ</a>
-      </nav>
+      <!-- Search -->
+      <div class="hidden md:flex items-center gap-2 flex-1 max-w-xl">
+        <div class="relative w-full">
+          <i data-lucide="search" class="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input id="searchInput" class="w-full rounded-xl bg-white/5 border border-white/10 pl-9 pr-3 py-2 text-sm outline-none focus:border-white/20 focus:bg-white/7"
+                 placeholder="Szukaj: nick, branża, tagi, miasto…" />
+        </div>
+        <button id="resetBtn" class="shrink-0 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:bg-white/10 transition"
+                title="Wyczyść">
+          <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+        </button>
+      </div>
 
+      <!-- Right actions -->
       <div class="flex items-center gap-2">
-        <a href="#kontakt" class="hidden sm:inline-flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white hover:bg-white/10 transition">
-          <i data-lucide="mail" class="h-4 w-4"></i>
-          <span>Kontakt</span>
-        </a>
+        <button id="favoritesBtn" class="hidden sm:inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition">
+          <i data-lucide="heart" class="h-4 w-4 text-[var(--accent)]"></i>
+          <span>Ulubione</span>
+          <span id="favCount" class="ml-1 inline-flex items-center justify-center h-5 min-w-[20px] px-1 rounded-full bg-white/10 text-xs text-white/70">0</span>
+        </button>
 
-        <!-- Wymagany przycisk w prawym górnym rogu -->
-        <a href="./auth.html" class="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold hover:brightness-110 transition shadow-[0_10px_30px_rgba(255,3,84,0.35)]">
+        <!-- W prawym górnym rogu: user icon + Panel -->
+        <button id="panelBtn" class="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-extrabold hover:brightness-110 transition shadow-[0_10px_30px_rgba(255,3,84,0.35)]">
           <i data-lucide="user" class="h-4 w-4"></i>
-          <span>Zaloguj / Zarejestruj się</span>
-        </a>
+          <span>Panel</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters row -->
+    <div class="mx-auto max-w-7xl px-4 pb-3">
+      <div class="flex flex-wrap items-center gap-2">
+        <button class="filterPill pill-active inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10 transition"
+                data-filter="all">
+          <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
+          Wszystko
+        </button>
+        <button class="filterPill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10 transition"
+                data-filter="Programista">
+          <i data-lucide="code" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+          Programista
+        </button>
+        <button class="filterPill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10 transition"
+                data-filter="Grafik">
+          <i data-lucide="palette" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+          Grafik
+        </button>
+        <button class="filterPill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10 transition"
+                data-filter="Montażysta">
+          <i data-lucide="video" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+          Montażysta
+        </button>
+        <button class="filterPill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10 transition"
+                data-filter="Budowniczy Minecraft">
+          <i data-lucide="blocks" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+          Minecraft
+        </button>
+        <button class="filterPill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10 transition"
+                data-filter="Technik">
+          <i data-lucide="wrench" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+          Technik
+        </button>
+
+        <div class="ml-auto flex items-center gap-2">
+          <div class="hidden sm:flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70">
+            <i data-lucide="sliders-horizontal" class="h-3.5 w-3.5"></i>
+            <span>Sortuj:</span>
+            <select id="sortSelect" class="bg-transparent outline-none text-xs text-white/80">
+              <option value="rank" selected>Najwyżej pozycjonowane</option>
+              <option value="newest">Najnowsze</option>
+              <option value="rating">Najlepiej oceniane</option>
+              <option value="name">A–Z</option>
+            </select>
+          </div>
+
+          <button id="openMobileSearch" class="md:hidden inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:bg-white/10 transition">
+            <i data-lucide="search" class="h-4 w-4"></i>
+          </button>
+        </div>
       </div>
     </div>
   </header>
 
-  <main>
-    <!-- HERO -->
-    <section id="hero" class="relative overflow-hidden">
-      <div id="particles-container" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden"></div>
+  <!-- MOBILE SEARCH SHEET -->
+  <div id="mobileSearchSheet" class="fixed inset-0 z-[70] hidden" data-cloak>
+    <div class="absolute inset-0 backdrop" id="mobileSearchBackdrop"></div>
+    <div class="absolute inset-x-0 top-0 glass border-b border-white/10 p-4">
+      <div class="flex items-center gap-2">
+        <div class="relative w-full">
+          <i data-lucide="search" class="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input id="searchInputMobile" class="w-full rounded-xl bg-white/5 border border-white/10 pl-9 pr-3 py-2 text-sm outline-none focus:border-white/20"
+                 placeholder="Szukaj: nick, branża, tagi, miasto…" />
+        </div>
+        <button id="closeMobileSearch" class="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition">
+          <i data-lucide="x" class="h-4 w-4"></i>
+        </button>
+      </div>
+      <div class="mt-3 flex items-center justify-between text-xs text-white/60">
+        <span>Podpowiedź: wpisz np. „React”, „Warszawa”, „logo”, „Skyblock”.</span>
+        <button id="resetBtnMobile" class="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 hover:bg-white/10 transition">
+          <i data-lucide="rotate-ccw" class="h-3.5 w-3.5"></i> Wyczyść
+        </button>
+      </div>
+    </div>
+  </div>
 
-      <div class="mx-auto max-w-7xl px-4 py-20 md:py-28 grid md:grid-cols-2 gap-10 items-center">
-        <div id="hero-text" class="space-y-6">
-          <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80">
-            <i data-lucide="sparkles" class="h-3 w-3"></i>
-            <span>Bez escrow • Bez prowizji od płatności • Tylko łączenie ludzi</span>
-          </span>
+  <!-- MAIN -->
+  <main id="top" class="mx-auto max-w-7xl px-4 py-10">
+    <!-- Top intro -->
+    <section class="animate-on-scroll">
+      <div class="glass rounded-3xl p-6 md:p-8 overflow-hidden relative">
+        <div class="absolute -inset-10 -z-10 opacity-60 blur-3xl"
+             style="background: conic-gradient(from 180deg at 50% 50%, rgba(255,3,84,0.25), transparent, rgba(79,70,229,0.25), transparent);">
+        </div>
 
-          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05]">
-            <span class="block">Znajdź zleceniodawcę</span>
-            <span class="block text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">albo sprawdzonego freelancera</span>
-          </h1>
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div class="space-y-2 max-w-2xl">
+            <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80">
+              <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
+              <span>Nowość: promowanie ogłoszeń i weryfikacja konta w Sklepie</span>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-black tracking-tight leading-[1.05]">
+              Market ogłoszeń — <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">znajdź wykonawcę w minutę</span>
+            </h1>
+            <p class="text-white/70">
+              Przeglądaj poziome kafelki profili: nick/imię, profilowe, branża i mini-portfolio.
+              Kliknij w kafelek, by otworzyć pełny profil z opisem i kontaktem.
+            </p>
 
-          <p class="max-w-xl text-white/70">
-            Velorie Market to informacyjna platforma ogłoszeniowa dla freelancerów i zleceniodawców.
-            Publikujesz ofertę lub przeglądasz profile — a kontakt i płatność odbywają się poza platformą.
-          </p>
-
-          <div class="flex flex-wrap items-center gap-3">
-            <a href="#o-platformie" class="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold hover:brightness-110 transition shadow-[0_10px_40px_rgba(255,3,84,0.45)]">
-              <i data-lucide="info" class="h-4 w-4"></i>
-              <span>Dowiedz się więcej</span>
-            </a>
-            <a href="#jak-to-dziala" class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition">
-              <i data-lucide="workflow" class="h-4 w-4"></i>
-              <span>Jak to działa</span>
-            </a>
+            <div class="flex flex-wrap items-center gap-2 text-xs text-white/60 pt-2">
+              <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                <i data-lucide="shield-off" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Bez escrow — kontakt poza platformą
+              </span>
+              <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                <i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Weryfikacja konta (znaczek)
+              </span>
+              <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                <i data-lucide="trending-up" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Promowanie ogłoszeń (ranking)
+              </span>
+            </div>
           </div>
 
-          <div class="flex flex-wrap items-center gap-3 text-xs text-white/60">
-            <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
-              <i data-lucide="shield" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
-              Brak escrow — nie przetwarzamy płatności
-            </span>
-            <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
-              <i data-lucide="message-circle" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
-              Kontakt: Discord / e-mail / social
-            </span>
-            <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
-              <i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
-              Profile + ogłoszenia + portfolio
-            </span>
+          <div class="flex flex-wrap gap-2">
+            <button id="createListingCta" class="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-extrabold hover:brightness-110 transition shadow-[0_10px_40px_rgba(255,3,84,0.45)]">
+              <i data-lucide="plus" class="h-4 w-4"></i>
+              Dodaj ogłoszenie
+            </button>
+            <button id="howItWorksCta" class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold hover:bg-white/10 transition">
+              <i data-lucide="info" class="h-4 w-4"></i>
+              Jak działa ranking?
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Info row / extra features -->
+    <section class="mt-8 grid md:grid-cols-3 gap-4">
+      <div class="animate-on-scroll glass rounded-2xl p-5">
+        <div class="flex items-center gap-2">
+          <i data-lucide="star" class="h-5 w-5 text-[var(--accent)]"></i>
+          <div class="font-semibold">Oceny i rekomendacje</div>
+        </div>
+        <p class="mt-2 text-sm text-white/70">
+          Profile mogą mieć ocenę (gwiazdki) oraz krótkie rekomendacje od klientów.
+        </p>
+      </div>
+
+      <div class="animate-on-scroll glass rounded-2xl p-5">
+        <div class="flex items-center gap-2">
+          <i data-lucide="bookmark" class="h-5 w-5 text-[var(--accent)]"></i>
+          <div class="font-semibold">Ulubione i zapisane</div>
+        </div>
+        <p class="mt-2 text-sm text-white/70">
+          Zapisz profile do ulubionych i wróć do nich jednym kliknięciem.
+        </p>
+      </div>
+
+      <div class="animate-on-scroll glass rounded-2xl p-5">
+        <div class="flex items-center gap-2">
+          <i data-lucide="flag" class="h-5 w-5 text-[var(--accent)]"></i>
+          <div class="font-semibold">Zgłaszanie i bezpieczeństwo</div>
+        </div>
+        <p class="mt-2 text-sm text-white/70">
+          Zgłoś podejrzane ogłoszenie — moderacja i historia zgłoszeń w Panelu.
+        </p>
+      </div>
+    </section>
+
+    <!-- LIST -->
+    <section class="mt-10">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <div class="flex items-center gap-2">
+          <i data-lucide="layers" class="h-5 w-5 text-[var(--accent)]"></i>
+          <h2 class="text-xl font-bold">Ogłoszenia</h2>
+          <span id="resultsCount" class="text-xs text-white/60"></span>
+        </div>
+
+        <div class="hidden md:flex items-center gap-2 text-xs text-white/60">
+          <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+            <i data-lucide="mouse-pointer-click" class="h-3.5 w-3.5"></i> Kliknij kafelek, by otworzyć profil
+          </span>
+        </div>
+      </div>
+
+      <div id="listingsGrid" class="space-y-4"></div>
+
+      <!-- empty state -->
+      <div id="emptyState" class="hidden glass rounded-2xl p-8 text-center mt-6">
+        <div class="inline-flex items-center justify-center h-12 w-12 rounded-2xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10 mx-auto">
+          <i data-lucide="search-x" class="h-6 w-6"></i>
+        </div>
+        <h3 class="mt-3 font-bold text-lg">Brak wyników</h3>
+        <p class="mt-1 text-sm text-white/70">Zmień frazę, usuń filtry lub wyczyść wyszukiwanie.</p>
+        <button id="emptyReset" class="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-extrabold hover:brightness-110 transition shadow-[0_10px_40px_rgba(255,3,84,0.45)]">
+          <i data-lucide="rotate-ccw" class="h-4 w-4"></i> Wyczyść
+        </button>
+      </div>
+    </section>
+
+    <!-- footer tiny -->
+    <footer class="mt-12 text-center text-xs text-white/45">
+      <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2">
+        <i data-lucide="shield-off" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+        <span>Velorie Market nie pośredniczy w płatnościach. Kontakt i rozliczenia odbywają się poza platformą.</span>
+      </div>
+    </footer>
+  </main>
+
+  <!-- PROFILE MODAL -->
+  <div id="profileModal" class="fixed inset-0 z-[90] hidden" data-cloak>
+    <div class="absolute inset-0 backdrop" id="profileBackdrop"></div>
+
+    <div class="absolute inset-0 flex items-start justify-center p-3 md:p-6 overflow-auto">
+      <div class="glass w-full max-w-5xl rounded-3xl overflow-hidden border border-white/10">
+        <!-- top bar -->
+        <div class="flex items-center justify-between gap-2 px-4 md:px-6 py-4 border-b border-white/10 bg-black/20">
+          <div class="flex items-center gap-3">
+            <div id="pmAvatarWrap" class="h-10 w-10 rounded-xl ring-1 ring-white/10 overflow-hidden bg-white/5"></div>
+            <div class="leading-tight">
+              <div class="flex items-center gap-2">
+                <div id="pmName" class="font-extrabold tracking-tight"></div>
+                <span id="pmVerified" class="hidden inline-flex items-center gap-1 rounded-full bg-[var(--accent)]/15 text-[var(--accent)] px-2.5 py-1 text-xs font-bold border border-[var(--accent)]/25">
+                  <i data-lucide="badge-check" class="h-3.5 w-3.5"></i> Zweryfikowany
+                </span>
+                <span id="pmPromoted" class="hidden inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/80">
+                  <i data-lucide="trending-up" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Promowane
+                </span>
+              </div>
+              <div class="text-xs text-white/60" id="pmRole"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="pmFavBtn" class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:bg-white/10 transition">
+              <i data-lucide="heart" class="h-4 w-4 text-[var(--accent)]"></i>
+              <span class="hidden sm:inline">Ulubione</span>
+            </button>
+
+            <button id="pmShareBtn" class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:bg-white/10 transition">
+              <i data-lucide="share-2" class="h-4 w-4"></i>
+              <span class="hidden sm:inline">Udostępnij</span>
+            </button>
+
+            <button id="pmClose" class="inline-flex items-center justify-center w-10 h-10 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition">
+              <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
           </div>
         </div>
 
-        <!-- Mockup w tym samym klimacie -->
-        <div class="animate-on-scroll perspective-container">
-          <div id="market-mockup" class="relative mx-auto w-full max-w-2xl">
-            <div class="absolute -inset-4 -z-10 rounded-[2rem] bg-[conic-gradient(from_180deg_at_50%_50%,rgba(255,3,84,0.35),transparent,rgba(79,70,229,0.35),transparent)] blur-2xl"></div>
+        <!-- content -->
+        <div class="grid lg:grid-cols-12 gap-0">
+          <!-- left -->
+          <div class="lg:col-span-8 p-4 md:p-6 space-y-5">
+            <div class="glass rounded-2xl p-5">
+              <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                  <div class="text-xs text-white/60">Opis</div>
+                  <div id="pmBio" class="text-sm text-white/80 leading-relaxed"></div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs text-white/60">Ocena</div>
+                  <div class="flex items-center justify-end gap-1 mt-1" id="pmStars"></div>
+                </div>
+              </div>
 
-            <div class="relative rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_10px_50px_rgba(0,0,0,0.4)] p-3">
-              <div class="rounded-[1.5rem] border border-white/10 bg-black/60 p-3">
-                <div class="rounded-2xl bg-gradient-to-br from-white/10 to-white/5 overflow-hidden ring-1 ring-white/10">
-                  <!-- Zastępcza grafika (możesz podmienić na swój screenshot) -->
-                  <div class="aspect-video p-5">
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-2">
-                        <span class="h-2.5 w-2.5 rounded-full bg-white/20"></span>
-                        <span class="h-2.5 w-2.5 rounded-full bg-white/20"></span>
-                        <span class="h-2.5 w-2.5 rounded-full bg-white/20"></span>
-                      </div>
-                      <span class="text-xs text-white/60">velorie.market</span>
-                    </div>
+              <div class="mt-4 flex flex-wrap gap-2" id="pmTags"></div>
+            </div>
 
-                    <div class="mt-5 grid grid-cols-12 gap-3">
-                      <div class="col-span-7 space-y-3">
-                        <div class="h-4 w-3/4 rounded bg-white/10"></div>
-                        <div class="h-3 w-full rounded bg-white/10"></div>
-                        <div class="h-3 w-11/12 rounded bg-white/10"></div>
-                        <div class="h-3 w-10/12 rounded bg-white/10"></div>
+            <div class="glass rounded-2xl p-5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-xs text-white/60">Portfolio</div>
+                  <div class="font-bold">Wybrane realizacje</div>
+                </div>
+                <button id="pmRequestBtn" class="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-extrabold hover:brightness-110 transition shadow-[0_10px_30px_rgba(255,3,84,0.35)]">
+                  <i data-lucide="send" class="h-4 w-4"></i>
+                  Wyślij zapytanie
+                </button>
+              </div>
 
-                        <div class="mt-4 grid grid-cols-2 gap-3">
-                          <div class="rounded-xl border border-white/10 bg-white/5 p-3">
-                            <div class="flex items-center gap-2">
-                              <i data-lucide="code" class="h-4 w-4 text-[var(--accent)]"></i>
-                              <div class="text-xs text-white/70">Programista</div>
-                            </div>
-                            <div class="mt-2 h-3 w-4/5 rounded bg-white/10"></div>
-                          </div>
-                          <div class="rounded-xl border border-white/10 bg-white/5 p-3">
-                            <div class="flex items-center gap-2">
-                              <i data-lucide="palette" class="h-4 w-4 text-[var(--accent)]"></i>
-                              <div class="text-xs text-white/70">Grafik</div>
-                            </div>
-                            <div class="mt-2 h-3 w-3/5 rounded bg-white/10"></div>
-                          </div>
-                        </div>
+              <div class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-3" id="pmPortfolio"></div>
 
-                        <div class="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] px-3 py-2 text-xs font-semibold">
-                          <i data-lucide="zap" class="h-4 w-4"></i>
-                          Ogłoszenia + profile + portfolio
-                        </div>
-                      </div>
+              <div class="mt-4 text-xs text-white/55">
+                Wskazówka: kliknij w miniaturę, aby powiększyć (lightbox).
+              </div>
+            </div>
 
-                      <div class="col-span-5 space-y-3">
-                        <div class="rounded-xl border border-white/10 bg-white/5 p-3">
-                          <div class="flex items-center justify-between">
-                            <div class="text-xs text-white/70">Szybki kontakt</div>
-                            <i data-lucide="message-square" class="h-4 w-4 text-white/50"></i>
-                          </div>
-                          <div class="mt-2 h-3 w-full rounded bg-white/10"></div>
-                          <div class="mt-2 h-3 w-10/12 rounded bg-white/10"></div>
-                        </div>
+            <div class="glass rounded-2xl p-5">
+              <div class="flex items-center gap-2">
+                <i data-lucide="message-square" class="h-5 w-5 text-[var(--accent)]"></i>
+                <div class="font-bold">Szybka wiadomość (demo)</div>
+              </div>
+              <p class="mt-2 text-sm text-white/70">
+                To jest demonstracja — zapis wiadomości leci do localStorage. W produkcji podepnij API lub integrację (np. Discord webhook).
+              </p>
+              <div class="mt-3 grid md:grid-cols-12 gap-3">
+                <div class="md:col-span-8">
+                  <textarea id="pmMsg" rows="3"
+                            class="w-full rounded-2xl bg-white/5 border border-white/10 p-3 text-sm outline-none focus:border-white/20"
+                            placeholder="Napisz wiadomość (np. budżet, termin, zakres)…"></textarea>
+                </div>
+                <div class="md:col-span-4 flex flex-col gap-2">
+                  <button id="pmSendMsg" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-extrabold hover:brightness-110 transition shadow-[0_10px_30px_rgba(255,3,84,0.35)]">
+                    <i data-lucide="send" class="h-4 w-4"></i>
+                    Wyślij
+                  </button>
+                  <button id="pmReportBtn" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10 transition">
+                    <i data-lucide="flag" class="h-4 w-4 text-[var(--accent)]"></i>
+                    Zgłoś profil
+                  </button>
+                </div>
+              </div>
+              <div id="pmMsgHint" class="mt-2 text-xs text-white/55"></div>
+            </div>
+          </div>
 
-                        <div class="rounded-xl border border-white/10 bg-white/5 p-3">
-                          <div class="flex items-center justify-between">
-                            <div class="text-xs text-white/70">Brak escrow</div>
-                            <i data-lucide="shield-off" class="h-4 w-4 text-white/50"></i>
-                          </div>
-                          <div class="mt-2 h-3 w-full rounded bg-white/10"></div>
-                          <div class="mt-2 h-3 w-9/12 rounded bg-white/10"></div>
-                        </div>
+          <!-- right: contact / meta -->
+          <div class="lg:col-span-4 border-t lg:border-t-0 lg:border-l border-white/10 bg-black/10 p-4 md:p-6 space-y-4">
+            <div class="glass rounded-2xl p-5">
+              <div class="flex items-center gap-2">
+                <i data-lucide="contact" class="h-5 w-5 text-[var(--accent)]"></i>
+                <div class="font-bold">Kontakt</div>
+              </div>
 
-                        <div class="rounded-xl border border-white/10 bg-white/5 p-3">
-                          <div class="flex items-center justify-between">
-                            <div class="text-xs text-white/70">Kategorie</div>
-                            <i data-lucide="layers" class="h-4 w-4 text-white/50"></i>
-                          </div>
-                          <div class="mt-3 flex flex-wrap gap-2">
-                            <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[11px] text-white/70">Minecraft</span>
-                            <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[11px] text-white/70">Wideo</span>
-                            <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[11px] text-white/70">Grafika</span>
-                            <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[11px] text-white/70">Dev</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+              <div class="mt-4 space-y-2 text-sm">
+                <a id="pmDiscord" href="#" class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 hover:bg-white/10 transition">
+                  <span class="inline-flex items-center gap-2">
+                    <i data-lucide="message-circle" class="h-4 w-4 text-[var(--accent)]"></i> Discord
+                  </span>
+                  <span class="text-white/70" id="pmDiscordText"></span>
+                </a>
 
+                <a id="pmEmail" href="#" class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 hover:bg-white/10 transition">
+                  <span class="inline-flex items-center gap-2">
+                    <i data-lucide="mail" class="h-4 w-4 text-[var(--accent)]"></i> E-mail
+                  </span>
+                  <span class="text-white/70" id="pmEmailText"></span>
+                </a>
+
+                <a id="pmWebsite" href="#" target="_blank" rel="noreferrer"
+                   class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 hover:bg-white/10 transition">
+                  <span class="inline-flex items-center gap-2">
+                    <i data-lucide="link" class="h-4 w-4 text-[var(--accent)]"></i> Portfolio
+                  </span>
+                  <span class="text-white/70">Otwórz</span>
+                </a>
+              </div>
+
+              <div class="mt-4 text-xs text-white/55">
+                Uwaga: kontakt jest poza platformą — Velorie Market nie pośredniczy w rozliczeniach.
+              </div>
+            </div>
+
+            <div class="glass rounded-2xl p-5">
+              <div class="flex items-center gap-2">
+                <i data-lucide="badge-info" class="h-5 w-5 text-[var(--accent)]"></i>
+                <div class="font-bold">Szczegóły</div>
+              </div>
+
+              <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                  <div class="text-xs text-white/60">Miasto</div>
+                  <div id="pmCity" class="font-semibold mt-1"></div>
+                </div>
+                <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                  <div class="text-xs text-white/60">Dostępność</div>
+                  <div id="pmAvailability" class="font-semibold mt-1"></div>
+                </div>
+                <div class="rounded-xl border border-white/10 bg-white/5 p-3 col-span-2">
+                  <div class="text-xs text-white/60">Stawka / budżet</div>
+                  <div id="pmRate" class="font-semibold mt-1"></div>
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <div class="text-xs text-white/60 mb-2">Dodatkowe</div>
+                <div class="space-y-2 text-sm text-white/75">
+                  <div class="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                    <span class="inline-flex items-center gap-2">
+                      <i data-lucide="clock" class="h-4 w-4 text-[var(--accent)]"></i> Czas odpowiedzi
+                    </span>
+                    <span id="pmResponseTime" class="text-white/70"></span>
+                  </div>
+                  <div class="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                    <span class="inline-flex items-center gap-2">
+                      <i data-lucide="shield-check" class="h-4 w-4 text-[var(--accent)]"></i> Weryfikacja
+                    </span>
+                    <span id="pmVerifyState" class="text-white/70"></span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="mt-4 flex items-center justify-center gap-2 text-xs text-white/60">
-              <i data-lucide="award" class="h-3.5 w-3.5"></i>
-              <span>Informacyjna strona główna — funkcje ogłoszeń i wyszukiwania są w osobnej podstronie</span>
+            <div class="text-xs text-white/45">
+              ID profilu: <span id="pmId" class="text-white/70"></span>
             </div>
           </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- O PLATFORMIE -->
-    <section id="o-platformie" class="relative py-20">
-      <div class="mx-auto max-w-7xl px-4">
-        <div class="grid lg:grid-cols-12 gap-8 items-start">
-          <div class="lg:col-span-7 space-y-4">
-            <h2 class="text-3xl md:text-4xl font-black">O czym jest Velorie Market?</h2>
-            <p class="text-white/70 max-w-2xl">
-              To platforma ogłoszeniowa, której celem jest <span class="text-white font-semibold">skojarzenie zleceniodawcy i zleceniobiorcy</span>.
-              Nie prowadzimy płatności escrow i nie pośredniczymy w rozliczeniach — po znalezieniu odpowiedniej osoby dogadujecie się już poza platformą.
-            </p>
-
-            <div class="grid sm:grid-cols-2 gap-4 pt-4">
-              <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-                <div class="flex items-center gap-2">
-                  <i data-lucide="users" class="h-5 w-5 text-[var(--accent)]"></i>
-                  <div class="font-semibold">Dla obu stron</div>
-                </div>
-                <p class="mt-2 text-sm text-white/70">Zleceniodawcy szukają wykonawców, a freelancerzy znajdują oferty.</p>
-              </div>
-
-              <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-                <div class="flex items-center gap-2">
-                  <i data-lucide="shield-off" class="h-5 w-5 text-[var(--accent)]"></i>
-                  <div class="font-semibold">Bez escrow</div>
-                </div>
-                <p class="mt-2 text-sm text-white/70">Nie przetwarzamy płatności. Kontakt i rozliczenia są poza platformą.</p>
-              </div>
-
-              <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-                <div class="flex items-center gap-2">
-                  <i data-lucide="badge-check" class="h-5 w-5 text-[var(--accent)]"></i>
-                  <div class="font-semibold">Portfolio i profil</div>
-                </div>
-                <p class="mt-2 text-sm text-white/70">Prezentuj doświadczenie, stack, realizacje i linki do sociali.</p>
-              </div>
-
-              <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-                <div class="flex items-center gap-2">
-                  <i data-lucide="search-check" class="h-5 w-5 text-[var(--accent)]"></i>
-                  <div class="font-semibold">Szybkie dopasowanie</div>
-                </div>
-                <p class="mt-2 text-sm text-white/70">Kategorie, tagi, poziom doświadczenia i jasne wymagania w ogłoszeniu.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="lg:col-span-5">
-            <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="text-sm text-white/60">Kluczowa zasada</div>
-                  <div class="text-xl font-bold mt-1">Platforma = znalezienie kontaktu</div>
-                </div>
-                <span class="inline-flex items-center gap-2 rounded-full bg-[var(--accent)]/15 text-[var(--accent)] px-3 py-1 text-xs font-semibold">
-                  <i data-lucide="sparkles" class="h-4 w-4"></i>
-                  Transparentnie
-                </span>
-              </div>
-
-              <ul class="mt-5 space-y-3 text-sm text-white/75">
-                <li class="flex items-start gap-2">
-                  <i data-lucide="check" class="h-5 w-5 mt-0.5 text-[var(--accent)] shrink-0"></i>
-                  <span>Kontakt: Discord / e-mail / social (poza platformą)</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <i data-lucide="check" class="h-5 w-5 mt-0.5 text-[var(--accent)] shrink-0"></i>
-                  <span>Płatność: ustalana indywidualnie (poza platformą)</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <i data-lucide="check" class="h-5 w-5 mt-0.5 text-[var(--accent)] shrink-0"></i>
-                  <span>Ogłoszenia: jasny opis + budżet orientacyjny + termin</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <i data-lucide="check" class="h-5 w-5 mt-0.5 text-[var(--accent)] shrink-0"></i>
-                  <span>Freelancerzy: profil, portfolio, technologie, dostępność</span>
-                </li>
-              </ul>
-
-              <div class="mt-6 rounded-xl border border-white/10 bg-black/30 p-4 text-xs text-white/65">
-                <div class="flex items-center gap-2">
-                  <i data-lucide="info" class="h-4 w-4 text-white/60"></i>
-                  <span><span class="text-white/80 font-semibold">Uwaga:</span> Velorie Market nie gwarantuje rozliczeń — służy do znalezienia drugiej strony i nawiązania współpracy.</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- DLA KOGO -->
-    <section id="dla-kogo" class="relative py-20">
-      <div class="mx-auto max-w-7xl px-4">
-        <h2 class="text-3xl md:text-4xl font-black mb-2">Dla kogo jest Velorie Market?</h2>
-        <p class="text-white/60 mb-10 max-w-2xl">
-          Dla osób, które chcą szybko znaleźć współpracę wokół projektów cyfrowych, serwerów i społeczności — od mikro-zleceń po większe realizacje.
-        </p>
-
-        <div class="grid md:grid-cols-3 gap-6">
-          <!-- Cards -->
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-            <div class="flex items-center gap-3">
-              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
-                <i data-lucide="code" class="h-5 w-5"></i>
-              </span>
-              <div>
-                <div class="font-bold">Programiści</div>
-                <div class="text-xs text-white/60">Web • Boty • Pluginy • Backend</div>
-              </div>
-            </div>
-            <p class="mt-4 text-sm text-white/70">Stwórz profil i pokaż stack, repozytoria, realizacje i dostępność.</p>
-            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Java</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Node</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">React</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Spigot</span>
-            </div>
-          </div>
-
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-            <div class="flex items-center gap-3">
-              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
-                <i data-lucide="palette" class="h-5 w-5"></i>
-              </span>
-              <div>
-                <div class="font-bold">Graficy</div>
-                <div class="text-xs text-white/60">Branding • UI • Miniatury • Packi</div>
-              </div>
-            </div>
-            <p class="mt-4 text-sm text-white/70">Dodaj portfolio i oferuj projekty do serwerów, sklepów i social mediów.</p>
-            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Logo</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">UI</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">GFX</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Thumbnails</span>
-            </div>
-          </div>
-
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-            <div class="flex items-center gap-3">
-              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
-                <i data-lucide="video" class="h-5 w-5"></i>
-              </span>
-              <div>
-                <div class="font-bold">Content Creatorzy i Montażyści</div>
-                <div class="text-xs text-white/60">Shorts • TikTok • YouTube • Reels</div>
-              </div>
-            </div>
-            <p class="mt-4 text-sm text-white/70">Łącz twórców z markami i społecznościami — szybko i bez pośredników w płatnościach.</p>
-            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Montaż</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Animacje</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Intro</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Shorts</span>
-            </div>
-          </div>
-
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-            <div class="flex items-center gap-3">
-              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
-                <i data-lucide="wrench" class="h-5 w-5"></i>
-              </span>
-              <div>
-                <div class="font-bold">Technicy</div>
-                <div class="text-xs text-white/60">Konfiguracje • DevOps • Hosting • Serwery</div>
-              </div>
-            </div>
-            <p class="mt-4 text-sm text-white/70">Dla osób od infrastruktury i utrzymania — konfiguracje, zabezpieczenia, optymalizacja.</p>
-            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Linux</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Proxy</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">DDoS</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Optymalizacja</span>
-            </div>
-          </div>
-
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-            <div class="flex items-center gap-3">
-              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
-                <i data-lucide="blocks" class="h-5 w-5"></i>
-              </span>
-              <div>
-                <div class="font-bold">Budowniczowie Minecraft</div>
-                <div class="text-xs text-white/60">Spawny • Huby • Mapy • Areny</div>
-              </div>
-            </div>
-            <p class="mt-4 text-sm text-white/70">Szukaj zleceń budowlanych albo zlecaj budowy pod swój serwer.</p>
-            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Spawn</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Lobby</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Skyblock</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Events</span>
-            </div>
-          </div>
-
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-            <div class="flex items-center gap-3">
-              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
-                <i data-lucide="briefcase" class="h-5 w-5"></i>
-              </span>
-              <div>
-                <div class="font-bold">Zleceniodawcy</div>
-                <div class="text-xs text-white/60">Serwery • Marki • Społeczności</div>
-              </div>
-            </div>
-            <p class="mt-4 text-sm text-white/70">Publikuj ogłoszenia i znajdź wykonawcę dopasowanego do budżetu i terminu.</p>
-            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Budżet</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Termin</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Opis</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Kontakt</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- JAK TO DZIAŁA -->
-    <section id="jak-to-dziala" class="relative py-20">
-      <div class="mx-auto max-w-7xl px-4">
-        <h2 class="text-3xl md:text-4xl font-black mb-2">Jak to działa?</h2>
-        <p class="text-white/60 mb-10 max-w-2xl">
-          Prosty proces: ogłoszenie / profil → dopasowanie → kontakt → współpraca poza platformą.
-        </p>
-
-        <div class="grid md:grid-cols-3 gap-6">
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-            <div class="flex items-center gap-3">
-              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
-                <i data-lucide="file-text" class="h-5 w-5"></i>
-              </span>
-              <div class="font-bold">1) Wystawiasz / uzupełniasz</div>
-            </div>
-            <p class="mt-3 text-sm text-white/70">
-              Zleceniodawca dodaje opis zlecenia, a freelancer uzupełnia profil i portfolio.
-            </p>
-          </div>
-
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-            <div class="flex items-center gap-3">
-              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
-                <i data-lucide="scan-search" class="h-5 w-5"></i>
-              </span>
-              <div class="font-bold">2) Znajdujesz dopasowanie</div>
-            </div>
-            <p class="mt-3 text-sm text-white/70">
-              Przeglądasz ogłoszenia lub profile po kategoriach i wymaganiach (na podstronie funkcjonalnej).
-            </p>
-          </div>
-
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-            <div class="flex items-center gap-3">
-              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
-                <i data-lucide="messages-square" class="h-5 w-5"></i>
-              </span>
-              <div class="font-bold">3) Kontakt poza platformą</div>
-            </div>
-            <p class="mt-3 text-sm text-white/70">
-              Ustalasz szczegóły i rozliczenie bezpośrednio: Discord / e-mail / inny kanał.
-            </p>
-          </div>
-        </div>
-
-        <div class="mt-10 animate-on-scroll rounded-2xl border border-white/10 bg-black/30 p-6">
-          <div class="flex items-start gap-3">
-            <i data-lucide="shield-alert" class="h-5 w-5 text-[var(--accent)] mt-0.5"></i>
-            <div>
-              <div class="font-semibold">Dlaczego bez escrow?</div>
-              <p class="text-sm text-white/70 mt-1">
-                Velorie Market ma być lekkim miejscem do łączenia ludzi. Nie przechowujemy środków, nie wchodzimy w rozliczenia
-                i nie narzucamy metod płatności — liczy się szybkie znalezienie współpracy.
-              </p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- STATYSTYKI -->
-    <section id="statystyki" class="relative py-16">
-      <div class="mx-auto max-w-7xl px-4">
-        <h2 class="text-2xl md:text-3xl font-bold mb-8 flex items-center gap-3">
-          <i data-lucide="trending-up" class="h-6 w-6 text-[var(--accent)]"></i>
-          Statystyki społeczności
-        </h2>
-
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="stats-grid"></div>
-
-        <p class="mt-4 text-xs text-white/50">
-          *Przykładowe liczby do podmiany (na produkcji możesz podpiąć API).
-        </p>
-      </div>
-    </section>
-
-    <!-- FAQ -->
-    <section id="faq" class="relative py-20">
-      <div class="mx-auto max-w-7xl px-4">
-        <h2 class="text-3xl md:text-4xl font-black mb-2">FAQ</h2>
-        <p class="text-white/60 mb-10 max-w-2xl">Najczęściej zadawane pytania o zasady działania platformy.</p>
-
-        <div class="grid lg:grid-cols-2 gap-6">
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-            <div class="flex items-center gap-3">
-              <i data-lucide="help-circle" class="h-5 w-5 text-[var(--accent)]"></i>
-              <div class="font-bold">Czy Velorie Market pobiera prowizję?</div>
-            </div>
-            <p class="mt-3 text-sm text-white/70">Nie. Ponieważ nie obsługujemy płatności — rozliczenia są poza platformą.</p>
-          </div>
-
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-            <div class="flex items-center gap-3">
-              <i data-lucide="shield-off" class="h-5 w-5 text-[var(--accent)]"></i>
-              <div class="font-bold">Czy jest escrow lub ochrona kupującego?</div>
-            </div>
-            <p class="mt-3 text-sm text-white/70">Nie. Platforma służy tylko do znalezienia kontaktu. Ustalcie zasady współpracy we własnym zakresie.</p>
-          </div>
-
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-            <div class="flex items-center gap-3">
-              <i data-lucide="message-circle" class="h-5 w-5 text-[var(--accent)]"></i>
-              <div class="font-bold">Gdzie odbywa się kontakt?</div>
-            </div>
-            <p class="mt-3 text-sm text-white/70">Najczęściej Discord lub e-mail — możesz też dodać inne linki w profilu.</p>
-          </div>
-
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
-            <div class="flex items-center gap-3">
-              <i data-lucide="badge-check" class="h-5 w-5 text-[var(--accent)]"></i>
-              <div class="font-bold">Jak zwiększyć wiarygodność?</div>
-            </div>
-            <p class="mt-3 text-sm text-white/70">Uzupełnij portfolio, opis doświadczenia, stack i dodaj linki do realizacji.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- FOOTER -->
-  <footer id="kontakt" class="relative border-t border-white/10">
-    <div class="mx-auto max-w-7xl px-4 py-12 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-      <div class="space-y-4">
-        <div class="flex items-center gap-3">
-          <img src="https://i.imgur.com/ikYb7tH.png" alt="logo" class="h-10 w-10 rounded-xl ring-1 ring-white/10" />
-          <div>
-            <div class="font-bold">Velorie Market</div>
-            <div class="text-xs text-white/60">© <span id="footer-year"></span> · Wszelkie prawa zastrzeżone.</div>
-          </div>
-        </div>
-        <p class="text-sm text-white/70">
-          Platforma ogłoszeniowa dla freelancerów i zleceniodawców. Bez escrow — łączymy ludzi, a rozliczenia zostają po Waszej stronie.
-        </p>
-        <div class="flex items-center gap-3">
-          <a aria-label="Discord" href="#discord" class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs hover:bg-white/10">Discord</a>
-          <a aria-label="Facebook" href="#facebook" class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs hover:bg-white/10">Fanpage</a>
-          <a aria-label="E-mail" href="mailto:kontakt@velorie.market" class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs hover:bg-white/10">E-mail</a>
-        </div>
-      </div>
-
-      <div>
-        <div class="font-semibold mb-3">Nawigacja</div>
-        <ul class="space-y-2 text-sm text-white/70" id="footer-nav-list"></ul>
-      </div>
-
-      <div>
-        <div class="font-semibold mb-3">Zasady</div>
-        <ul class="space-y-2 text-sm text-white/70">
-          <li class="flex items-start gap-2">
-            <i data-lucide="dot" class="h-5 w-5 text-[var(--accent)] -mt-0.5"></i>
-            <span>Brak escrow i brak obsługi płatności</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <i data-lucide="dot" class="h-5 w-5 text-[var(--accent)] -mt-0.5"></i>
-            <span>Kontakt i rozliczenia poza platformą</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <i data-lucide="dot" class="h-5 w-5 text-[var(--accent)] -mt-0.5"></i>
-            <span>Uzupełnione portfolio = większa wiarygodność</span>
-          </li>
-        </ul>
-      </div>
-
-      <div>
-        <div class="font-semibold mb-3">Start</div>
-        <p class="text-sm text-white/70 mb-4">
-          Zaloguj się lub załóż konto, aby korzystać z funkcji ogłoszeń i profili (na osobnej podstronie).
-        </p>
-        <a href="./auth.html" class="w-full justify-center inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-3 font-semibold hover:brightness-110 transition shadow-[0_10px_40px_rgba(255,3,84,0.45)]">
-          <i data-lucide="user" class="h-4 w-4"></i>
-          <span>Zaloguj / Zarejestruj się</span>
-        </a>
-        <div class="mt-3 text-xs text-white/50">
-          To jest strona informacyjna — wyszukiwarka i dodawanie ogłoszeń są w osobnym widoku.
         </div>
       </div>
     </div>
-  </footer>
+  </div>
+
+  <!-- PANEL (drawer) -->
+  <div id="panelDrawer" class="fixed inset-0 z-[95] hidden" data-cloak>
+    <div class="absolute inset-0 backdrop" id="panelBackdrop"></div>
+
+    <div class="absolute right-0 top-0 h-full w-full max-w-xl glass border-l border-white/10 overflow-auto">
+      <!-- drawer header -->
+      <div class="sticky top-0 z-10 bg-black/20 border-b border-white/10 px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="inline-flex items-center justify-center h-10 w-10 rounded-2xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+            <i data-lucide="user" class="h-5 w-5"></i>
+          </div>
+          <div class="leading-tight">
+            <div class="font-extrabold">Panel użytkownika</div>
+            <div class="text-xs text-white/60">Edycja profilu • Ogłoszenie • Sklep • Podgląd</div>
+          </div>
+        </div>
+
+        <button id="panelClose" class="inline-flex items-center justify-center w-10 h-10 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+
+      <!-- drawer tabs -->
+      <div class="px-4 pt-4">
+        <div class="flex flex-wrap gap-2">
+          <button class="panelTab pill-active inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs hover:bg-white/10 transition" data-tab="edit">
+            <i data-lucide="pencil" class="h-3.5 w-3.5"></i> Edytuj profil
+          </button>
+          <button class="panelTab inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs hover:bg-white/10 transition" data-tab="preview">
+            <i data-lucide="eye" class="h-3.5 w-3.5"></i> Podgląd
+          </button>
+          <button class="panelTab inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs hover:bg-white/10 transition" data-tab="listing">
+            <i data-lucide="file-plus" class="h-3.5 w-3.5"></i> Dodaj ogłoszenie
+          </button>
+          <button class="panelTab inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs hover:bg-white/10 transition" data-tab="shop">
+            <i data-lucide="shopping-bag" class="h-3.5 w-3.5"></i> Sklep
+          </button>
+          <button class="panelTab inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs hover:bg-white/10 transition" data-tab="inbox">
+            <i data-lucide="inbox" class="h-3.5 w-3.5"></i> Skrzynka
+          </button>
+          <button class="panelTab inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs hover:bg-white/10 transition" data-tab="reports">
+            <i data-lucide="flag" class="h-3.5 w-3.5"></i> Zgłoszenia
+          </button>
+        </div>
+      </div>
+
+      <!-- drawer content -->
+      <div class="px-4 py-4 space-y-4">
+        <!-- EDIT TAB -->
+        <section id="tab-edit" class="panelSection glass rounded-2xl p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-xs text-white/60">Twój profil (demo)</div>
+              <div class="font-extrabold text-lg">Edytuj dane</div>
+            </div>
+            <button id="saveProfileBtn" class="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-extrabold hover:brightness-110 transition shadow-[0_10px_30px_rgba(255,3,84,0.35)]">
+              <i data-lucide="save" class="h-4 w-4"></i> Zapisz
+            </button>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <div class="col-span-2">
+              <label class="text-xs text-white/60">Nick / Imię i nazwisko</label>
+              <input id="meName" class="mt-1 w-full rounded-2xl bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none focus:border-white/20" placeholder="np. zxq0 / Jan Kowalski" />
+            </div>
+
+            <div>
+              <label class="text-xs text-white/60">Branża</label>
+              <select id="meRole" class="mt-1 w-full rounded-2xl bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none focus:border-white/20">
+                <option>Programista</option>
+                <option>Grafik</option>
+                <option>Montażysta</option>
+                <option>Budowniczy Minecraft</option>
+                <option>Technik</option>
+                <option>Inne</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="text-xs text-white/60">Miasto</label>
+              <input id="meCity" class="mt-1 w-full rounded-2xl bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none focus:border-white/20" placeholder="np. Warszawa" />
+            </div>
+
+            <div class="col-span-2">
+              <label class="text-xs text-white/60">Avatar URL</label>
+              <input id="meAvatar" class="mt-1 w-full rounded-2xl bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none focus:border-white/20" placeholder="https://..." />
+              <div class="mt-2 text-xs text-white/45">Tip: wklej link do obrazka (np. imgur). W produkcji: upload.</div>
+            </div>
+
+            <div class="col-span-2">
+              <label class="text-xs text-white/60">Bio (opis)</label>
+              <textarea id="meBio" rows="4" class="mt-1 w-full rounded-2xl bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none focus:border-white/20"
+                        placeholder="Krótko: czym się zajmujesz, co robisz najlepiej, jaka dostępność…"></textarea>
+            </div>
+
+            <div>
+              <label class="text-xs text-white/60">Dostępność</label>
+              <select id="meAvailability" class="mt-1 w-full rounded-2xl bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none focus:border-white/20">
+                <option>Od zaraz</option>
+                <option>W tym tygodniu</option>
+                <option>W tym miesiącu</option>
+                <option>Weekendy</option>
+                <option>Wieczorami</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="text-xs text-white/60">Stawka / budżet</label>
+              <input id="meRate" class="mt-1 w-full rounded-2xl bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none focus:border-white/20"
+                     placeholder="np. 80 zł/h lub 1200 zł/projekt" />
+            </div>
+
+            <div class="col-span-2">
+              <label class="text-xs text-white/60">Portfolio link</label>
+              <input id="meWebsite" class="mt-1 w-full rounded-2xl bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none focus:border-white/20"
+                     placeholder="https://twoje-portfolio.pl" />
+            </div>
+
+            <div>
+              <label class="text-xs text-white/60">Discord</label>
+              <input id="meDiscord" class="mt-1 w-full rounded-2xl bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none focus:border-white/20"
+                     placeholder="nick#0000 lub @nick" />
+            </div>
+
+            <div>
+              <label class="text-xs text-white/60">E-mail</label>
+              <input id="meEmail" class="mt-1 w-full rounded-2xl bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none focus:border-white/20"
+                     placeholder="kontakt@..." />
+            </div>
+
+            <div class="col-span-2">
+              <label class="text-xs text-white/60">Tagi (oddziel przecinkami)</label>
+              <input id="meTags" class="mt-1 w-full rounded-2xl bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none focus:border-white/20"
+                     placeholder="np. React, Node, UI, Spigot, Skyblock…" />
+            </div>
+
+            <div class="col-span-2">
+              <label class="text-xs text-white/60">Miniatury portfolio (2–3 URL, przecinkami)</label>
+              <input id="mePortfolio" class="mt-1 w-full rounded-2xl bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none focus:border-white/20"
+                     placeholder="https://img1..., https://img2..., https://img3..." />
+              <div class="mt-2 text-xs text-white/45">Na liście pokażemy 3 miniatury. W profilu pokażemy całość.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PREVIEW TAB -->
+        <section id="tab-preview" class="panelSection hidden glass rounded-2xl p-5">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="text-xs text-white/60">Jak widzą Cię inni</div>
+              <div class="font-extrabold text-lg">Podgląd profilu</div>
+            </div>
+            <button id="openMyProfileBtn" class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10 transition">
+              <i data-lucide="external-link" class="h-4 w-4"></i> Otwórz w modalu
+            </button>
+          </div>
+
+          <div class="mt-4 glass rounded-2xl p-5">
+            <div class="flex items-center gap-3">
+              <div id="mePreviewAvatar" class="h-12 w-12 rounded-2xl ring-1 ring-white/10 overflow-hidden bg-white/5"></div>
+              <div class="leading-tight">
+                <div class="flex items-center gap-2">
+                  <div id="mePreviewName" class="font-extrabold"></div>
+                  <span id="mePreviewVerified" class="hidden inline-flex items-center gap-1 rounded-full bg-[var(--accent)]/15 text-[var(--accent)] px-2.5 py-1 text-xs font-bold border border-[var(--accent)]/25">
+                    <i data-lucide="badge-check" class="h-3.5 w-3.5"></i> Zweryfikowany
+                  </span>
+                </div>
+                <div id="mePreviewRole" class="text-xs text-white/60"></div>
+              </div>
+            </div>
+
+            <div class="mt-4 text-sm text-white/75" id="mePreviewBio"></div>
+            <div class="mt-4 flex flex-wrap gap-2" id="mePreviewTags"></div>
+
+            <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                <div class="text-xs text-white/60">Miasto</div>
+                <div id="mePreviewCity" class="font-semibold mt-1"></div>
+              </div>
+              <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                <div class="text-xs text-white/60">Dostępność</div>
+                <div id="mePreviewAvailability" class="font-semibold mt-1"></div>
+              </div>
+              <div class="rounded-xl border border-white/10 bg-white/5 p-3 col-span-2">
+                <div class="text-xs text-white/60">Stawka / budżet</div>
+                <div id="mePreviewRate" class="font-semibold mt-1"></div>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <div class="text-xs text-white/60 mb-2">Mini-portfolio</div>
+              <div class="grid grid-cols-3 gap-2" id="mePreviewPortfolio"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- LISTING TAB -->
+        <section id="tab-listing" class="panelSection hidden glass rounded-2xl p-5">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="text-xs text-white/60">Dodaj ogłoszenie o sobie</div>
+              <div class="font-extrabold text-lg">Publikacja profilu</div>
+            </div>
+            <button id="publishMeBtn" class="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-extrabold hover:brightness-110 transition shadow-[0_10px_30px_rgba(255,3,84,0.35)]">
+              <i data-lucide="upload" class="h-4 w-4"></i> Opublikuj / Aktualizuj
+            </button>
+          </div>
+
+          <div class="mt-4 text-sm text-white/70">
+            W tym demo ogłoszenie = Twój profil widoczny na liście. Możesz je promować i weryfikować w zakładce <b>Sklep</b>.
+          </div>
+
+          <div class="mt-4 grid gap-3">
+            <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div class="flex items-start gap-3">
+                <div class="inline-flex items-center justify-center h-10 w-10 rounded-2xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                  <i data-lucide="trending-up" class="h-5 w-5"></i>
+                </div>
+                <div>
+                  <div class="font-bold">Pozycjonowanie (ranking)</div>
+                  <div class="text-xs text-white/60 mt-1">
+                    Profile promowane wyświetlają się wyżej (sortowanie „Najwyżej pozycjonowane”).
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div class="flex items-start gap-3">
+                <div class="inline-flex items-center justify-center h-10 w-10 rounded-2xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                  <i data-lucide="badge-check" class="h-5 w-5"></i>
+                </div>
+                <div>
+                  <div class="font-bold">Weryfikacja konta</div>
+                  <div class="text-xs text-white/60 mt-1">
+                    Zweryfikowane konta mają znaczek na profilu + subtelne wyróżnienie na liście.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="publishHint" class="mt-3 text-xs text-white/50"></div>
+        </section>
+
+        <!-- SHOP TAB -->
+        <section id="tab-shop" class="panelSection hidden glass rounded-2xl p-5">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="text-xs text-white/60">Subskrypcje</div>
+              <div class="font-extrabold text-lg">Sklep</div>
+            </div>
+            <div class="text-xs text-white/60">
+              Demo płatności: zapis w localStorage
+            </div>
+          </div>
+
+          <div class="mt-4 grid gap-3">
+            <!-- Promotion -->
+            <div class="glass rounded-2xl p-5 border border-white/10">
+              <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                  <div class="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-white/80">
+                    <i data-lucide="trending-up" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+                    Promowanie ogłoszeń
+                  </div>
+                  <div class="font-extrabold text-lg">Wyższe pozycjonowanie</div>
+                  <div class="text-sm text-white/70">
+                    Twoje ogłoszenie będzie wyświetlane wyżej w rankingu i otrzyma znacznik „Promowane”.
+                  </div>
+                </div>
+
+                <div class="text-right">
+                  <div class="text-xs text-white/60">Cena</div>
+                  <div class="text-xl font-extrabold">23.99 PLN<span class="text-xs text-white/60"> / mies.</span></div>
+                </div>
+              </div>
+
+              <div class="mt-4 flex items-center justify-between gap-2">
+                <div class="text-xs text-white/60">
+                  Status: <span id="promoStatus" class="text-white/80 font-semibold">Nieaktywne</span>
+                </div>
+                <button id="buyPromoBtn" class="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-extrabold hover:brightness-110 transition shadow-[0_10px_30px_rgba(255,3,84,0.35)]">
+                  <i data-lucide="shopping-cart" class="h-4 w-4"></i> Aktywuj
+                </button>
+              </div>
+            </div>
+
+            <!-- Verification -->
+            <div class="glass rounded-2xl p-5 border border-white/10">
+              <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                  <div class="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-white/80">
+                    <i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+                    Weryfikacja konta
+                  </div>
+                  <div class="font-extrabold text-lg">Znaczek w profilu</div>
+                  <div class="text-sm text-white/70">
+                    Dodaje badge „Zweryfikowany” + zwiększa wiarygodność na liście i w profilu.
+                  </div>
+                </div>
+
+                <div class="text-right">
+                  <div class="text-xs text-white/60">Cena</div>
+                  <div class="text-xl font-extrabold">19.55 PLN<span class="text-xs text-white/60"> / mies.</span></div>
+                </div>
+              </div>
+
+              <div class="mt-4 flex items-center justify-between gap-2">
+                <div class="text-xs text-white/60">
+                  Status: <span id="verifyStatus" class="text-white/80 font-semibold">Nieaktywne</span>
+                </div>
+                <button id="buyVerifyBtn" class="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-extrabold hover:brightness-110 transition shadow-[0_10px_30px_rgba(255,3,84,0.35)]">
+                  <i data-lucide="shopping-cart" class="h-4 w-4"></i> Aktywuj
+                </button>
+              </div>
+            </div>
+
+            <!-- Extra features (invented) -->
+            <div class="glass rounded-2xl p-5 border border-white/10">
+              <div class="flex items-center gap-2">
+                <i data-lucide="sparkles" class="h-5 w-5 text-[var(--accent)]"></i>
+                <div class="font-extrabold">Dodatkowe funkcje (plan)</div>
+              </div>
+
+              <div class="mt-3 grid gap-2 text-sm text-white/75">
+                <div class="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                  <span class="inline-flex items-center gap-2"><i data-lucide="bell" class="h-4 w-4 text-[var(--accent)]"></i> Alerty wyszukiwania</span>
+                  <span class="text-xs text-white/60">wkrótce</span>
+                </div>
+                <div class="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                  <span class="inline-flex items-center gap-2"><i data-lucide="sparkle" class="h-4 w-4 text-[var(--accent)]"></i> Wyróżniony kafelek</span>
+                  <span class="text-xs text-white/60">wkrótce</span>
+                </div>
+                <div class="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                  <span class="inline-flex items-center gap-2"><i data-lucide="calendar" class="h-4 w-4 text-[var(--accent)]"></i> Terminarz dostępności</span>
+                  <span class="text-xs text-white/60">wkrótce</span>
+                </div>
+              </div>
+
+              <div class="mt-3 text-xs text-white/50">
+                Jeśli chcesz, w 2 części dopniemy te opcje jako toggles + widoki (też w localStorage).
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- INBOX TAB -->
+        <section id="tab-inbox" class="panelSection hidden glass rounded-2xl p-5">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="text-xs text-white/60">Wiadomości (demo)</div>
+              <div class="font-extrabold text-lg">Skrzynka</div>
+            </div>
+            <button id="clearInboxBtn" class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10 transition">
+              <i data-lucide="trash-2" class="h-4 w-4 text-[var(--accent)]"></i> Wyczyść
+            </button>
+          </div>
+
+          <div id="inboxList" class="mt-4 space-y-3"></div>
+
+          <div id="inboxEmpty" class="hidden mt-4 rounded-2xl border border-white/10 bg-black/20 p-5 text-sm text-white/70">
+            Brak wiadomości. Wyślij zapytanie z profilu dowolnej osoby (demo zapisuje do localStorage).
+          </div>
+        </section>
+
+        <!-- REPORTS TAB -->
+        <section id="tab-reports" class="panelSection hidden glass rounded-2xl p-5">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="text-xs text-white/60">Moderacja (demo)</div>
+              <div class="font-extrabold text-lg">Zgłoszenia</div>
+            </div>
+            <button id="clearReportsBtn" class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10 transition">
+              <i data-lucide="trash-2" class="h-4 w-4 text-[var(--accent)]"></i> Wyczyść
+            </button>
+          </div>
+
+          <div id="reportsList" class="mt-4 space-y-3"></div>
+
+          <div id="reportsEmpty" class="hidden mt-4 rounded-2xl border border-white/10 bg-black/20 p-5 text-sm text-white/70">
+            Brak zgłoszeń. Zgłoś profil z poziomu modalu profilu (demo).
+          </div>
+        </section>
+
+        <div class="text-xs text-white/45 pb-8">
+          <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div class="flex items-start gap-2">
+              <i data-lucide="info" class="h-4 w-4 text-white/60 mt-0.5"></i>
+              <div>
+                <div class="text-white/70 font-semibold">To jest demonstracja (market.html)</div>
+                <div class="mt-1">
+                  Dane, subskrypcje, wiadomości i zgłoszenia trzymamy w <code class="text-white/70">localStorage</code>.
+                  W produkcji podepniesz API (auth, płatności, CRUD, wyszukiwarka).
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX (portfolio) -->
+  <div id="lightbox" class="fixed inset-0 z-[110] hidden" data-cloak>
+    <div class="absolute inset-0 backdrop" id="lightboxBackdrop"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="glass rounded-3xl border border-white/10 overflow-hidden max-w-4xl w-full">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/20">
+          <div class="text-sm font-bold inline-flex items-center gap-2">
+            <i data-lucide="image" class="h-4 w-4 text-[var(--accent)]"></i> Podgląd portfolio
+          </div>
+          <button id="lightboxClose" class="inline-flex items-center justify-center w-10 h-10 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition">
+            <i data-lucide="x" class="h-5 w-5"></i>
+          </button>
+        </div>
+        <div class="bg-black/40">
+          <img id="lightboxImg" alt="portfolio" class="w-full max-h-[80vh] object-contain" />
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const ACCENT = "#ff0354";
+    /******************************************************************
+     * Velorie Market — market.html (DEMO)
+     * - Styl: dark gradient + glass + accent #ff0354
+     * - Lista: poziome kafelki (avatar, nick, branża, mini-portfolio 2-3)
+     * - Klik: pełny profil (modal) + kontakt + wysyłka wiadomości (demo)
+     * - Panel: edycja profilu, podgląd, publikacja, sklep (promo + weryfikacja)
+     * - Dodatki: ulubione, sortowanie, filtry, zgłoszenia, skrzynka
+     ******************************************************************/
 
-      // Schema.org
-      const schema = {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        name: "Velorie Market",
-        url: window.location.href,
-        inLanguage: "PL",
-        description: "Platforma ogłoszeniowa dla freelancerów i zleceniodawców. Bez escrow – kontakt i płatność poza platformą."
-      };
-      document.getElementById("schema-json").textContent = JSON.stringify(schema);
+    const LS_KEYS = {
+      listings: "vm_listings_v1",
+      me: "vm_me_v1",
+      subs: "vm_subs_v1",
+      favorites: "vm_favorites_v1",
+      inbox: "vm_inbox_v1",
+      reports: "vm_reports_v1",
+    };
 
-      // footer year
-      document.getElementById("footer-year").textContent = new Date().getFullYear();
+    const moneyPLN = (n) => Number(n).toFixed(2).replace(".", ",") + " PLN";
+    const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
 
-      // footer nav
-      const footerNav = [
-        { href: "#o-platformie", text: "O platformie" },
-        { href: "#dla-kogo", text: "Dla kogo" },
-        { href: "#jak-to-dziala", text: "Jak to działa" },
-        { href: "#statystyki", text: "Statystyki" },
-        { href: "#faq", text: "FAQ" },
-        { href: "#kontakt", text: "Kontakt" },
-      ];
-      const footerList = document.getElementById("footer-nav-list");
-      footerNav.forEach(item => {
-        const li = document.createElement("li");
-        li.innerHTML = `<a href="${item.href}" class="hover:text-white">${item.text}</a>`;
-        footerList.appendChild(li);
-      });
+    // --- Demo seed data (jeśli brak w localStorage)
+    const seedListings = () => ([
+      {
+        id: "p1",
+        name: "zxq0 • Jan Kowalski",
+        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=256&q=80",
+        role: "Programista",
+        city: "Warszawa",
+        availability: "Od zaraz",
+        rate: "80 zł/h • 1200 zł/projekt",
+        rating: 4.8,
+        responseTime: "do 2h",
+        verified: true,
+        promoted: true,
+        tags: ["React", "Node", "API", "UI", "Discord Bot"],
+        bio: "Buduję aplikacje web (React/Node), panele klientów i integracje. Szybkie MVP, czysty UI i dobra komunikacja. Mogę też ogarnąć bota na Discorda + panel admina.",
+        website: "https://example.com",
+        discord: "@zxq0",
+        email: "kontakt@velorie.market",
+        portfolio: [
+          "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?auto=format&fit=crop&w=900&q=80",
+        ],
+        createdAt: Date.now() - 1000 * 60 * 60 * 24 * 2,
+      },
+      {
+        id: "p2",
+        name: "Klaudia • UI/GFX",
+        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80",
+        role: "Grafik",
+        city: "Kraków",
+        availability: "W tym tygodniu",
+        rate: "od 250 zł/projekt",
+        rating: 4.6,
+        responseTime: "do 6h",
+        verified: false,
+        promoted: true,
+        tags: ["Branding", "Logo", "UI", "Thumbnails"],
+        bio: "Projektuję logotypy, miniatury i UI w stylu modern-glass. Dobre dopasowanie do community i sociali. W razie potrzeby przygotuję też pakiet pod sklep/serwer.",
+        website: "https://example.com",
+        discord: "@klaudia.design",
+        email: "klaudia@example.com",
+        portfolio: [
+          "https://images.unsplash.com/photo-1526498460520-4c246339dccb?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1526498460520-4c246339dccb?auto=format&fit=crop&w=900&q=80",
+        ],
+        createdAt: Date.now() - 1000 * 60 * 60 * 24 * 6,
+      },
+      {
+        id: "p3",
+        name: "kubus • Builder",
+        avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=256&q=80",
+        role: "Budowniczy Minecraft",
+        city: "Gdańsk",
+        availability: "Weekendy",
+        rate: "od 600 zł/mapa",
+        rating: 4.9,
+        responseTime: "do 1 dnia",
+        verified: true,
+        promoted: false,
+        tags: ["Spawn", "Hub", "Skyblock", "Events"],
+        bio: "Buduję spawny, lobby, huby i mapy eventowe. Pracuję szybko i dbam o detale + optymalizację pod performance. Możliwe poprawki po wdrożeniu.",
+        website: "https://example.com",
+        discord: "@kubus.build",
+        email: "kubus@example.com",
+        portfolio: [
+          "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1496307653780-42ee777d4833?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=900&q=80",
+        ],
+        createdAt: Date.now() - 1000 * 60 * 60 * 24 * 1,
+      },
+      {
+        id: "p4",
+        name: "Mati • Montaż",
+        avatar: "https://images.unsplash.com/photo-1520975869018-61f3c3a0f8f8?auto=format&fit=crop&w=256&q=80",
+        role: "Montażysta",
+        city: "Poznań",
+        availability: "Wieczorami",
+        rate: "od 150 zł/short",
+        rating: 4.3,
+        responseTime: "do 12h",
+        verified: false,
+        promoted: false,
+        tags: ["Shorts", "TikTok", "Reels", "Intro"],
+        bio: "Montaż shortów, reelsów i TikToków. Szybkie tempo, napisy, beat cuts, motion. Mogę też przygotować intro/outro do kanału.",
+        website: "https://example.com",
+        discord: "@mati.edit",
+        email: "mati@example.com",
+        portfolio: [
+          "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1496307653780-42ee777d4833?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=900&q=80",
+        ],
+        createdAt: Date.now() - 1000 * 60 * 60 * 24 * 10,
+      },
+    ]);
 
-      // Stats (podmień wartości na swoje / API)
-      const statsData = [
-        { id: "offers", icon: "briefcase", label: "Aktywne ogłoszenia", value: 1280 },
-        { id: "profiles", icon: "users", label: "Profile freelancerów", value: 6420 },
-        { id: "categories", icon: "layers", label: "Kategorie umiejętności", value: 28 },
-        { id: "matches", icon: "sparkles", label: "Dopasowania / mies.", value: 15400 },
-      ];
-
-      const renderStats = () => {
-        const grid = document.getElementById("stats-grid");
-        grid.innerHTML = "";
-        statsData.forEach((s, idx) => {
-          const card = document.createElement("div");
-          card.className = "p-5 text-center relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_10px_50px_rgba(0,0,0,0.4)] animate-on-scroll";
-          card.style.transitionDelay = `${idx * 0.06}s`;
-          card.innerHTML = `
-            <div class="flex items-center justify-center gap-2">
-              <i data-lucide="${s.icon}" class="h-5 w-5 text-[var(--accent)]"></i>
-              <span class="text-xs uppercase tracking-wider text-white/60">${s.label}</span>
-            </div>
-            <div id="stat-${s.id}" class="mt-2 text-2xl md:text-3xl font-extrabold tabular-nums">0</div>
-          `;
-          grid.appendChild(card);
-        });
-        lucide.createIcons();
-        initScrollAnimations();
-      };
-
-      // Counter animation
-      const animateCounter = (element, target, duration = 1200) => {
-        let start = null;
-        const step = (ts) => {
-          if (!start) start = ts;
-          const progress = Math.min((ts - start) / duration, 1);
-          element.textContent = Math.floor(progress * target).toLocaleString("pl-PL");
-          if (progress < 1) window.requestAnimationFrame(step);
-        };
-        window.requestAnimationFrame(step);
-      };
-
-      // Parallax hero text
-      const heroText = document.getElementById("hero-text");
-      window.addEventListener("scroll", () => {
-        if (window.scrollY < window.innerHeight) {
-          heroText.style.transform = `translateY(${window.scrollY * 0.2}px)`;
-        }
-      });
-
-      // Scroll progress bar
-      const progressBar = document.getElementById("scroll-progress");
-      const updateProgress = () => {
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const p = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-        progressBar.style.width = `${p}%`;
-      };
-      window.addEventListener("scroll", updateProgress, { passive: true });
-      updateProgress();
-
-      // Intersection observer animations
-      let observer;
-      const initScrollAnimations = () => {
-        if (observer) observer.disconnect();
-        observer = new IntersectionObserver((entries, obs) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("is-visible");
-
-              // animate stats if present
-              const statEl = entry.target.querySelector('[id^="stat-"]');
-              if (statEl) {
-                const key = statEl.id.replace("stat-", "");
-                const stat = statsData.find(x => x.id === key);
-                if (stat) animateCounter(statEl, stat.value);
-              }
-
-              obs.unobserve(entry.target);
-            }
-          });
-        }, { threshold: 0.12 });
-
-        document.querySelectorAll(".animate-on-scroll").forEach(el => observer.observe(el));
-      };
-
-      // Particles
-      const createParticles = () => {
-        const container = document.getElementById("particles-container");
-        if (!container) return;
-        container.innerHTML = "";
-        for (let i = 0; i < 28; i++) {
-          const particle = document.createElement("span");
-          const size = 24 + (i % 5) * 12;
-          particle.className = "absolute rounded-full opacity-20 blur-2xl particle";
-          particle.style.cssText = `
-            width:${size}px;
-            height:${size}px;
-            background:${i % 3 ? ACCENT : "#4f46e5"};
-            left:${Math.random() * 100}%;
-            top:${Math.random() * 100}%;
-            animation-duration:${10 + (i % 5)}s;
-            animation-delay:${i * 0.2}s;
-          `;
-          container.appendChild(particle);
-        }
-      };
-
-      // Init
-      const init = () => {
-        renderStats();
-        createParticles();
-        lucide.createIcons();
-        initScrollAnimations();
-      };
-
-      init();
+    const defaultMe = () => ({
+      id: "me",
+      name: "Twoje imię • Nick",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=256&q=80",
+      role: "Programista",
+      city: "Warszawa",
+      availability: "Od zaraz",
+      rate: "80 zł/h",
+      bio: "Napisz krótkie bio: czym się zajmujesz, co robisz najlepiej, jakie masz terminy.",
+      tags: ["React", "UI", "API"],
+      website: "https://example.com",
+      discord: "@twoj.nick",
+      email: "twoj@email.com",
+      portfolio: [
+        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?auto=format&fit=crop&w=900&q=80",
+      ],
     });
+
+    const loadJSON = (key, fallback) => {
+      try {
+        const v = localStorage.getItem(key);
+        return v ? JSON.parse(v) : fallback;
+      } catch {
+        return fallback;
+      }
+    };
+    const saveJSON = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+
+    // Initialize LS
+    const ensureData = () => {
+      if (!localStorage.getItem(LS_KEYS.listings)) saveJSON(LS_KEYS.listings, seedListings());
+      if (!localStorage.getItem(LS_KEYS.me)) saveJSON(LS_KEYS.me, defaultMe());
+      if (!localStorage.getItem(LS_KEYS.subs)) saveJSON(LS_KEYS.subs, { promoted: false, verified: false });
+      if (!localStorage.getItem(LS_KEYS.favorites)) saveJSON(LS_KEYS.favorites, []);
+      if (!localStorage.getItem(LS_KEYS.inbox)) saveJSON(LS_KEYS.inbox, []);
+      if (!localStorage.getItem(LS_KEYS.reports)) saveJSON(LS_KEYS.reports, []);
+    };
+
+    // ---- UI refs
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    const listingsGrid = $("#listingsGrid");
+    const emptyState = $("#emptyState");
+    const resultsCount = $("#resultsCount");
+
+    const searchInput = $("#searchInput");
+    const searchInputMobile = $("#searchInputMobile");
+    const sortSelect = $("#sortSelect");
+
+    const favCount = $("#favCount");
+
+    const profileModal = $("#profileModal");
+    const profileBackdrop = $("#profileBackdrop");
+    const pmClose = $("#pmClose");
+
+    const panelDrawer = $("#panelDrawer");
+    const panelBackdrop = $("#panelBackdrop");
+    const panelBtn = $("#panelBtn");
+    const panelClose = $("#panelClose");
+
+    const favoritesBtn = $("#favoritesBtn");
+
+    const lightbox = $("#lightbox");
+    const lightboxBackdrop = $("#lightboxBackdrop");
+    const lightboxClose = $("#lightboxClose");
+    const lightboxImg = $("#lightboxImg");
+
+    const howItWorksCta = $("#howItWorksCta");
+    const createListingCta = $("#createListingCta");
+
+    // --- state
+    let state = {
+      filter: "all",
+      query: "",
+      showFavorites: false,
+      activeProfileId: null,
+    };
+
+    // ---- helpers
+    const setVisible = (el, v) => {
+      if (!el) return;
+      el.classList.toggle("hidden", !v);
+    };
+
+    const escapeHTML = (s="") =>
+      s.replace(/[&<>"']/g, (m) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+
+    const tagChip = (t) => `
+      <span class="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/75">
+        <i data-lucide="hash" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(t)}
+      </span>
+    `;
+
+    const stars = (rating) => {
+      const r = Math.max(0, Math.min(5, rating || 0));
+      const full = Math.floor(r);
+      const half = (r - full) >= 0.5;
+      let out = "";
+      for (let i=0;i<5;i++){
+        if (i < full) out += `<i data-lucide="star" class="h-4 w-4 text-[var(--accent)]"></i>`;
+        else if (i === full && half) out += `<i data-lucide="star-half" class="h-4 w-4 text-[var(--accent)]"></i>`;
+        else out += `<i data-lucide="star" class="h-4 w-4 text-white/25"></i>`;
+      }
+      return out;
+    };
+
+    // ---- ranking score (promoted + verified + rating + recency)
+    const rankScore = (p) => {
+      const promo = p.promoted ? 1000 : 0;
+      const ver = p.verified ? 200 : 0;
+      const rate = (p.rating || 0) * 20;
+      const rec = Math.max(0, 80 - ((Date.now() - (p.createdAt||Date.now())) / (1000*60*60*24)) * 4);
+      return promo + ver + rate + rec;
+    };
+
+    // ---- data access
+    const getListings = () => loadJSON(LS_KEYS.listings, []);
+    const setListings = (arr) => saveJSON(LS_KEYS.listings, arr);
+
+    const getMe = () => loadJSON(LS_KEYS.me, defaultMe());
+    const setMe = (me) => saveJSON(LS_KEYS.me, me);
+
+    const getSubs = () => loadJSON(LS_KEYS.subs, { promoted:false, verified:false });
+    const setSubs = (subs) => saveJSON(LS_KEYS.subs, subs);
+
+    const getFavs = () => loadJSON(LS_KEYS.favorites, []);
+    const setFavs = (arr) => saveJSON(LS_KEYS.favorites, arr);
+
+    const getInbox = () => loadJSON(LS_KEYS.inbox, []);
+    const setInbox = (arr) => saveJSON(LS_KEYS.inbox, arr);
+
+    const getReports = () => loadJSON(LS_KEYS.reports, []);
+    const setReports = (arr) => saveJSON(LS_KEYS.reports, arr);
+
+    // ---- LIST render (poziome kafelki)
+    const renderListings = () => {
+      const q = (state.query || "").trim().toLowerCase();
+      const favs = new Set(getFavs());
+
+      let list = getListings();
+
+      // filter by favorites toggle
+      if (state.showFavorites) list = list.filter(x => favs.has(x.id));
+
+      // filter by role
+      if (state.filter !== "all") list = list.filter(x => (x.role || "") === state.filter);
+
+      // search
+      if (q) {
+        list = list.filter(x => {
+          const hay = [
+            x.name, x.role, x.city,
+            (x.tags||[]).join(" "),
+            x.bio
+          ].join(" ").toLowerCase();
+          return hay.includes(q);
+        });
+      }
+
+      // sort
+      const sort = sortSelect?.value || "rank";
+      if (sort === "rank") list.sort((a,b) => rankScore(b) - rankScore(a));
+      if (sort === "newest") list.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+      if (sort === "rating") list.sort((a,b) => (b.rating||0) - (a.rating||0));
+      if (sort === "name") list.sort((a,b) => (a.name||"").localeCompare((b.name||""), "pl"));
+
+      // render
+      listingsGrid.innerHTML = "";
+      setVisible(emptyState, list.length === 0);
+      resultsCount.textContent = `(${list.length})`;
+
+      list.forEach((p, idx) => {
+        const imgs = (p.portfolio || []).slice(0,3);
+        const isFav = favs.has(p.id);
+
+        const card = document.createElement("article");
+        card.className =
+          "animate-on-scroll glass rounded-3xl p-4 md:p-5 cursor-pointer hover:border-white/20 transition " +
+          "group";
+        card.style.transitionDelay = `${Math.min(idx*0.03, 0.24)}s`;
+
+        card.innerHTML = `
+          <div class="flex flex-col md:flex-row md:items-center gap-4">
+            <div class="flex items-center gap-3 min-w-[260px]">
+              <div class="h-14 w-14 rounded-2xl ring-1 ring-white/10 overflow-hidden bg-white/5 shrink-0">
+                <img src="${escapeHTML(p.avatar||"")}" alt="avatar" class="h-full w-full object-cover" />
+              </div>
+
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <div class="font-extrabold tracking-tight truncate">${escapeHTML(p.name||"")}</div>
+
+                  ${p.verified ? `
+                    <span class="inline-flex items-center gap-1 rounded-full bg-[var(--accent)]/15 text-[var(--accent)] px-2 py-0.5 text-[11px] font-extrabold border border-[var(--accent)]/25">
+                      <i data-lucide="badge-check" class="h-3.5 w-3.5"></i> Verified
+                    </span>` : ""}
+
+                  ${p.promoted ? `
+                    <span class="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-white/80">
+                      <i data-lucide="trending-up" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Promowane
+                    </span>` : ""}
+                </div>
+
+                <div class="mt-1 flex items-center gap-2 text-xs text-white/60">
+                  <span class="inline-flex items-center gap-1">
+                    <i data-lucide="briefcase" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+                    ${escapeHTML(p.role||"")}
+                  </span>
+                  <span class="text-white/25">•</span>
+                  <span class="inline-flex items-center gap-1">
+                    <i data-lucide="map-pin" class="h-3.5 w-3.5"></i> ${escapeHTML(p.city||"—")}
+                  </span>
+                  <span class="text-white/25">•</span>
+                  <span class="inline-flex items-center gap-1">
+                    <i data-lucide="clock" class="h-3.5 w-3.5"></i> ${escapeHTML(p.responseTime||"—")}
+                  </span>
+                </div>
+
+                <div class="mt-2 flex items-center gap-2">
+                  <div class="flex items-center gap-1">${stars(p.rating||0)}</div>
+                  <span class="text-xs text-white/60">${(p.rating||0).toFixed(1)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div class="text-xs text-white/60">Szybki opis</div>
+              <p class="mt-1 text-sm text-white/75 clamp-2">${escapeHTML(p.bio||"")}</p>
+
+              <div class="mt-3 flex flex-wrap gap-2">
+                ${(p.tags || []).slice(0,4).map(tagChip).join("")}
+              </div>
+            </div>
+
+            <div class="md:ml-auto flex items-center gap-3">
+              <div class="hidden lg:block perspective">
+                <div class="tilt grid grid-cols-3 gap-2">
+                  ${imgs.map(src => `
+                    <div class="h-14 w-20 rounded-xl overflow-hidden ring-1 ring-white/10 bg-white/5">
+                      <img src="${escapeHTML(src)}" alt="pf" class="h-full w-full object-cover opacity-90 group-hover:opacity-100 transition" />
+                    </div>
+                  `).join("")}
+                </div>
+              </div>
+
+              <button class="favBtn inline-flex items-center justify-center w-11 h-11 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition"
+                      data-id="${escapeHTML(p.id)}" title="Ulubione">
+                <i data-lucide="heart" class="h-5 w-5 ${isFav ? "text-[var(--accent)]" : "text-white/60"}"></i>
+              </button>
+
+              <button class="openBtn hidden sm:inline-flex items-center gap-2 rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-extrabold hover:brightness-110 transition shadow-[0_10px_30px_rgba(255,3,84,0.35)]"
+                      data-open="${escapeHTML(p.id)}">
+                <i data-lucide="user-round" class="h-4 w-4"></i>
+                Profil
+              </button>
+            </div>
+          </div>
+        `;
+
+        // click card -> open profile (ignore fav button)
+        card.addEventListener("click", (e) => {
+          const target = e.target;
+          if (target.closest(".favBtn")) return;
+          if (target.closest(".openBtn")) return;
+          openProfile(p.id);
+        });
+
+        listingsGrid.appendChild(card);
+      });
+
+      lucide.createIcons();
+      initScrollAnimations();
+
+      // bind fav buttons
+      $$(".favBtn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute("data-id");
+          toggleFavorite(id);
+        });
+      });
+
+      $$(".openBtn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute("data-open");
+          openProfile(id);
+        });
+      });
+
+      updateFavUI();
+    };
+
+    const updateFavUI = () => {
+      const favs = getFavs();
+      favCount.textContent = String(favs.length);
+      // refresh hearts in list (without full render: quick pass)
+      $$(".favBtn").forEach(btn => {
+        const id = btn.getAttribute("data-id");
+        const icon = btn.querySelector("i");
+        if (!icon) return;
+        icon.classList.toggle("text-[var(--accent)]", favs.includes(id));
+        icon.classList.toggle("text-white/60", !favs.includes(id));
+      });
+    };
+
+    const toggleFavorite = (id) => {
+      const favs = getFavs();
+      const next = favs.includes(id) ? favs.filter(x => x !== id) : [...favs, id];
+      setFavs(next);
+      updateFavUI();
+      if (state.showFavorites) renderListings();
+    };
+
+    // ---- profile modal fill (render details)
+    const openProfile = (id) => {
+      const list = getListings();
+      const p = list.find(x => x.id === id);
+      if (!p) return;
+
+      state.activeProfileId = id;
+
+      // avatar
+      $("#pmAvatarWrap").innerHTML = `<img src="${escapeHTML(p.avatar||"")}" class="h-full w-full object-cover" alt="avatar">`;
+      $("#pmName").textContent = p.name || "Profil";
+      $("#pmRole").textContent = `${p.role || "—"} • ${p.city || "—"}`;
+
+      setVisible($("#pmVerified"), !!p.verified);
+      setVisible($("#pmPromoted"), !!p.promoted);
+
+      $("#pmBio").textContent = p.bio || "—";
+      $("#pmStars").innerHTML = stars(p.rating||0);
+      $("#pmId").textContent = p.id || "—";
+
+      $("#pmCity").textContent = p.city || "—";
+      $("#pmAvailability").textContent = p.availability || "—";
+      $("#pmRate").textContent = p.rate || "—";
+      $("#pmResponseTime").textContent = p.responseTime || "—";
+      $("#pmVerifyState").textContent = p.verified ? "Aktywna" : "Brak";
+
+      // tags
+      const tagsWrap = $("#pmTags");
+      tagsWrap.innerHTML = "";
+      (p.tags || []).forEach(t => {
+        const chip = document.createElement("span");
+        chip.className = "inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/75";
+        chip.innerHTML = `<i data-lucide="hash" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(t)}`;
+        tagsWrap.appendChild(chip);
+      });
+
+      // portfolio grid
+      const port = $("#pmPortfolio");
+      port.innerHTML = "";
+      (p.portfolio || []).forEach((src, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "group relative rounded-2xl overflow-hidden ring-1 ring-white/10 bg-white/5 hover:ring-white/20 transition";
+        btn.innerHTML = `
+          <img src="${escapeHTML(src)}" alt="portfolio ${idx+1}" class="h-36 w-full object-cover opacity-90 group-hover:opacity-100 transition" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition"></div>
+          <div class="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/40 px-2 py-1 text-[11px] text-white/80 opacity-0 group-hover:opacity-100 transition">
+            <i data-lucide="zoom-in" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Podgląd
+          </div>
+        `;
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          openLightbox(src);
+        });
+        port.appendChild(btn);
+      });
+
+      // contact
+      const discord = p.discord || "—";
+      $("#pmDiscordText").textContent = discord;
+      $("#pmDiscord").setAttribute("href", discord && discord !== "—" ? "#" : "#");
+      $("#pmDiscord").onclick = (e) => { e.preventDefault(); copyToClipboard(discord, "Skopiowano Discord"); };
+
+      const email = p.email || "—";
+      $("#pmEmailText").textContent = email;
+      $("#pmEmail").setAttribute("href", email && email !== "—" ? `mailto:${email}` : "#");
+
+      const web = p.website || "#";
+      $("#pmWebsite").setAttribute("href", web);
+
+      // fav status on modal button
+      const favs = new Set(getFavs());
+      $("#pmFavBtn").dataset.id = p.id;
+      // keep icon color by re-render icons after toggles
+      $("#pmFavBtn").onclick = () => toggleFavorite(p.id);
+
+      $("#pmMsg").value = "";
+      $("#pmMsgHint").textContent = "";
+
+      // open modal
+      setVisible(profileModal, true);
+      lucide.createIcons();
+      document.body.style.overflow = "hidden";
+    };
+
+    const closeProfile = () => {
+      setVisible(profileModal, false);
+      document.body.style.overflow = "";
+      state.activeProfileId = null;
+    };
+
+    // ---- lightbox
+    const openLightbox = (src) => {
+      lightboxImg.src = src;
+      setVisible(lightbox, true);
+      lucide.createIcons();
+    };
+    const closeLightbox = () => setVisible(lightbox, false);
+
+    // ---- copy helper
+    const copyToClipboard = async (text, toast="Skopiowano") => {
+      try {
+        await navigator.clipboard.writeText(String(text||""));
+        toastMini(toast);
+      } catch {
+        toastMini("Nie udało się skopiować");
+      }
+    };
+
+    // ---- mini toast (simple)
+    let toastTimer = null;
+    const toastMini = (msg) => {
+      let el = $("#toastMini");
+      if (!el) {
+        el = document.createElement("div");
+        el.id = "toastMini";
+        el.className = "fixed bottom-4 left-1/2 -translate-x-1/2 z-[120] px-4 py-2 rounded-full border border-white/10 bg-black/60 text-sm text-white/85 backdrop-blur-xl";
+        document.body.appendChild(el);
+      }
+      el.textContent = msg;
+      el.style.opacity = "1";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { el.style.opacity = "0"; }, 1600);
+    };
+
+    // ---- scroll animations
+    let observer;
+    const initScrollAnimations = () => {
+      if (observer) observer.disconnect();
+      observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+
+      document.querySelectorAll(".animate-on-scroll").forEach(el => observer.observe(el));
+    };
+
+    // ---- particles
+    const createParticles = () => {
+      const container = $("#particles-container");
+      if (!container) return;
+      container.innerHTML = "";
+      for (let i = 0; i < 30; i++) {
+        const particle = document.createElement("span");
+        const size = 22 + (i % 6) * 12;
+        particle.className = "absolute rounded-full opacity-20 blur-2xl particle";
+        particle.style.cssText = `
+          width:${size}px;
+          height:${size}px;
+          background:${i % 3 ? "rgba(255,3,84,1)" : "rgba(79,70,229,1)"};
+          left:${Math.random() * 100}%;
+          top:${Math.random() * 100}%;
+          animation-duration:${10 + (i % 6)}s;
+          animation-delay:${i * 0.18}s;
+        `;
+        container.appendChild(particle);
+      }
+    };
+
+    // ---- scroll progress
+    const progressBar = $("#scroll-progress");
+    const updateProgress = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const p = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      progressBar.style.width = `${p}%`;
+    };
+
+    // ==========================================================
+    //  STOP — CZĘŚĆ 2/2 będzie zawierała:
+    //  - Pełną logikę Panelu (zakładki, zapis profilu, publikacja)
+    //  - Sklep (aktywacja promo/weryfikacji + wpływ na listę)
+    //  - Skrzynka (zapytania), Zgłoszenia
+    //  - Ulubione toggle, mobile search, eventy i klawisze (ESC)
+    //  - Render podglądu profilu w Panelu
+    //  - „Jak działa ranking?” (modal/info)
+    //  - Domknięcie init() oraz wszystkie handlery
+    // ==========================================================
+
+    // Napisz "2" — wkleję drugą połowę kodu.
   </script>
+
 </body>
 </html>
+<!-- STOP -->
