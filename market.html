@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Velorie Market — Katalog ogłoszeń</title>
-  <meta name="description" content="Velorie Market — katalog ogłoszeń freelancerów. Filtry, wyszukiwarka, modal profilu i panel użytkownika." />
+  <meta name="description" content="Velorie Market — katalog ogłoszeń freelancerów. Filtry, wyszukiwarka, profil, zapisane i panel konta." />
   <meta name="keywords" content="velorie market, freelancer, ogłoszenia, portfolio, katalog" />
   <meta name="theme-color" content="#0a1030" />
 
@@ -258,12 +258,13 @@
     .drawer{
       position: fixed;
       inset: 0 0 0 auto;
-      width: min(600px, 94vw);
+      width: min(650px, 94vw);
       z-index: 98;
       transform: translateX(110%);
       transition: transform .26s ease;
       display: flex;
       flex-direction: column;
+      border-left: 1px solid rgba(255,255,255,.10);
     }
     .drawer[data-open="true"]{ transform: translateX(0%); }
 
@@ -349,6 +350,31 @@
       box-shadow: 0 0 0 4px rgba(255,3,84,.16);
       border-radius: 16px;
     }
+
+    /* Active filter pills */
+    .pill {
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      padding:.45rem .7rem;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.07);
+      color: rgba(255,255,255,.86);
+      font-size: 12px;
+      line-height:1;
+      white-space: nowrap;
+    }
+    .pill button{
+      width:18px;height:18px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      background: rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);
+    }
+    .pill button:hover{ background: rgba(255,255,255,.14); }
   </style>
 
   <script>
@@ -377,20 +403,20 @@
         <img src="https://i.imgur.com/ikYb7tH.png" alt="Velorie" class="h-10 w-10 rounded-xl ring-1 ring-white/10" />
         <div class="leading-tight">
           <div class="text-lg font-black tracking-tight">Velorie Market</div>
-          <div class="text-xs text-white/60">Katalog ogłoszeń • Panel • Zapisane • Modal profilu</div>
+          <div class="text-xs text-white/60">Katalog ogłoszeń • Filtry • Zapisane • Profil</div>
         </div>
       </a>
 
       <div class="flex items-center gap-2">
-        <button id="btn-open-saved" class="btn btn-ghost px-4 py-2 text-sm" type="button" aria-label="Pokaż zapisane">
+        <button id="btn-open-saved" class="btn btn-ghost px-4 py-2 text-sm" type="button" aria-label="Włącz filtr: zapisane">
           <i data-lucide="bookmark" class="h-4 w-4"></i>
           <span>Zapisane</span>
           <span id="saved-pill" class="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs font-black">0</span>
         </button>
 
-        <button id="btn-open-panel" class="btn btn-ghost px-4 py-2 text-sm" type="button" aria-label="Otwórz panel użytkownika">
+        <button id="btn-open-panel" class="btn btn-ghost px-4 py-2 text-sm" type="button" aria-label="Otwórz konto">
           <i data-lucide="user" class="h-4 w-4"></i>
-          <span>Panel</span>
+          <span>Konto</span>
         </button>
       </div>
     </div>
@@ -407,11 +433,11 @@
         <div>
           <h1 class="text-3xl md:text-4xl font-black tracking-tight">Katalog ogłoszeń</h1>
           <p class="text-white/60 mt-2 max-w-2xl">
-            Wyszukuj, filtruj, zapisuj i otwieraj profile w modalu. Panel (drawer) służy do edycji Twojego profilu i ogłoszenia (demo).
+            Wyszukuj, filtruj, zapisuj i otwieraj profile. Panel konta służy do edycji profilu publicznego i ogłoszenia.
           </p>
 
           <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/60">
-            <span class="chip"><i data-lucide="shield" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Bez escrow</span>
+            <span class="chip"><i data-lucide="shield" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Kontakt bezpośredni</span>
             <span class="chip"><i data-lucide="sparkles" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Premium = wyróżnienie</span>
             <span class="chip"><i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Verified = zaufanie</span>
           </div>
@@ -440,77 +466,100 @@
       <!-- FILTERS BAR -->
       <div id="filters-bar" class="mt-6">
         <div class="glass rounded-2xl p-4">
-          <div class="grid lg:grid-cols-12 gap-3 items-end">
+          <div class="flex flex-col gap-4">
 
-            <!-- search -->
-            <div class="lg:col-span-4">
-              <label class="label">Szukaj</label>
-              <div class="relative">
-                <input id="search-input" class="input pr-10" placeholder="np. React, Branding, DevOps, Klaudia..." />
-                <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/55">
-                  <i data-lucide="search" class="h-4 w-4"></i>
+            <!-- Row 1: Search + Sort -->
+            <div class="grid lg:grid-cols-12 gap-3 items-end">
+              <div class="lg:col-span-6">
+                <label class="label">Szukaj</label>
+                <div class="relative">
+                  <input id="search-input" class="input pr-10" placeholder="Szukaj po nazwie, tagach, opisie..." />
+                  <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/55">
+                    <i data-lucide="search" class="h-4 w-4"></i>
+                  </div>
                 </div>
               </div>
-              <div class="mt-1 text-xs text-white/45">Szukamy w: nazwie, tagach, tagline i opisie.</div>
+
+              <div class="lg:col-span-3">
+                <label class="label">Branża</label>
+                <select id="industry-select" class="input">
+                  <option value="all">Wszystkie</option>
+                  <option value="dev">Programista</option>
+                  <option value="gfx">Grafik</option>
+                  <option value="video">Montażysta / Content</option>
+                  <option value="tech">Technik / DevOps</option>
+                  <option value="mc">Budowniczy Minecraft</option>
+                </select>
+              </div>
+
+              <div class="lg:col-span-3">
+                <label class="label">Sortowanie</label>
+                <select id="sort-select" class="input">
+                  <option value="recommended">Polecane</option>
+                  <option value="newest">Najnowsze</option>
+                  <option value="rating">Najwyższa ocena</option>
+                  <option value="verified">Zweryfikowani</option>
+                </select>
+              </div>
             </div>
 
-            <!-- industry -->
-            <div class="lg:col-span-3">
-              <label class="label">Branża</label>
-              <select id="industry-select" class="input">
-                <option value="all">Wszystkie</option>
-                <option value="dev">Programista</option>
-                <option value="gfx">Grafik</option>
-                <option value="video">Montażysta / Content</option>
-                <option value="tech">Technik / DevOps</option>
-                <option value="mc">Budowniczy Minecraft</option>
-              </select>
+            <!-- Row 2: Quick toggles + Budget -->
+            <div class="grid lg:grid-cols-12 gap-3 items-end">
+              <div class="lg:col-span-6">
+                <label class="label">Szybkie filtry</label>
+                <div class="flex flex-wrap gap-2">
+                  <button id="filter-saved" class="chip" type="button" aria-pressed="false">
+                    <i data-lucide="bookmark" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Zapisane
+                  </button>
+                  <button id="filter-premium" class="chip" type="button" aria-pressed="false">
+                    <i data-lucide="zap" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Premium
+                  </button>
+                  <button id="filter-verified" class="chip" type="button" aria-pressed="false">
+                    <i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Verified
+                  </button>
+                  <button id="filter-available" class="chip" type="button" aria-pressed="false">
+                    <i data-lucide="clock-3" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny ≤72h
+                  </button>
+                </div>
+              </div>
+
+              <div class="lg:col-span-6">
+                <label class="label">Budżet (PLN)</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <input id="budget-min" class="input" type="number" min="0" step="10" placeholder="Min. np. 100" />
+                  <input id="budget-max" class="input" type="number" min="0" step="10" placeholder="Max. np. 1000" />
+                </div>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <button class="chip" type="button" data-budget-preset="300">≤ 300</button>
+                  <button class="chip" type="button" data-budget-preset="500">≤ 500</button>
+                  <button class="chip" type="button" data-budget-preset="1000">≤ 1000</button>
+                  <button class="chip" type="button" data-budget-preset="0">Bez limitu</button>
+                </div>
+              </div>
             </div>
 
-            <!-- sort -->
-            <div class="lg:col-span-3">
-              <label class="label">Sortowanie</label>
-              <select id="sort-select" class="input">
-                <option value="recommended">Polecane (Premium/Verified/ocena/świeżość)</option>
-                <option value="newest">Najnowsze</option>
-                <option value="rating">Najlepsza ocena</option>
-                <option value="verified">Zweryfikowani</option>
-              </select>
-            </div>
+            <!-- Row 3: Active filters pills -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div class="text-xs text-white/60 flex items-center gap-2">
+                <i data-lucide="info" class="h-4 w-4"></i>
+                <span>Kontakt i rozliczenia odbywają się bezpośrednio między stronami.</span>
+              </div>
 
-            <!-- filters -->
-            <div class="lg:col-span-2">
-              <label class="label">Filtry</label>
-              <div class="flex flex-wrap gap-2">
-                <button id="filter-premium" class="chip" type="button" aria-pressed="false">
-                  <i data-lucide="zap" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Premium
+              <div class="flex items-center gap-2">
+                <div id="active-filters" class="hidden sm:flex flex-wrap gap-2 justify-end"></div>
+
+                <button id="btn-reset-filters" class="btn btn-outline px-3 py-2 text-xs" type="button">
+                  <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+                  Wyczyść
                 </button>
-                <button id="filter-verified" class="chip" type="button" aria-pressed="false">
-                  <i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Verified
-                </button>
-                <button id="filter-available" class="chip" type="button" aria-pressed="false">
-                  <i data-lucide="clock-3" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ≤72h
+
+                <button id="btn-open-panel-inline" class="btn btn-primary px-3 py-2 text-xs" type="button">
+                  <i data-lucide="sliders-horizontal" class="h-4 w-4"></i>
+                  Konto
                 </button>
               </div>
             </div>
-          </div>
 
-          <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-white/55">
-            <div class="flex items-center gap-2">
-              <i data-lucide="info" class="h-4 w-4"></i>
-              <span>Kontakt i rozliczenia poza platformą (bez escrow).</span>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <button id="btn-reset-filters" class="btn btn-outline px-3 py-2 text-xs" type="button">
-                <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
-                Reset
-              </button>
-              <button id="btn-open-panel-inline" class="btn btn-primary px-3 py-2 text-xs" type="button">
-                <i data-lucide="sliders-horizontal" class="h-4 w-4"></i>
-                Otwórz panel
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -540,7 +589,7 @@
         <div class="glass rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div class="flex items-center gap-2">
             <i data-lucide="sparkles" class="h-4 w-4 text-[var(--accent)]"></i>
-            <span>Velorie Market • demo front-only (localStorage)</span>
+            <span>Velorie Market • Platforma ogłoszeń freelancerów</span>
           </div>
           <div class="flex items-center gap-2">
             <span id="footer-year"></span>
@@ -602,10 +651,10 @@
           <div class="glass rounded-2xl p-4">
             <div class="text-sm font-black flex items-center gap-2">
               <i data-lucide="message-circle" class="h-4 w-4 text-[var(--accent)]"></i>
-              Kontakt (demo)
+              Kontakt
             </div>
             <p class="mt-2 text-sm text-white/70">
-              Tu w realu podpinasz kanały: Discord/e-mail/IG. W demie pokażemy przyciski “kopiuj”.
+              Wybierz preferowany kanał kontaktu. Dane możesz skopiować jednym kliknięciem.
             </p>
 
             <div class="mt-3 grid sm:grid-cols-2 gap-2">
@@ -622,7 +671,7 @@
             <div class="mt-4 divider"></div>
 
             <div class="mt-4 text-xs text-white/55">
-              Tip: Otwieranie profilu zapisuje się w URL jako <span class="text-white/70 font-semibold">#profile=ID</span>.
+              Tip: Możesz udostępniać link do profilu — adres zawiera <span class="text-white/70 font-semibold">#profile=ID</span>.
             </div>
           </div>
 
@@ -632,9 +681,9 @@
               Bezpieczeństwo
             </div>
             <ul class="mt-2 text-sm text-white/70 list-disc pl-5 space-y-1">
-              <li>Weryfikuj ofertę i ustalaj warunki na piśmie.</li>
-              <li>Nie wysyłaj kodów/hasła przed ustaleniem współpracy.</li>
-              <li>W razie podejrzeń — zgłaszaj.</li>
+              <li>Ustalaj warunki współpracy na piśmie.</li>
+              <li>Nie udostępniaj haseł ani kodów przed ustaleniem zasad.</li>
+              <li>W razie podejrzeń — zgłaszaj naruszenia.</li>
             </ul>
           </div>
         </div>
@@ -643,16 +692,16 @@
   </section>
 
   <!-- USER PANEL (drawer) -->
-  <aside id="user-panel" class="drawer glass-soft" data-open="false" aria-label="Panel użytkownika">
+  <aside id="user-panel" class="drawer glass-soft" data-open="false" aria-label="Panel konta">
     <div class="p-4 flex items-center justify-between gap-3 border-b border-white/10">
       <div class="flex items-center gap-3">
         <div class="avatar">
           <img id="panel-avatar" src="" alt="Ty" />
         </div>
         <div class="leading-tight">
-          <div class="font-black tracking-tight">Panel użytkownika</div>
+          <div class="font-black tracking-tight">Konto</div>
           <div class="text-xs text-white/60">
-            <span id="panel-username"></span> • <span id="panel-status">Zalogowany (demo)</span>
+            <span id="panel-username"></span> • <span id="panel-status">Aktywne konto</span>
           </div>
         </div>
       </div>
@@ -662,12 +711,22 @@
       </button>
     </div>
 
+    <div class="px-4 py-3 text-xs text-white/65 border-b border-white/10 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i data-lucide="circle-check" class="h-4 w-4 text-[var(--accent)]"></i>
+        <span id="save-status">Wszystko zapisane</span>
+      </div>
+      <div class="text-white/55">
+        Plan: <span id="plan-status" class="text-white/80 font-semibold">Standard</span>
+      </div>
+    </div>
+
     <!-- tabs -->
     <div class="p-4">
       <div class="grid grid-cols-2 gap-2">
         <button class="btn btn-ghost px-4 py-3" data-tab="edit" type="button">
           <i data-lucide="pencil" class="h-4 w-4"></i>
-          <span>Edytuj profil</span>
+          <span>Profil</span>
         </button>
         <button class="btn btn-ghost px-4 py-3" data-tab="preview" type="button">
           <i data-lucide="eye" class="h-4 w-4"></i>
@@ -679,7 +738,7 @@
         </button>
         <button class="btn btn-primary px-4 py-3" data-tab="shop" type="button">
           <i data-lucide="shopping-bag" class="h-4 w-4"></i>
-          <span>Sklep</span>
+          <span>Plany</span>
         </button>
       </div>
     </div>
@@ -687,14 +746,14 @@
     <div class="divider"></div>
 
     <!-- tab content -->
-    <div class="p-4 space-y-4 overflow-auto" style="height: calc(100vh - 190px);">
+    <div class="p-4 space-y-4 overflow-auto" style="height: calc(100vh - 230px);">
 
       <!-- EDIT PROFILE -->
       <section id="tab-edit" class="space-y-4">
         <div class="glass rounded-2xl p-5">
           <div class="font-black flex items-center gap-2">
             <i data-lucide="pencil" class="h-5 w-5 text-[var(--accent)]"></i>
-            Edytuj profil
+            Dane profilu
           </div>
 
           <div class="mt-4 grid sm:grid-cols-2 gap-3">
@@ -741,24 +800,24 @@
             </div>
 
             <div class="sm:col-span-2">
-              <label class="label">Link do avatara (URL)</label>
+              <label class="label">Avatar (URL)</label>
               <input id="edit-avatar-url" class="input" placeholder="https://..." />
-              <div class="mt-1 text-xs text-white/45">Zostaw puste aby zachować obecny.</div>
+              <div class="mt-1 text-xs text-white/45">Jeśli puste — zostaje obecny.</div>
             </div>
           </div>
 
           <div class="mt-4 flex flex-wrap items-center gap-2">
             <button id="btn-save-profile" class="btn btn-primary px-4 py-3" type="button">
               <i data-lucide="save" class="h-4 w-4"></i>
-              <span>Zapisz zmiany</span>
+              <span>Zapisz</span>
             </button>
             <button id="btn-reset-profile" class="btn btn-ghost px-4 py-3" type="button">
               <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
-              <span>Przywróć demo</span>
+              <span>Przywróć</span>
             </button>
             <button id="btn-open-me-modal" class="btn btn-outline px-4 py-3" type="button">
               <i data-lucide="external-link" class="h-4 w-4"></i>
-              <span>Zobacz mnie w modalu</span>
+              <span>Otwórz profil</span>
             </button>
           </div>
         </div>
@@ -769,7 +828,7 @@
             Portfolio (3 zdjęcia)
           </div>
           <p class="mt-2 text-sm text-white/70">
-            Widoczne w kafelku i w modalu profilu.
+            Widoczne w katalogu i w profilu.
           </p>
 
           <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -794,10 +853,10 @@
         <div class="glass rounded-2xl p-5">
           <div class="font-black flex items-center gap-2">
             <i data-lucide="eye" class="h-5 w-5 text-[var(--accent)]"></i>
-            Podgląd profilu (kafelek)
+            Podgląd profilu
           </div>
           <p class="mt-2 text-sm text-white/70">
-            To jest live preview na podstawie Twoich danych (me).
+            Ten podgląd pokazuje jak Twoja karta wygląda w katalogu.
           </p>
 
           <div class="mt-4" id="preview-card"></div>
@@ -809,10 +868,10 @@
         <div class="glass rounded-2xl p-5">
           <div class="font-black flex items-center gap-2">
             <i data-lucide="file-plus" class="h-5 w-5 text-[var(--accent)]"></i>
-            Twoje ogłoszenie (wizytówka)
+            Ogłoszenie
           </div>
           <p class="mt-2 text-sm text-white/70">
-            Ogłoszenie = Twój wpis w katalogu. Możesz opublikować lub ukryć.
+            Uzupełnij opis i opublikuj wizytówkę w katalogu.
           </p>
 
           <div class="mt-4 grid sm:grid-cols-2 gap-3">
@@ -831,12 +890,12 @@
             </div>
 
             <div class="sm:col-span-2">
-              <label class="label">Krótki opis (na kafelku)</label>
+              <label class="label">Krótki opis</label>
               <input id="listing-short" class="input" placeholder="2–3 zdania: co robisz i dla kogo." />
             </div>
 
             <div class="sm:col-span-2">
-              <label class="label">Dłuższy opis (w profilu)</label>
+              <label class="label">Dłuższy opis</label>
               <textarea id="listing-long" class="input" rows="6" placeholder="Szczegóły usług, proces, terminy, zasady..."></textarea>
             </div>
           </div>
@@ -847,8 +906,8 @@
               <span>Opublikuj / Zaktualizuj</span>
             </button>
             <button id="btn-unpublish" class="btn btn-outline px-4 py-3" type="button">
-              <i data-lucide="trash-2" class="h-4 w-4"></i>
-              <span>Ukryj z katalogu</span>
+              <i data-lucide="eye-off" class="h-4 w-4"></i>
+              <span>Ukryj</span>
             </button>
           </div>
         </div>
@@ -859,10 +918,10 @@
         <div class="glass rounded-2xl p-5">
           <div class="font-black flex items-center gap-2">
             <i data-lucide="shopping-bag" class="h-5 w-5 text-[var(--accent)]"></i>
-            Sklep usług
+            Plany i wyróżnienia
           </div>
           <p class="mt-2 text-sm text-white/70">
-            Subskrypcje miesięczne (logika demo). Aktywacja wpływa na pozycjonowanie i badge w katalogu.
+            Aktywny plan wpływa na widoczność oraz oznaczenia profilu w wynikach.
           </p>
 
           <div class="mt-4 space-y-3">
@@ -870,9 +929,9 @@
               <div class="flex items-start justify-between gap-3">
                 <div>
                   <div class="flex items-center gap-2">
-                    <span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium pozycjonowanie</span>
+                    <span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>
                   </div>
-                  <p class="mt-2 text-sm text-white/70">Wyżej w wynikach i wyróżnienie.</p>
+                  <p class="mt-2 text-sm text-white/70">Wyżej w wynikach i wyróżnienie profilu.</p>
                 </div>
                 <div class="text-right">
                   <div class="text-2xl font-black">23.99 PLN</div>
@@ -883,11 +942,11 @@
               <div class="mt-3 flex flex-col sm:flex-row gap-2">
                 <button id="buy-premium" class="btn btn-primary px-4 py-3" type="button">
                   <i data-lucide="credit-card" class="h-4 w-4"></i>
-                  <span>Kup premium</span>
+                  <span>Aktywuj</span>
                 </button>
                 <button id="cancel-premium" class="btn btn-outline px-4 py-3" type="button">
                   <i data-lucide="x-circle" class="h-4 w-4"></i>
-                  <span>Anuluj</span>
+                  <span>Wyłącz</span>
                 </button>
               </div>
             </div>
@@ -896,9 +955,9 @@
               <div class="flex items-start justify-between gap-3">
                 <div>
                   <div class="flex items-center gap-2">
-                    <span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Weryfikacja konta</span>
+                    <span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>
                   </div>
-                  <p class="mt-2 text-sm text-white/70">Znaczek Verified w katalogu.</p>
+                  <p class="mt-2 text-sm text-white/70">Oznaczenie zaufanego profilu.</p>
                 </div>
                 <div class="text-right">
                   <div class="text-2xl font-black">19.55 PLN</div>
@@ -909,17 +968,17 @@
               <div class="mt-3 flex flex-col sm:flex-row gap-2">
                 <button id="buy-verify" class="btn btn-primary px-4 py-3" type="button">
                   <i data-lucide="badge-check" class="h-4 w-4"></i>
-                  <span>Kup weryfikację</span>
+                  <span>Aktywuj</span>
                 </button>
                 <button id="cancel-verify" class="btn btn-outline px-4 py-3" type="button">
                   <i data-lucide="x-circle" class="h-4 w-4"></i>
-                  <span>Anuluj</span>
+                  <span>Wyłącz</span>
                 </button>
               </div>
             </div>
 
             <div class="text-xs text-white/55">
-              (To jest demo — w realu tu podpinasz Stripe/BLIK/P24.)
+              Zarządzanie subskrypcją i płatnościami jest dostępne z poziomu konta.
             </div>
           </div>
         </div>
@@ -929,15 +988,13 @@
 
 <script>
 /**
- * Velorie Market (v2) — Katalog + Panel + Modal profilu
- * Ulepszenia:
+ * Velorie Market — Katalog + Konto + Profil
  * - wyszukiwarka (debounce)
- * - modal profilu (hash #profile=ID + next/prev + ESC)
- * - zapisane (zakładka)
- * - lepsze sortowanie + filtrowanie
- * - skeleton loading + lepsze toasty
- * - a11y: focus, aria, klawiatura
- * - preview w panelu (live)
+ * - filtry: Premium/Verified/≤72h/Zapisane + budżet min/max + presety
+ * - aktywne filtry jako pill chips (z X)
+ * - modal profilu: hash #profile=ID + next/prev + ESC + focus trap
+ * - konto: edycja profilu + autosave + podgląd + ogłoszenie + plany
+ * - zapisane + profile w localStorage
  */
 
 (() => {
@@ -969,6 +1026,8 @@
       t = setTimeout(() => fn(...args), delay);
     };
   }
+
+  const setSaveStatus = (txt) => { $("#save-status") && ($("#save-status").textContent = txt); };
 
   /* ------------------------------ toast ------------------------------ */
   const Toast = (() => {
@@ -1023,10 +1082,10 @@
 
   /* ----------------------------- storage ----------------------------- */
   const LS = {
-    keyProfiles: "vm_profiles_v1",
-    keySaved: "vm_saved_v1",
-    keySubs: "vm_subs_v1",
-    keyMe: "vm_me_v1",
+    keyProfiles: "vm_profiles_v2",
+    keySaved: "vm_saved_v2",
+    keySubs: "vm_subs_v2",
+    keyMe: "vm_me_v2",
     getProfiles() {
       const v = localStorage.getItem(this.keyProfiles);
       return safeJSON.parse(v, null);
@@ -1058,7 +1117,7 @@
     }
   };
 
-  /* ----------------------------- demo data ---------------------------- */
+  /* ----------------------------- seed data ---------------------------- */
   const FALLBACK_PROFILES = [
     {
       id: "p1",
@@ -1133,17 +1192,17 @@
         id: "me",
         name: "zxq0",
         industry: "dev",
-        about: "",
+        about: "Tworzę produkty web, automatyzacje i integracje. Działam szybko i konkretnie.",
         availability: "48h",
         minBudget: 300,
         tags: ["React", "Node", "API", "Automatyzacje"],
         avatar: "https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop",
         portfolio: ["", "", ""],
         listing: {
-          title: "",
+          title: "Programista React/Node — szybkie MVP",
           contactMain: "Discord",
-          short: "",
-          long: "",
+          short: "Buduję MVP, dashboardy i integracje. Szybkie iteracje i konkretne wdrożenia.",
+          long: "Zakres → prototyp → wdrożenie. Integracje API, panele, automatyzacje, deployment.\n\nUstalamy cele i deadline, pracuję iteracyjnie.",
           published: true
         }
       });
@@ -1162,6 +1221,9 @@
     availableOnly: false,
     savedOnly: false,
     sort: "recommended",
+    budgetMin: null,
+    budgetMax: null,
+
     pageSize: 6,
     shown: 0,
     lastRenderToken: 0,
@@ -1226,11 +1288,8 @@
     setOverlay(open || ($("#user-panel")?.dataset.open === "true"));
     document.body.style.overflow = (open || $("#user-panel")?.dataset.open === "true") ? "hidden" : "";
 
-    // focus management
-    if (open) {
-      setTimeout(() => $("#modal-close")?.focus(), 0);
-    } else {
-      // restore focus
+    if (open) setTimeout(() => $("#modal-close")?.focus(), 0);
+    else {
       const el = state.lastFocus;
       if (el && typeof el.focus === "function") el.focus();
     }
@@ -1252,7 +1311,7 @@
   }
 
   function openProfileModalById(id, list) {
-    const profiles = list || getFilteredProfiles(true); // use full list (not paginated) for prev/next
+    const profiles = list || getFilteredProfiles(true);
     const idx = profiles.findIndex(p => p.id === id);
     if (idx === -1) {
       Toast.push("Nie znaleziono profilu.", "alert-triangle");
@@ -1319,7 +1378,6 @@
     $("#btn-open-panel-inline")?.addEventListener("click", () => setPanelOpen(true));
     $("#btn-close-panel")?.addEventListener("click", () => setPanelOpen(false));
     $("#overlay")?.addEventListener("click", () => {
-      // if modal open, close modal first
       if (state.modalOpen) closeProfileModal();
       else setPanelOpen(false);
     });
@@ -1380,9 +1438,66 @@
       });
     };
 
+    toggleChip("#filter-saved", "savedOnly");
     toggleChip("#filter-premium", "premiumOnly");
     toggleChip("#filter-verified", "verifiedOnly");
     toggleChip("#filter-available", "availableOnly");
+
+    // header shortcut: toggles saved filter + sync chip
+    $("#btn-open-saved")?.addEventListener("click", () => {
+      state.savedOnly = !state.savedOnly;
+      const el = $("#filter-saved");
+      if (el) {
+        el.dataset.active = state.savedOnly ? "true" : "false";
+        el.setAttribute("aria-pressed", state.savedOnly ? "true" : "false");
+      }
+      resetPagination();
+      render();
+      Toast.push(state.savedOnly ? "Filtr: zapisane" : "Wyłączono filtr: zapisane", "bookmark");
+    });
+
+    // budget
+    const onBudget = debounce(() => {
+      const minRaw = $("#budget-min")?.value ?? "";
+      const maxRaw = $("#budget-max")?.value ?? "";
+
+      const minV = Number(minRaw);
+      const maxV = Number(maxRaw);
+
+      state.budgetMin = (minRaw !== "" && Number.isFinite(minV)) ? Math.max(0, minV) : null;
+      state.budgetMax = (maxRaw !== "" && Number.isFinite(maxV)) ? Math.max(0, maxV) : null;
+
+      // if both set and invalid order, swap
+      if (state.budgetMin != null && state.budgetMax != null && state.budgetMin > state.budgetMax) {
+        const t = state.budgetMin;
+        state.budgetMin = state.budgetMax;
+        state.budgetMax = t;
+        $("#budget-min") && ($("#budget-min").value = String(state.budgetMin));
+        $("#budget-max") && ($("#budget-max").value = String(state.budgetMax));
+      }
+
+      resetPagination();
+      render();
+    }, 220);
+
+    $("#budget-min")?.addEventListener("input", onBudget);
+    $("#budget-max")?.addEventListener("input", onBudget);
+
+    $$("[data-budget-preset]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const v = Number(btn.dataset.budgetPreset || 0);
+        const max = $("#budget-max");
+        const min = $("#budget-min");
+        if (v <= 0) {
+          if (min) min.value = "";
+          if (max) max.value = "";
+        } else {
+          if (min) min.value = "";
+          if (max) max.value = String(v);
+        }
+        onBudget();
+      });
+    });
 
     $("#btn-reset-filters")?.addEventListener("click", () => {
       state.q = "";
@@ -1392,6 +1507,8 @@
       state.availableOnly = false;
       state.savedOnly = false;
       state.sort = "recommended";
+      state.budgetMin = null;
+      state.budgetMax = null;
 
       const industry = $("#industry-select");
       const sort = $("#sort-select");
@@ -1400,7 +1517,10 @@
       if (sort) sort.value = "recommended";
       if (q) q.value = "";
 
-      ["#filter-premium", "#filter-verified", "#filter-available"].forEach((id) => {
+      $("#budget-min") && ($("#budget-min").value = "");
+      $("#budget-max") && ($("#budget-max").value = "");
+
+      ["#filter-saved","#filter-premium", "#filter-verified", "#filter-available"].forEach((id) => {
         const el = $(id);
         if (!el) return;
         el.dataset.active = "false";
@@ -1409,19 +1529,12 @@
 
       resetPagination();
       render();
-      Toast.push("Zresetowano filtry.", "rotate-ccw");
+      Toast.push("Wyczyszczono filtry.", "rotate-ccw");
     });
 
     $("#btn-load-more")?.addEventListener("click", () => {
       state.shown += state.pageSize;
       renderList();
-    });
-
-    $("#btn-open-saved")?.addEventListener("click", () => {
-      state.savedOnly = !state.savedOnly;
-      resetPagination();
-      render();
-      Toast.push(state.savedOnly ? "Pokażę tylko zapisane." : "Wrócono do wszystkich.", "bookmark");
     });
   }
 
@@ -1449,8 +1562,6 @@
     const verified = p.verified ? 1 : 0;
     const rating = Number(p.rating || 0);
     const recency = typeof p.createdAt === "number" ? p.createdAt : 0;
-
-    // wagi (bardziej sensowne)
     return premium * 4 + verified * 2.2 + rating * 1.2 + recency / 1e12;
   }
 
@@ -1459,16 +1570,15 @@
     const savedSet = LS.getSaved();
     let out = profiles.slice();
 
-    // saved only
     if (state.savedOnly) out = out.filter(p => savedSet.has(p.id));
-
-    // industry
     if (state.industry !== "all") out = out.filter((p) => p.industry === state.industry);
-
-    // quick filters
     if (state.premiumOnly) out = out.filter((p) => !!p.premium);
     if (state.verifiedOnly) out = out.filter((p) => !!p.verified);
     if (state.availableOnly) out = out.filter((p) => parseAvailableHours(p.availableIn) <= 72);
+
+    // budget
+    if (state.budgetMin != null) out = out.filter(p => Number(p.minBudget || 0) >= state.budgetMin);
+    if (state.budgetMax != null) out = out.filter(p => Number(p.minBudget || 0) <= state.budgetMax);
 
     // search
     if (state.q) {
@@ -1483,19 +1593,13 @@
     }
 
     // sorting
-    if (state.sort === "newest") {
-      out.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    } else if (state.sort === "rating") {
-      out.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    } else if (state.sort === "verified") {
-      out.sort((a, b) => Number(!!b.verified) - Number(!!a.verified));
-    } else {
-      out.sort((a, b) => scoreRecommended(b) - scoreRecommended(a));
-    }
+    if (state.sort === "newest") out.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    else if (state.sort === "rating") out.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    else if (state.sort === "verified") out.sort((a, b) => Number(!!b.verified) - Number(!!a.verified));
+    else out.sort((a, b) => scoreRecommended(b) - scoreRecommended(a));
 
     if (ignorePagination) return out;
 
-    // pagination
     if (state.shown <= 0) state.shown = state.pageSize;
     return out.slice(0, state.shown);
   }
@@ -1592,6 +1696,59 @@
     `).join("");
   }
 
+  function renderActiveFiltersPills() {
+    const wrap = $("#active-filters");
+    if (!wrap) return;
+
+    const pills = [];
+    const actions = [];
+
+    const add = (label, onClear) => {
+      pills.push(`
+        <span class="pill">
+          ${escapeHTML(label)}
+          <button type="button" aria-label="Usuń filtr">×</button>
+        </span>
+      `);
+      actions.push(onClear);
+    };
+
+    if (state.q) add(`Szukaj: ${state.q}`, () => { state.q=""; $("#search-input").value=""; });
+    if (state.industry !== "all") add(`Branża: ${state.industry}`, () => { state.industry="all"; $("#industry-select").value="all"; });
+    if (state.premiumOnly) add("Premium", () => { state.premiumOnly=false; const el=$("#filter-premium"); el.dataset.active="false"; el.setAttribute("aria-pressed","false"); });
+    if (state.verifiedOnly) add("Verified", () => { state.verifiedOnly=false; const el=$("#filter-verified"); el.dataset.active="false"; el.setAttribute("aria-pressed","false"); });
+    if (state.availableOnly) add("≤72h", () => { state.availableOnly=false; const el=$("#filter-available"); el.dataset.active="false"; el.setAttribute("aria-pressed","false"); });
+    if (state.savedOnly) add("Zapisane", () => { state.savedOnly=false; const el=$("#filter-saved"); el.dataset.active="false"; el.setAttribute("aria-pressed","false"); });
+    if (state.budgetMin != null || state.budgetMax != null) {
+      add(`Budżet: ${state.budgetMin ?? 0}–${state.budgetMax ?? "∞"} PLN`, () => {
+        state.budgetMin=null; state.budgetMax=null;
+        $("#budget-min").value=""; $("#budget-max").value="";
+      });
+    }
+
+    if (!pills.length) {
+      wrap.classList.add("hidden");
+      wrap.innerHTML = "";
+      return;
+    }
+
+    wrap.classList.remove("hidden");
+    wrap.innerHTML = pills.join("");
+
+    const nodes = $$(".pill", wrap);
+    nodes.forEach((node, i) => {
+      const btn = node.querySelector("button");
+      const act = actions[i];
+      if (btn && act) {
+        btn.addEventListener("click", () => {
+          act();
+          resetPagination();
+          render();
+        });
+      }
+    });
+  }
+
   function renderList() {
     const listEl = $("#profiles-list");
     if (!listEl) return;
@@ -1599,7 +1756,6 @@
     const token = ++state.lastRenderToken;
     listEl.innerHTML = skeletonHTML(3);
 
-    // emulate tiny render delay (makes skeleton feel real, also prevents jank)
     setTimeout(() => {
       if (token !== state.lastRenderToken) return;
 
@@ -1611,22 +1767,23 @@
       $("#total-count") && ($("#total-count").textContent = String(total));
       $("#shown-count") && ($("#shown-count").textContent = String(shownList.length));
 
-      // stats
       const filtersCount =
         Number(!!state.q) +
         Number(state.industry !== "all") +
         Number(state.premiumOnly) +
         Number(state.verifiedOnly) +
         Number(state.availableOnly) +
-        Number(state.savedOnly);
+        Number(state.savedOnly) +
+        Number(state.budgetMin != null || state.budgetMax != null);
 
       $("#stat-results") && ($("#stat-results").textContent = String(total));
       $("#stat-saved") && ($("#stat-saved").textContent = String(saved.size));
       $("#stat-filters") && ($("#stat-filters").textContent = String(filtersCount));
 
       $("#saved-pill") && ($("#saved-pill").textContent = String(saved.size));
-
       $("#results-hint") && ($("#results-hint").textContent = state.savedOnly ? "• tryb: zapisane" : "");
+
+      renderActiveFiltersPills();
 
       if (!shownList.length) {
         listEl.innerHTML = `
@@ -1635,7 +1792,7 @@
               <i data-lucide="search-x" class="h-5 w-5 text-[var(--accent)]"></i>
               Brak wyników
             </div>
-            <p class="mt-2 text-sm text-white/70">Spróbuj zmienić filtry albo wyszukiwane hasło.</p>
+            <p class="mt-2 text-sm text-white/70">Zmień filtry lub wyszukiwane hasło.</p>
           </div>
         `;
         try { lucide.createIcons(); } catch {}
@@ -1644,7 +1801,6 @@
 
       listEl.innerHTML = shownList.map((p) => profileCardHTML(p, saved)).join("");
 
-      // bind save buttons
       $$(".btn-save", listEl).forEach((btn) => {
         btn.addEventListener("click", () => {
           const id = btn.dataset.save;
@@ -1662,7 +1818,6 @@
         });
       });
 
-      // bind open profile
       $$("[data-open]", listEl).forEach((btn) => {
         btn.addEventListener("click", () => {
           const id = btn.dataset.open;
@@ -1671,7 +1826,6 @@
         });
       });
 
-      // load more button
       const loadMore = $("#btn-load-more");
       if (loadMore) loadMore.style.display = (state.shown < total) ? "inline-flex" : "none";
 
@@ -1715,7 +1869,6 @@
     const about = (p.about || p.listing?.long || p.listing?.short || p.tagline || "Brak opisu.").trim();
     $("#modal-about") && ($("#modal-about").textContent = about);
 
-    // buttons
     $("#btn-copy-name")?.addEventListener("click", () => {
       navigator.clipboard?.writeText(p.name || "").then(
         () => Toast.push("Skopiowano nick.", "copy"),
@@ -1755,7 +1908,6 @@
     $("#panel-username") && ($("#panel-username").textContent = me.name || "Użytkownik");
     $("#panel-avatar") && ($("#panel-avatar").src = me.avatar || "");
 
-    // edit fields
     $("#edit-name") && ($("#edit-name").value = me.name || "");
     $("#edit-industry") && ($("#edit-industry").value = me.industry || "dev");
     $("#edit-about") && ($("#edit-about").value = me.about || "");
@@ -1764,19 +1916,18 @@
     $("#edit-tags") && ($("#edit-tags").value = (me.tags || []).join(", "));
     $("#edit-avatar-url") && ($("#edit-avatar-url").value = "");
 
-    // portfolio
     $("#edit-portfolio-1") && ($("#edit-portfolio-1").value = me.portfolio?.[0] || "");
     $("#edit-portfolio-2") && ($("#edit-portfolio-2").value = me.portfolio?.[1] || "");
     $("#edit-portfolio-3") && ($("#edit-portfolio-3").value = me.portfolio?.[2] || "");
 
-    // listing
     $("#listing-title") && ($("#listing-title").value = me.listing?.title || "");
     $("#listing-contact-main") && ($("#listing-contact-main").value = me.listing?.contactMain || "Discord");
     $("#listing-short") && ($("#listing-short").value = me.listing?.short || "");
     $("#listing-long") && ($("#listing-long").value = me.listing?.long || "");
 
-    // subs (shop)
     const subs = LS.getSubs();
+    $("#plan-status") && ($("#plan-status").textContent = subs.premium ? "Premium" : (subs.verified ? "Verified" : "Standard"));
+
     const buyP = $("#buy-premium");
     const cancelP = $("#cancel-premium");
     const buyV = $("#buy-verify");
@@ -1793,7 +1944,6 @@
       b.classList.toggle("pointer-events-none", b.disabled);
     });
 
-    // preview
     renderPreviewCard();
   }
 
@@ -1828,7 +1978,8 @@
       verified: !!subs.verified,
       avatar: me.avatar || "",
       portfolio: (me.portfolio || ["", "", ""]).slice(0, 3),
-      createdAt: now()
+      createdAt: now(),
+      listing: me.listing ? { ...me.listing } : undefined
     };
 
     const profiles = LS.getProfiles() || [];
@@ -1880,7 +2031,7 @@
     const wrap = $("#preview-card");
     if (wrap) {
       wrap.innerHTML = html;
-      // bind
+
       $$("[data-open]", wrap).forEach(btn => btn.addEventListener("click", () => openProfileModalById("me")));
       $$(".btn-save", wrap).forEach(btn => btn.addEventListener("click", () => {
         const set = LS.getSaved();
@@ -1891,6 +2042,7 @@
         renderPreviewCard();
         renderList();
       }));
+
       try { lucide.createIcons(); } catch {}
     }
   }
@@ -1939,6 +2091,7 @@
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
+      setSaveStatus("Wszystko zapisane");
       Toast.push("Zapisano profil.", "save");
     });
 
@@ -1949,7 +2102,8 @@
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      Toast.push("Przywrócono domyślne dane (demo).", "rotate-ccw");
+      setSaveStatus("Wszystko zapisane");
+      Toast.push("Przywrócono domyślne dane.", "rotate-ccw");
     });
   }
 
@@ -1959,9 +2113,12 @@
       if (!me) return;
 
       const title = ($("#listing-title")?.value || "").trim();
-      const contactMain = $("#listing-contact-main")?.value || "Discord";
       const short = ($("#listing-short")?.value || "").trim();
       const long = ($("#listing-long")?.value || "").trim();
+      const contactMain = $("#listing-contact-main")?.value || "Discord";
+
+      if (title.length < 6) { Toast.push("Uzupełnij tytuł (min. 6 znaków).", "alert-triangle"); $("#listing-title")?.focus(); return; }
+      if (short.length < 12) { Toast.push("Uzupełnij krótki opis (min. 12 znaków).", "alert-triangle"); $("#listing-short")?.focus(); return; }
 
       me.listing = { ...(me.listing || {}), title, contactMain, short, long, published: true };
       LS.setMe(me);
@@ -1982,7 +2139,7 @@
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      Toast.push("Ogłoszenie ukryte w katalogu.", "trash-2");
+      Toast.push("Ogłoszenie ukryte w katalogu.", "eye-off");
     });
   }
 
@@ -1995,7 +2152,7 @@
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      Toast.push("Premium aktywowane (demo).", "zap");
+      Toast.push("Premium aktywne.", "zap");
     });
 
     $("#cancel-premium")?.addEventListener("click", () => {
@@ -2006,7 +2163,7 @@
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      Toast.push("Premium anulowane (demo).", "x-circle");
+      Toast.push("Premium wyłączone.", "x-circle");
     });
 
     $("#buy-verify")?.addEventListener("click", () => {
@@ -2017,7 +2174,7 @@
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      Toast.push("Weryfikacja aktywowana (demo).", "badge-check");
+      Toast.push("Verified aktywne.", "badge-check");
     });
 
     $("#cancel-verify")?.addEventListener("click", () => {
@@ -2028,7 +2185,7 @@
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      Toast.push("Weryfikacja anulowana (demo).", "x-circle");
+      Toast.push("Verified wyłączone.", "x-circle");
     });
   }
 
@@ -2037,8 +2194,7 @@
     renderPanelFromMe();
     upsertMeIntoProfiles();
     renderList();
-
-    // footer year
+    renderActiveFiltersPills();
     $("#footer-year") && ($("#footer-year").textContent = String(new Date().getFullYear()));
   }
 
@@ -2058,9 +2214,21 @@
     switchTab("shop");
 
     // initial chip states
-    ["#filter-premium", "#filter-verified", "#filter-available"].forEach(id => {
+    ["#filter-saved","#filter-premium", "#filter-verified", "#filter-available"].forEach(id => {
       const el = $(id);
       if (el) el.dataset.active = "false";
+    });
+
+    // Autosave for profile fields
+    const autosave = debounce(() => {
+      $("#btn-save-profile")?.click();
+    }, 700);
+
+    ["#edit-name","#edit-about","#edit-tags","#edit-avatar-url","#edit-budget","#edit-portfolio-1","#edit-portfolio-2","#edit-portfolio-3"].forEach(sel=>{
+      $(sel)?.addEventListener("input", () => { setSaveStatus("Zmieniono — zapisuję…"); autosave(); });
+    });
+    ["#edit-industry","#edit-availability"].forEach(sel=>{
+      $(sel)?.addEventListener("change", () => { setSaveStatus("Zmieniono — zapisuję…"); autosave(); });
     });
 
     render();
@@ -2069,10 +2237,7 @@
 
     // open modal if hash provided
     const pid = getHashProfileId();
-    if (pid) {
-      // wait one tick so list is ready
-      setTimeout(() => openProfileModalById(pid), 150);
-    }
+    if (pid) setTimeout(() => openProfileModalById(pid), 150);
   });
 })();
 </script>
