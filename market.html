@@ -1,1 +1,1633 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Velorie Market — Ogłoszenia freelancerów</title>
+  <meta name="description" content="Velorie Market — platforma ogłoszeniowa freelancerów. Profile, portfolio, kontakt poza platformą, sklep: pozycjonowanie i weryfikacja." />
+  <meta name="keywords" content="velorie market, freelancer, ogłoszenia, portfolio, programista, grafik, montażysta, technik, minecraft builder" />
+  <meta name="theme-color" content="#0a1030" />
+
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script type="application/ld+json" id="schema-json"></script>
+
+  <style>
+    :root{
+      --accent:#ff0354;
+      --bg0:#00010f;
+      --bg1:#0a1030;
+      --glass: rgba(255,255,255,.06);
+      --glass2: rgba(255,255,255,.08);
+      --border: rgba(255,255,255,.10);
+      --muted: rgba(255,255,255,.68);
+      --muted2: rgba(255,255,255,.56);
+      --shadow: 0 10px 50px rgba(0,0,0,.45);
+      --shadow2: 0 10px 40px rgba(255,3,84,.28);
+      --ring: 0 0 0 1px rgba(255,255,255,.10) inset;
+    }
+
+    html { scroll-behavior: smooth; }
+    body{
+      background-color: var(--bg0);
+      background-image:
+        radial-gradient(1200px 600px at 80% -10%, var(--bg1) 0%, #050919 35%, var(--bg0) 65%, #000000 100%),
+        radial-gradient(900px 500px at 15% 110%, rgba(255,3,84,.20) 0%, rgba(255,3,84,0) 60%),
+        radial-gradient(800px 500px at 95% 90%, rgba(79,70,229,.20) 0%, rgba(79,70,229,0) 60%);
+    }
+
+    /* scrollbars */
+    ::-webkit-scrollbar{ width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb{ background: var(--accent); border-radius: 999px; }
+    ::-webkit-scrollbar-track{ background: rgba(255,255,255,.08); }
+
+    /* progress bar */
+    #scroll-progress{
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: 2px;
+      width: 0%;
+      background: var(--accent);
+      z-index: 70;
+      box-shadow: 0 10px 30px rgba(255,3,84,.35);
+    }
+
+    /* subtle noise */
+    .noise::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      opacity:.06;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='190' height='190'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='190' height='190' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+      background-size: 190px 190px;
+    }
+
+    /* animated grid */
+    .grid-bg{
+      position:absolute;
+      inset:-1px;
+      pointer-events:none;
+      opacity:.18;
+      background-image:
+        linear-gradient(to right, rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(60% 60% at 50% 40%, black 0%, transparent 70%);
+      animation: gridFloat 14s ease-in-out infinite;
+    }
+    @keyframes gridFloat{
+      0%,100%{ transform: translateY(0px); }
+      50%{ transform: translateY(10px); }
+    }
+
+    /* particles */
+    @keyframes particle-animation{
+      0%,100%{ transform: translateY(0%) translateX(0%) rotate(0deg); }
+      50%{ transform: translateY(-10%) translateX(5%) rotate(20deg); }
+    }
+    .particle{ animation-name: particle-animation; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+
+    /* reveal */
+    .animate-on-scroll{
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .55s ease, transform .55s ease;
+      will-change: opacity, transform;
+    }
+    .animate-on-scroll.is-visible{ opacity: 1; transform: translateY(0); }
+
+    /* glass surfaces */
+    .glass{
+      background: var(--glass);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .glass-soft{
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 10px 40px rgba(0,0,0,.45);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    /* chips */
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      padding: .35rem .6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      color: rgba(255,255,255,.78);
+      font-size: 12px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    /* buttons */
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.5rem;
+      border-radius: 14px;
+      padding: .8rem 1rem;
+      font-weight: 700;
+      transition: transform .15s ease, filter .15s ease, background .15s ease;
+      user-select:none;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn-primary{
+      background: var(--accent);
+      color: #0b0010;
+      box-shadow: 0 10px 40px rgba(255,3,84,.35);
+    }
+    .btn-primary:hover{ filter: brightness(1.08); }
+    .btn-ghost{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.92);
+    }
+    .btn-ghost:hover{ background: rgba(255,255,255,.10); }
+    .btn-outline{
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.14);
+      color: rgba(255,255,255,.92);
+    }
+    .btn-outline:hover{ background: rgba(255,255,255,.06); }
+
+    /* badge */
+    .badge-verified{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      font-size: 12px;
+      font-weight: 800;
+      padding: .25rem .55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(79,70,229,.14);
+      color: rgba(255,255,255,.92);
+    }
+    .badge-premium{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      font-size: 12px;
+      font-weight: 800;
+      padding: .25rem .55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,3,84,.16);
+      color: rgba(255,255,255,.92);
+    }
+
+    /* portfolio thumbs */
+    .thumb{
+      border-radius: 14px;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      box-shadow: 0 10px 30px rgba(0,0,0,.28);
+    }
+    .thumb img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display:block;
+      transform: scale(1.02);
+      transition: transform .35s ease;
+    }
+    .thumb:hover img{ transform: scale(1.07); }
+
+    /* horizontal profile card */
+    .profile-card{
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 10px 45px rgba(0,0,0,.40);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+    }
+    .profile-card:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.14);
+    }
+    .avatar{
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 10px 25px rgba(0,0,0,.35);
+      flex: 0 0 auto;
+      background: rgba(255,255,255,.06);
+    }
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    /* modal + drawer shells (JS later) */
+    .overlay{
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+    }
+    .overlay[data-open="true"]{ display: block; }
+
+    .modal{
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal[data-open="true"]{ display:flex; }
+
+    .modal-card{
+      width: min(1080px, 100%);
+      max-height: min(78vh, 860px);
+      overflow: auto;
+      border-radius: 26px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(10, 10, 18, .72);
+      box-shadow: 0 30px 120px rgba(0,0,0,.65);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .drawer{
+      position: fixed;
+      inset: 0 0 0 auto;
+      width: min(560px, 92vw);
+      z-index: 95;
+      transform: translateX(110%);
+      transition: transform .26s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .drawer[data-open="true"]{ transform: translateX(0%); }
+
+    .divider{
+      height: 1px;
+      background: rgba(255,255,255,.10);
+    }
+
+    /* inputs */
+    .input{
+      width: 100%;
+      border-radius: 14px;
+      padding: .75rem .9rem;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.92);
+      outline: none;
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .input:focus{
+      border-color: rgba(255,3,84,.55);
+      background: rgba(255,255,255,.08);
+    }
+    .label{
+      font-size: 12px;
+      color: rgba(255,255,255,.65);
+      margin-bottom: .35rem;
+      display:block;
+    }
+
+    /* small helper */
+    .muted{ color: rgba(255,255,255,.68); }
+    .muted2{ color: rgba(255,255,255,.56); }
+    .kpi{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      padding: 14px 14px;
+      text-align:center;
+    }
+  </style>
+
+  <script>
+    // (opcjonalnie) Tailwind extend — bez JS logiki
+    tailwind.config = {
+      theme: {
+        extend: {
+          boxShadow: {
+            glow: "0 10px 40px rgba(255,3,84,0.45)"
+          }
+        }
+      }
+    };
+  </script>
+</head>
+
+<body class="min-h-screen text-white selection:bg-[#ff0354]/40 selection:text-white">
+  <div id="scroll-progress" aria-hidden="true"></div>
+
+  <!-- BACKGROUND LAYERS -->
+  <div class="pointer-events-none fixed inset-0 -z-10 noise">
+    <div class="grid-bg"></div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-black/20 border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-3">
+      <a href="#top" class="flex items-center gap-3">
+        <img src="https://i.imgur.com/ikYb7tH.png" alt="Velorie" class="h-10 w-10 rounded-xl ring-1 ring-white/10" />
+        <div class="leading-tight">
+          <div class="text-lg font-semibold tracking-tight">Velorie Market</div>
+          <div class="text-xs text-white/60">Platforma ogłoszeniowa • Profile + portfolio</div>
+        </div>
+      </a>
+
+      <nav class="hidden lg:flex items-center gap-1 text-sm text-white/70">
+        <a href="#katalog" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">Katalog</a>
+        <a href="#jak-to-dziala" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">Jak to działa</a>
+        <a href="#funkcje" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">Funkcje</a>
+        <a href="#bezpieczenstwo" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">Zasady</a>
+        <a href="#faq" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">FAQ</a>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <button id="btn-open-panel" class="hidden sm:inline-flex items-center gap-2 rounded-xl bg-white/5 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition border border-white/10">
+          <i data-lucide="user" class="h-4 w-4"></i>
+          <span>Panel</span>
+        </button>
+
+        <a href="#kontakt" class="hidden md:inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition">
+          <i data-lucide="mail" class="h-4 w-4"></i>
+          <span>Kontakt</span>
+        </a>
+
+        <button id="btn-open-mobile" class="lg:hidden inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition">
+          <i data-lucide="menu" class="h-4 w-4"></i>
+          <span>Menu</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MOBILE MENU (drawer shell, JS later) -->
+  <div id="overlay" class="overlay" data-open="false" aria-hidden="true"></div>
+
+  <aside id="mobile-drawer" class="drawer glass-soft" data-open="false" aria-label="Menu mobilne">
+    <div class="p-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="https://i.imgur.com/ikYb7tH.png" alt="Velorie" class="h-9 w-9 rounded-xl ring-1 ring-white/10" />
+        <div class="leading-tight">
+          <div class="font-semibold">Velorie Market</div>
+          <div class="text-xs text-white/60">Menu</div>
+        </div>
+      </div>
+      <button id="btn-close-mobile" class="btn btn-ghost px-3 py-2">
+        <i data-lucide="x" class="h-4 w-4"></i>
+        <span>Zamknij</span>
+      </button>
+    </div>
+    <div class="divider"></div>
+    <div class="p-4 space-y-2 text-sm text-white/80">
+      <a href="#katalog" class="block rounded-xl border border-white/10 bg-white/5 px-4 py-3 hover:bg-white/10">Katalog</a>
+      <a href="#jak-to-dziala" class="block rounded-xl border border-white/10 bg-white/5 px-4 py-3 hover:bg-white/10">Jak to działa</a>
+      <a href="#funkcje" class="block rounded-xl border border-white/10 bg-white/5 px-4 py-3 hover:bg-white/10">Funkcje</a>
+      <a href="#bezpieczenstwo" class="block rounded-xl border border-white/10 bg-white/5 px-4 py-3 hover:bg-white/10">Zasady</a>
+      <a href="#faq" class="block rounded-xl border border-white/10 bg-white/5 px-4 py-3 hover:bg-white/10">FAQ</a>
+      <button id="btn-open-panel-mobile" class="w-full text-left rounded-xl border border-white/10 bg-[var(--accent)]/15 px-4 py-3 hover:brightness-110">
+        <span class="inline-flex items-center gap-2 font-semibold">
+          <i data-lucide="user" class="h-4 w-4 text-[var(--accent)]"></i>
+          Panel użytkownika
+        </span>
+      </button>
+    </div>
+    <div class="mt-auto p-4">
+      <div class="rounded-2xl border border-white/10 bg-black/30 p-4 text-xs text-white/65">
+        <div class="flex items-start gap-2">
+          <i data-lucide="shield-off" class="h-4 w-4 text-[var(--accent)] mt-0.5"></i>
+          <p>
+            Velorie Market to platforma ogłoszeniowa — <b>bez escrow</b>. Kontakt i płatność odbywają się poza serwisem.
+          </p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="relative overflow-hidden">
+      <div id="particles-container" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden"></div>
+
+      <div class="mx-auto max-w-7xl px-4 py-14 md:py-20 grid lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-7 space-y-5">
+          <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80">
+            <i data-lucide="sparkles" class="h-3 w-3"></i>
+            <span>Profile • Portfolio • Kontakt poza platformą • Sklep: premium + weryfikacja</span>
+          </span>
+
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05]">
+            <span class="block">Katalog freelancerów</span>
+            <span class="block text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">w poziomych kafelkach</span>
+          </h1>
+
+          <p class="text-white/70 max-w-2xl">
+            Przeglądaj ogłoszenia o sobie: imię/nick, branża, mini-portfolio (2–3 zdjęcia).
+            Kliknij kafelek, aby otworzyć pełny profil z opisem i kontaktami.
+          </p>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <a href="#katalog" class="btn btn-primary px-5 py-3">
+              <i data-lucide="search" class="h-4 w-4"></i>
+              <span>Przeglądaj katalog</span>
+            </a>
+            <button id="btn-open-panel-hero" class="btn btn-ghost px-5 py-3">
+              <i data-lucide="user" class="h-4 w-4"></i>
+              <span>Otwórz panel</span>
+            </button>
+            <a href="#jak-to-dziala" class="btn btn-outline px-5 py-3">
+              <i data-lucide="workflow" class="h-4 w-4"></i>
+              <span>Jak to działa</span>
+            </a>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 pt-2">
+            <span class="chip"><i data-lucide="shield-off" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Brak escrow</span>
+            <span class="chip"><i data-lucide="message-circle" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Discord / e-mail / social</span>
+            <span class="chip"><i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Weryfikacja konta</span>
+            <span class="chip"><i data-lucide="zap" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Premium pozycjonowanie</span>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5">
+          <div class="glass rounded-[2rem] p-3 relative overflow-hidden">
+            <div class="absolute -inset-4 -z-10 rounded-[2rem] bg-[conic-gradient(from_180deg_at_50%_50%,rgba(255,3,84,0.30),transparent,rgba(79,70,229,0.30),transparent)] blur-2xl"></div>
+
+            <div class="rounded-[1.6rem] bg-black/50 border border-white/10 p-4">
+              <div class="flex items-center justify-between">
+                <div class="text-xs text-white/60">Podgląd kafelków</div>
+                <div class="text-xs text-white/60">velorie.market</div>
+              </div>
+
+              <div class="mt-4 space-y-3">
+                <!-- Mini mock cards -->
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                      <div class="h-10 w-10 rounded-xl bg-white/10 border border-white/10"></div>
+                      <div>
+                        <div class="font-semibold leading-tight">zxq0 <span class="text-white/60 text-sm">— Programista</span></div>
+                        <div class="text-xs text-white/60">React • Node • API</div>
+                      </div>
+                    </div>
+                    <span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>
+                  </div>
+                  <div class="mt-3 grid grid-cols-3 gap-2">
+                    <div class="thumb aspect-[4/3]"></div>
+                    <div class="thumb aspect-[4/3]"></div>
+                    <div class="thumb aspect-[4/3]"></div>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                      <div class="h-10 w-10 rounded-xl bg-white/10 border border-white/10"></div>
+                      <div>
+                        <div class="font-semibold leading-tight">Klaudia <span class="text-white/60 text-sm">— Grafik</span></div>
+                        <div class="text-xs text-white/60">Branding • UI • GFX</div>
+                      </div>
+                    </div>
+                    <span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>
+                  </div>
+                  <div class="mt-3 grid grid-cols-3 gap-2">
+                    <div class="thumb aspect-[4/3]"></div>
+                    <div class="thumb aspect-[4/3]"></div>
+                    <div class="thumb aspect-[4/3]"></div>
+                  </div>
+                </div>
+
+                <div class="text-xs text-white/55 pt-1">
+                  Kliknięcie kafelka otwiera pełny profil (modal/strona) — logika w JS.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-3 gap-3">
+            <div class="kpi">
+              <div class="text-xs text-white/60 flex items-center justify-center gap-2">
+                <i data-lucide="users" class="h-4 w-4 text-[var(--accent)]"></i> Profile
+              </div>
+              <div class="mt-1 text-xl font-extrabold">6 420</div>
+            </div>
+            <div class="kpi">
+              <div class="text-xs text-white/60 flex items-center justify-center gap-2">
+                <i data-lucide="briefcase" class="h-4 w-4 text-[var(--accent)]"></i> Ogłoszenia
+              </div>
+              <div class="mt-1 text-xl font-extrabold">1 280</div>
+            </div>
+            <div class="kpi">
+              <div class="text-xs text-white/60 flex items-center justify-center gap-2">
+                <i data-lucide="sparkles" class="h-4 w-4 text-[var(--accent)]"></i> Match/mies.
+              </div>
+              <div class="mt-1 text-xl font-extrabold">15 400</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KATALOG -->
+    <section id="katalog" class="relative py-12">
+      <div class="mx-auto max-w-7xl px-4">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+          <div>
+            <h2 class="text-3xl md:text-4xl font-black">Katalog ogłoszeń</h2>
+            <p class="text-white/60 mt-2 max-w-2xl">
+              Poziome kafelki zawierają: nick/imię, avatar, branżę oraz mini-portfolio (2–3 zdjęcia).
+              <span class="text-white/75 font-semibold">Kliknij kafelek</span>, aby otworzyć pełny profil i kontakt.
+            </p>
+          </div>
+
+          <!-- CONTROLS -->
+          <div class="glass rounded-2xl p-4 w-full lg:w-[540px]">
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label class="label">Szukaj</label>
+                <div class="relative">
+                  <i data-lucide="search" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/50"></i>
+                  <input id="search-input" class="input pl-9" placeholder="nick, imię, branża, tag..." />
+                </div>
+              </div>
+
+              <div>
+                <label class="label">Branża</label>
+                <select id="industry-select" class="input">
+                  <option value="all">Wszystkie</option>
+                  <option value="dev">Programista</option>
+                  <option value="gfx">Grafik</option>
+                  <option value="video">Montażysta / Content</option>
+                  <option value="tech">Technik / DevOps</option>
+                  <option value="mc">Budowniczy Minecraft</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="label">Sortowanie</label>
+                <select id="sort-select" class="input">
+                  <option value="recommended">Polecane (Premium + aktywność)</option>
+                  <option value="newest">Najnowsze</option>
+                  <option value="rating">Najlepsza ocena</option>
+                  <option value="verified">Zweryfikowani</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="label">Filtry</label>
+                <div class="flex flex-wrap gap-2">
+                  <button id="filter-premium" class="chip hover:bg-white/10 transition" type="button">
+                    <i data-lucide="zap" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Premium
+                  </button>
+                  <button id="filter-verified" class="chip hover:bg-white/10 transition" type="button">
+                    <i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Weryfikacja
+                  </button>
+                  <button id="filter-available" class="chip hover:bg-white/10 transition" type="button">
+                    <i data-lucide="clock-3" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center justify-between text-xs text-white/55">
+              <div class="flex items-center gap-2">
+                <i data-lucide="info" class="h-4 w-4"></i>
+                <span>Kontakt i rozliczenia poza platformą (bez escrow).</span>
+              </div>
+              <button id="btn-reset-filters" class="text-white/80 hover:text-white underline decoration-white/20 hover:decoration-white/50 transition" type="button">
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULTS -->
+        <div class="mt-8 space-y-4" id="profiles-list">
+          <!-- Profile card template (JS later duplicates) -->
+          <article class="profile-card animate-on-scroll p-4 md:p-5" data-profile-id="p1">
+            <div class="flex flex-col md:flex-row md:items-center gap-4">
+              <div class="flex items-center gap-3 min-w-[260px]">
+                <div class="avatar">
+                  <img src="https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop" alt="Avatar" />
+                </div>
+                <div class="leading-tight">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <div class="text-lg font-extrabold tracking-tight">zxq0</div>
+                    <span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>
+                    <span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>
+                  </div>
+                  <div class="text-sm text-white/70 font-semibold">Programista</div>
+                  <div class="text-xs text-white/55">React • Node • API • Automatyzacje</div>
+                </div>
+              </div>
+
+              <div class="flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena 4.9</span>
+                  <span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: 48h</span>
+                  <span class="chip"><i data-lucide="map-pin" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Online</span>
+                  <span class="chip"><i data-lucide="wallet" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Budżet: od 300 PLN</span>
+                </div>
+
+                <div class="mt-3 grid grid-cols-3 gap-2">
+                  <div class="thumb aspect-[4/3]">
+                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=900&auto=format&fit=crop" alt="Portfolio 1" />
+                  </div>
+                  <div class="thumb aspect-[4/3]">
+                    <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=900&auto=format&fit=crop" alt="Portfolio 2" />
+                  </div>
+                  <div class="thumb aspect-[4/3]">
+                    <img src="https://images.unsplash.com/photo-1526378722484-bd91ca387e72?q=80&w=900&auto=format&fit=crop" alt="Portfolio 3" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex md:flex-col gap-2 md:items-end">
+                <button class="btn btn-primary px-4 py-3 w-full md:w-auto btn-open-profile" type="button">
+                  <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                  <span>Otwórz profil</span>
+                </button>
+                <button class="btn btn-ghost px-4 py-3 w-full md:w-auto btn-save" type="button">
+                  <i data-lucide="bookmark" class="h-4 w-4"></i>
+                  <span>Zapisz</span>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="profile-card animate-on-scroll p-4 md:p-5" data-profile-id="p2">
+            <div class="flex flex-col md:flex-row md:items-center gap-4">
+              <div class="flex items-center gap-3 min-w-[260px]">
+                <div class="avatar">
+                  <img src="https://images.unsplash.com/photo-1548142813-c348350df52b?q=80&w=512&auto=format&fit=crop" alt="Avatar" />
+                </div>
+                <div class="leading-tight">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <div class="text-lg font-extrabold tracking-tight">Klaudia</div>
+                    <span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>
+                  </div>
+                  <div class="text-sm text-white/70 font-semibold">Grafik</div>
+                  <div class="text-xs text-white/55">Branding • UI • Miniatury • Packi</div>
+                </div>
+              </div>
+
+              <div class="flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena 4.7</span>
+                  <span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: 24h</span>
+                  <span class="chip"><i data-lucide="sparkles" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Styl: nowoczesny</span>
+                </div>
+
+                <div class="mt-3 grid grid-cols-3 gap-2">
+                  <div class="thumb aspect-[4/3]">
+                    <img src="https://images.unsplash.com/photo-1526498460520-4c246339dccb?q=80&w=900&auto=format&fit=crop" alt="Portfolio 1" />
+                  </div>
+                  <div class="thumb aspect-[4/3]">
+                    <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=900&auto=format&fit=crop" alt="Portfolio 2" />
+                  </div>
+                  <div class="thumb aspect-[4/3]">
+                    <img src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=900&auto=format&fit=crop" alt="Portfolio 3" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex md:flex-col gap-2 md:items-end">
+                <button class="btn btn-primary px-4 py-3 w-full md:w-auto btn-open-profile" type="button">
+                  <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                  <span>Otwórz profil</span>
+                </button>
+                <button class="btn btn-ghost px-4 py-3 w-full md:w-auto btn-save" type="button">
+                  <i data-lucide="bookmark" class="h-4 w-4"></i>
+                  <span>Zapisz</span>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="profile-card animate-on-scroll p-4 md:p-5" data-profile-id="p3">
+            <div class="flex flex-col md:flex-row md:items-center gap-4">
+              <div class="flex items-center gap-3 min-w-[260px]">
+                <div class="avatar">
+                  <img src="https://images.unsplash.com/photo-1603415526960-f7e0328b7cf6?q=80&w=512&auto=format&fit=crop" alt="Avatar" />
+                </div>
+                <div class="leading-tight">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <div class="text-lg font-extrabold tracking-tight">kubus</div>
+                    <span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>
+                  </div>
+                  <div class="text-sm text-white/70 font-semibold">Technik / DevOps</div>
+                  <div class="text-xs text-white/55">Linux • Proxy • Optymalizacja • Security</div>
+                </div>
+              </div>
+
+              <div class="flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena 4.8</span>
+                  <span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: 72h</span>
+                  <span class="chip"><i data-lucide="shield" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Audit</span>
+                </div>
+
+                <div class="mt-3 grid grid-cols-3 gap-2">
+                  <div class="thumb aspect-[4/3]">
+                    <img src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=900&auto=format&fit=crop" alt="Portfolio 1" />
+                  </div>
+                  <div class="thumb aspect-[4/3]">
+                    <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=900&auto=format&fit=crop" alt="Portfolio 2" />
+                  </div>
+                  <div class="thumb aspect-[4/3]">
+                    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=900&auto=format&fit=crop" alt="Portfolio 3" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex md:flex-col gap-2 md:items-end">
+                <button class="btn btn-primary px-4 py-3 w-full md:w-auto btn-open-profile" type="button">
+                  <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                  <span>Otwórz profil</span>
+                </button>
+                <button class="btn btn-ghost px-4 py-3 w-full md:w-auto btn-save" type="button">
+                  <i data-lucide="bookmark" class="h-4 w-4"></i>
+                  <span>Zapisz</span>
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <!-- Pagination shell -->
+        <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-white/70">
+          <div class="flex items-center gap-2">
+            <i data-lucide="layers" class="h-4 w-4 text-[var(--accent)]"></i>
+            <span>Wyświetlane: <b id="shown-count">3</b> / <b id="total-count">3</b> (demo)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btn-load-more" class="btn btn-ghost px-4 py-2">
+              <i data-lucide="plus" class="h-4 w-4"></i>
+              <span>Wczytaj więcej</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- JAK TO DZIAŁA -->
+    <section id="jak-to-dziala" class="relative py-16">
+      <div class="mx-auto max-w-7xl px-4">
+        <h2 class="text-3xl md:text-4xl font-black mb-2">Jak to działa?</h2>
+        <p class="text-white/60 mb-8 max-w-2xl">
+          Wystawiasz ogłoszenie o sobie → ktoś otwiera profil → kontakt i rozliczenia poza platformą.
+        </p>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                <i data-lucide="user-plus" class="h-5 w-5"></i>
+              </span>
+              <div class="font-bold">1) Tworzysz profil</div>
+            </div>
+            <p class="mt-3 text-sm text-white/70">
+              Uzupełnij branżę, opis, tagi, dostępność i dodaj mini-portfolio (2–3 zdjęcia).
+            </p>
+          </div>
+
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                <i data-lucide="search-check" class="h-5 w-5"></i>
+              </span>
+              <div class="font-bold">2) Ktoś znajduje Cię</div>
+            </div>
+            <p class="mt-3 text-sm text-white/70">
+              Filtry, sortowanie, zapisywanie i premium pozycjonowanie pomagają przebić się w katalogu.
+            </p>
+          </div>
+
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                <i data-lucide="messages-square" class="h-5 w-5"></i>
+              </span>
+              <div class="font-bold">3) Kontakt poza platformą</div>
+            </div>
+            <p class="mt-3 text-sm text-white/70">
+              Discord / e-mail / social — zasady współpracy i płatność ustalacie bezpośrednio.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-8 glass-soft rounded-2xl p-6 animate-on-scroll">
+          <div class="flex items-start gap-3">
+            <i data-lucide="shield-off" class="h-5 w-5 text-[var(--accent)] mt-0.5"></i>
+            <div>
+              <div class="font-semibold">Dlaczego bez escrow?</div>
+              <p class="text-sm text-white/70 mt-1">
+                Velorie Market ma być lekkim miejscem do łączenia ludzi — bez przechowywania środków i bez pośrednictwa w rozliczeniach.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FUNKCJE (dodatkowe pomysły, wdrożone w UI) -->
+    <section id="funkcje" class="relative py-16">
+      <div class="mx-auto max-w-7xl px-4">
+        <h2 class="text-3xl md:text-4xl font-black mb-2">Funkcje platformy</h2>
+        <p class="text-white/60 mb-8 max-w-2xl">
+          Dodałem też dodatkowe funkcje, które są typowe dla takiej platformy (UI gotowe, logika później w JS).
+        </p>
+
+        <div class="grid lg:grid-cols-3 gap-6">
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-center gap-3">
+              <i data-lucide="bookmark" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Zapisywanie profili</div>
+            </div>
+            <p class="mt-2 text-sm text-white/70">
+              Użytkownik może zapisywać interesujące profile do „Ulubionych” (localStorage).
+            </p>
+          </div>
+
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-center gap-3">
+              <i data-lucide="star" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Oceny i rekomendacje</div>
+            </div>
+            <p class="mt-2 text-sm text-white/70">
+              Prosty system ocen (np. 1–5) + licznik rekomendacji — wpływa na sortowanie.
+            </p>
+          </div>
+
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-center gap-3">
+              <i data-lucide="calendar-clock" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Dostępność</div>
+            </div>
+            <p class="mt-2 text-sm text-white/70">
+              Freelancer ustawia dostępność (np. 24h / 48h / tydzień) — widoczne na kafelku i w profilu.
+            </p>
+          </div>
+
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-center gap-3">
+              <i data-lucide="tags" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Tagi umiejętności</div>
+            </div>
+            <p class="mt-2 text-sm text-white/70">
+              Tagi (stack/skills) ułatwiają wyszukiwanie. Filtr po tagu w kontrolkach katalogu.
+            </p>
+          </div>
+
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-center gap-3">
+              <i data-lucide="flag" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Zgłaszanie profili</div>
+            </div>
+            <p class="mt-2 text-sm text-white/70">
+              W profilu jest przycisk „Zgłoś” (np. spam/kradzież/niezgodne treści) — UI gotowe.
+            </p>
+          </div>
+
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-center gap-3">
+              <i data-lucide="shield-check" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Weryfikacja</div>
+            </div>
+            <p class="mt-2 text-sm text-white/70">
+              Znaczek Verified w profilu (subskrypcja 19.55 PLN/mies.). Wyświetlany też na kafelku.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ZASADY -->
+    <section id="bezpieczenstwo" class="relative py-16">
+      <div class="mx-auto max-w-7xl px-4">
+        <h2 class="text-3xl md:text-4xl font-black mb-2">Zasady i bezpieczeństwo</h2>
+        <p class="text-white/60 mb-8 max-w-2xl">
+          Kluczowe informacje dla obu stron — widoczne w UI, żeby nikt nie miał wątpliwości.
+        </p>
+
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div class="glass-soft rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-start gap-3">
+              <i data-lucide="shield-off" class="h-6 w-6 text-[var(--accent)] mt-0.5"></i>
+              <div>
+                <div class="font-bold">Brak escrow</div>
+                <p class="mt-2 text-sm text-white/70">
+                  Serwis nie przechowuje pieniędzy i nie obsługuje płatności. Współpraca i rozliczenia są poza platformą.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-soft rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-start gap-3">
+              <i data-lucide="alert-triangle" class="h-6 w-6 text-[var(--accent)] mt-0.5"></i>
+              <div>
+                <div class="font-bold">Uważaj na oszustwa</div>
+                <p class="mt-2 text-sm text-white/70">
+                  Weryfikacja zwiększa wiarygodność, ale zawsze ustalaj warunki na piśmie, weryfikuj portfolio i rozliczenia.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-start gap-3">
+              <i data-lucide="file-text" class="h-6 w-6 text-[var(--accent)] mt-0.5"></i>
+              <div>
+                <div class="font-bold">Szablon ogłoszenia o sobie</div>
+                <p class="mt-2 text-sm text-white/70">
+                  Dodaj: zakres usług, czas realizacji, budżet minimalny, portfolio, kanały kontaktu, dostępność.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-start gap-3">
+              <i data-lucide="sparkles" class="h-6 w-6 text-[var(--accent)] mt-0.5"></i>
+              <div>
+                <div class="font-bold">Premium pozycjonowanie</div>
+                <p class="mt-2 text-sm text-white/70">
+                  Subskrypcja 23.99 PLN/mies. — profil jest wyżej w wynikach i może mieć wyróżnienie.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="relative py-16">
+      <div class="mx-auto max-w-7xl px-4">
+        <h2 class="text-3xl md:text-4xl font-black mb-2">FAQ</h2>
+        <p class="text-white/60 mb-8 max-w-2xl">Najczęstsze pytania o działanie i sklep.</p>
+
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-center gap-3">
+              <i data-lucide="help-circle" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Czy platforma pobiera prowizję?</div>
+            </div>
+            <p class="mt-2 text-sm text-white/70">Nie — nie obsługujemy płatności. Rozliczenia są poza platformą.</p>
+          </div>
+
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-center gap-3">
+              <i data-lucide="badge-check" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Co daje weryfikacja?</div>
+            </div>
+            <p class="mt-2 text-sm text-white/70">Znaczek Verified w profilu i na kafelku — zwiększa zaufanie.</p>
+          </div>
+
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-center gap-3">
+              <i data-lucide="zap" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Co daje premium pozycjonowanie?</div>
+            </div>
+            <p class="mt-2 text-sm text-white/70">Wyższa pozycja w wynikach + wyróżnienie (badge Premium).</p>
+          </div>
+
+          <div class="glass rounded-2xl p-6 animate-on-scroll">
+            <div class="flex items-center gap-3">
+              <i data-lucide="message-circle" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Jak się kontaktować?</div>
+            </div>
+            <p class="mt-2 text-sm text-white/70">Discord / e-mail / social — dane są w profilu (prawy górny róg).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- PROFILE MODAL (pełny profil, JS później) -->
+  <div id="profile-modal" class="modal" data-open="false" role="dialog" aria-modal="true" aria-label="Profil użytkownika">
+    <div class="modal-card">
+      <!-- top bar -->
+      <div class="p-4 md:p-5 flex items-center justify-between gap-3 border-b border-white/10">
+        <div class="flex items-center gap-3">
+          <div class="avatar">
+            <img id="modal-avatar" src="https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop" alt="Avatar" />
+          </div>
+          <div class="leading-tight">
+            <div class="flex items-center gap-2 flex-wrap">
+              <div id="modal-name" class="text-lg md:text-xl font-extrabold tracking-tight">zxq0</div>
+              <span id="modal-verified" class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>
+              <span id="modal-premium" class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>
+            </div>
+            <div id="modal-industry" class="text-sm text-white/70 font-semibold">Programista</div>
+            <div id="modal-sub" class="text-xs text-white/55">React • Node • API</div>
+          </div>
+        </div>
+
+        <!-- CONTACT in top-right -->
+        <div class="flex items-center gap-2">
+          <a id="modal-contact-discord" href="#discord" class="btn btn-ghost px-3 py-2">
+            <i data-lucide="message-circle" class="h-4 w-4"></i>
+            <span class="hidden sm:inline">Discord</span>
+          </a>
+          <a id="modal-contact-mail" href="mailto:kontakt@velorie.market" class="btn btn-ghost px-3 py-2">
+            <i data-lucide="mail" class="h-4 w-4"></i>
+            <span class="hidden sm:inline">E-mail</span>
+          </a>
+          <button id="btn-close-profile" class="btn btn-outline px-3 py-2">
+            <i data-lucide="x" class="h-4 w-4"></i>
+            <span class="hidden sm:inline">Zamknij</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- content -->
+      <div class="p-4 md:p-6 grid lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-8 space-y-5">
+          <div class="glass rounded-2xl p-5">
+            <div class="font-bold flex items-center gap-2">
+              <i data-lucide="file-text" class="h-5 w-5 text-[var(--accent)]"></i>
+              Opis
+            </div>
+            <p id="modal-about" class="mt-2 text-sm text-white/70 leading-relaxed">
+              (Tutaj będzie pełny opis freelancera: doświadczenie, zakres usług, sposób pracy, terminy, itp.)
+            </p>
+
+            <div class="mt-4 flex flex-wrap gap-2" id="modal-tags">
+              <span class="chip"><i data-lucide="tag" class="h-3.5 w-3.5 text-[var(--accent)]"></i> React</span>
+              <span class="chip"><i data-lucide="tag" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Node</span>
+              <span class="chip"><i data-lucide="tag" class="h-3.5 w-3.5 text-[var(--accent)]"></i> API</span>
+              <span class="chip"><i data-lucide="tag" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Automatyzacje</span>
+            </div>
+          </div>
+
+          <div class="glass rounded-2xl p-5">
+            <div class="font-bold flex items-center gap-2">
+              <i data-lucide="image" class="h-5 w-5 text-[var(--accent)]"></i>
+              Portfolio
+            </div>
+
+            <div class="mt-3 grid sm:grid-cols-3 gap-3" id="modal-portfolio">
+              <div class="thumb aspect-[4/3]">
+                <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=900&auto=format&fit=crop" alt="Portfolio 1" />
+              </div>
+              <div class="thumb aspect-[4/3]">
+                <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=900&auto=format&fit=crop" alt="Portfolio 2" />
+              </div>
+              <div class="thumb aspect-[4/3]">
+                <img src="https://images.unsplash.com/photo-1526378722484-bd91ca387e72?q=80&w=900&auto=format&fit=crop" alt="Portfolio 3" />
+              </div>
+            </div>
+
+            <div class="mt-3 text-xs text-white/55">
+              Kliknięcie zdjęcia może otwierać podgląd (lightbox) — logika w JS.
+            </div>
+          </div>
+
+          <div class="glass-soft rounded-2xl p-5">
+            <div class="font-bold flex items-center gap-2">
+              <i data-lucide="flag" class="h-5 w-5 text-[var(--accent)]"></i>
+              Zgłaszanie
+            </div>
+            <p class="mt-2 text-sm text-white/70">
+              Jeśli profil jest nieprawdziwy lub narusza zasady, możesz go zgłosić do moderacji.
+            </p>
+            <button id="btn-report" class="btn btn-outline mt-4 px-4 py-3">
+              <i data-lucide="flag" class="h-4 w-4"></i>
+              <span>Zgłoś profil</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-4 space-y-4">
+          <div class="glass rounded-2xl p-5">
+            <div class="font-bold flex items-center gap-2">
+              <i data-lucide="activity" class="h-5 w-5 text-[var(--accent)]"></i>
+              Informacje
+            </div>
+
+            <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
+              <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                <div class="text-xs text-white/55">Ocena</div>
+                <div id="modal-rating" class="font-extrabold mt-1">4.9</div>
+              </div>
+              <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                <div class="text-xs text-white/55">Dostępność</div>
+                <div id="modal-availability" class="font-extrabold mt-1">48h</div>
+              </div>
+              <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                <div class="text-xs text-white/55">Budżet</div>
+                <div id="modal-budget" class="font-extrabold mt-1">od 300</div>
+              </div>
+              <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                <div class="text-xs text-white/55">Tryb</div>
+                <div id="modal-location" class="font-extrabold mt-1">Online</div>
+              </div>
+            </div>
+
+            <div class="mt-4 text-xs text-white/55">
+              Kontakt: w prawym górnym rogu (Discord / e-mail / social).
+            </div>
+          </div>
+
+          <div class="glass rounded-2xl p-5">
+            <div class="font-bold flex items-center gap-2">
+              <i data-lucide="bookmark" class="h-5 w-5 text-[var(--accent)]"></i>
+              Akcje
+            </div>
+
+            <div class="mt-3 space-y-2">
+              <button id="btn-save-from-modal" class="btn btn-ghost w-full px-4 py-3">
+                <i data-lucide="bookmark" class="h-4 w-4"></i>
+                <span>Zapisz profil</span>
+              </button>
+              <button id="btn-copy-link" class="btn btn-ghost w-full px-4 py-3">
+                <i data-lucide="link" class="h-4 w-4"></i>
+                <span>Kopiuj link</span>
+              </button>
+              <button id="btn-open-panel-from-modal" class="btn btn-primary w-full px-4 py-3">
+                <i data-lucide="user" class="h-4 w-4"></i>
+                <span>Panel (Twój profil)</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="glass-soft rounded-2xl p-5">
+            <div class="flex items-start gap-2">
+              <i data-lucide="shield-alert" class="h-5 w-5 text-[var(--accent)] mt-0.5"></i>
+              <p class="text-xs text-white/65">
+                Velorie Market nie odpowiada za rozliczenia. Zawsze ustalaj warunki współpracy i płatności we własnym zakresie.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- bottom bar -->
+      <div class="p-4 md:p-5 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="text-xs text-white/55">
+          Podgląd profilu • UI gotowe • Logika w JS (kolejna część)
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn btn-ghost px-4 py-3" id="btn-prev-profile" type="button">
+            <i data-lucide="chevron-left" class="h-4 w-4"></i>
+            <span>Poprzedni</span>
+          </button>
+          <button class="btn btn-ghost px-4 py-3" id="btn-next-profile" type="button">
+            <span>Następny</span>
+            <i data-lucide="chevron-right" class="h-4 w-4"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USER PANEL (drawer, JS później) -->
+  <aside id="user-panel" class="drawer glass-soft" data-open="false" aria-label="Panel użytkownika">
+    <div class="p-4 flex items-center justify-between gap-3 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="avatar">
+          <img id="panel-avatar" src="https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop" alt="Ty" />
+        </div>
+        <div class="leading-tight">
+          <div class="font-extrabold tracking-tight">Panel użytkownika</div>
+          <div class="text-xs text-white/60"><span id="panel-username">zxq0</span> • <span id="panel-status">Zalogowany (demo)</span></div>
+        </div>
+      </div>
+      <button id="btn-close-panel" class="btn btn-outline px-3 py-2">
+        <i data-lucide="x" class="h-4 w-4"></i>
+        <span class="hidden sm:inline">Zamknij</span>
+      </button>
+    </div>
+
+    <!-- tabs -->
+    <div class="p-4">
+      <div class="grid grid-cols-2 gap-2">
+        <button class="btn btn-ghost px-4 py-3" data-tab="edit">
+          <i data-lucide="pencil" class="h-4 w-4"></i>
+          <span>Edytuj profil</span>
+        </button>
+        <button class="btn btn-ghost px-4 py-3" data-tab="preview">
+          <i data-lucide="eye" class="h-4 w-4"></i>
+          <span>Podgląd</span>
+        </button>
+        <button class="btn btn-ghost px-4 py-3" data-tab="listing">
+          <i data-lucide="file-plus" class="h-4 w-4"></i>
+          <span>Dodaj ogłoszenie</span>
+        </button>
+        <button class="btn btn-primary px-4 py-3" data-tab="shop">
+          <i data-lucide="shopping-bag" class="h-4 w-4"></i>
+          <span>Sklep</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- tab content shells -->
+    <div class="p-4 space-y-4 overflow-auto" style="height: calc(100vh - 190px);">
+      <!-- EDIT PROFILE -->
+      <section id="tab-edit" class="space-y-4">
+        <div class="glass rounded-2xl p-5">
+          <div class="font-bold flex items-center gap-2">
+            <i data-lucide="pencil" class="h-5 w-5 text-[var(--accent)]"></i>
+            Edytuj profil
+          </div>
+
+          <div class="mt-4 grid sm:grid-cols-2 gap-3">
+            <div>
+              <label class="label">Nick / Imię</label>
+              <input id="edit-name" class="input" value="zxq0" />
+            </div>
+            <div>
+              <label class="label">Branża</label>
+              <select id="edit-industry" class="input">
+                <option value="dev" selected>Programista</option>
+                <option value="gfx">Grafik</option>
+                <option value="video">Montażysta / Content</option>
+                <option value="tech">Technik / DevOps</option>
+                <option value="mc">Budowniczy Minecraft</option>
+              </select>
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="label">Opis</label>
+              <textarea id="edit-about" class="input" rows="5" placeholder="Napisz kilka zdań o sobie..."></textarea>
+            </div>
+
+            <div>
+              <label class="label">Dostępność</label>
+              <select id="edit-availability" class="input">
+                <option>24h</option>
+                <option selected>48h</option>
+                <option>72h</option>
+                <option>Tydzień</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="label">Budżet minimalny (PLN)</label>
+              <input id="edit-budget" class="input" type="number" value="300" />
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="label">Tagi (oddziel przecinkami)</label>
+              <input id="edit-tags" class="input" value="React, Node, API, Automatyzacje" />
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="label">Link do avatara (URL)</label>
+              <input id="edit-avatar-url" class="input" placeholder="https://..." />
+              <div class="mt-2 text-xs text-white/55">
+                (Dodatkowo zrobimy upload do dataURL w JS, jeśli chcesz — ale później.)
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 flex items-center gap-2">
+            <button id="btn-save-profile" class="btn btn-primary px-4 py-3">
+              <i data-lucide="save" class="h-4 w-4"></i>
+              <span>Zapisz zmiany</span>
+            </button>
+            <button id="btn-reset-profile" class="btn btn-ghost px-4 py-3">
+              <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+              <span>Przywróć</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl p-5">
+          <div class="font-bold flex items-center gap-2">
+            <i data-lucide="images" class="h-5 w-5 text-[var(--accent)]"></i>
+            Portfolio (3 zdjęcia)
+          </div>
+          <p class="mt-2 text-sm text-white/70">
+            Wybierasz 2–3 zdjęcia, które będą widoczne na kafelku i w profilu.
+          </p>
+
+          <div class="mt-4 grid grid-cols-3 gap-3">
+            <div>
+              <label class="label">Zdjęcie 1 URL</label>
+              <input id="edit-portfolio-1" class="input" placeholder="https://..." />
+            </div>
+            <div>
+              <label class="label">Zdjęcie 2 URL</label>
+              <input id="edit-portfolio-2" class="input" placeholder="https://..." />
+            </div>
+            <div>
+              <label class="label">Zdjęcie 3 URL</label>
+              <input id="edit-portfolio-3" class="input" placeholder="https://..." />
+            </div>
+          </div>
+
+          <div class="mt-3 text-xs text-white/55">
+            (Dodamy upload i walidację linków w JS.)
+          </div>
+        </div>
+      </section>
+
+      <!-- PREVIEW -->
+      <section id="tab-preview" class="space-y-4 hidden">
+        <div class="glass rounded-2xl p-5">
+          <div class="font-bold flex items-center gap-2">
+            <i data-lucide="eye" class="h-5 w-5 text-[var(--accent)]"></i>
+            Podgląd profilu
+          </div>
+          <p class="mt-2 text-sm text-white/70">
+            Podgląd wygląda jak normalny profil w katalogu — przycisk otwiera modal profilu.
+          </p>
+
+          <div class="mt-4 profile-card p-4">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="avatar">
+                  <img src="https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop" alt="Ty" />
+                </div>
+                <div>
+                  <div class="font-extrabold">zxq0</div>
+                  <div class="text-sm text-white/70 font-semibold">Programista</div>
+                  <div class="text-xs text-white/55">React • Node • API</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>
+                <span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>
+              </div>
+            </div>
+
+            <div class="mt-3 grid grid-cols-3 gap-2">
+              <div class="thumb aspect-[4/3]"></div>
+              <div class="thumb aspect-[4/3]"></div>
+              <div class="thumb aspect-[4/3]"></div>
+            </div>
+
+            <div class="mt-3 flex items-center gap-2">
+              <button id="btn-open-my-profile" class="btn btn-primary px-4 py-3">
+                <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                <span>Otwórz profil</span>
+              </button>
+              <button id="btn-copy-my-link" class="btn btn-ghost px-4 py-3">
+                <i data-lucide="link" class="h-4 w-4"></i>
+                <span>Kopiuj link</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADD LISTING -->
+      <section id="tab-listing" class="space-y-4 hidden">
+        <div class="glass rounded-2xl p-5">
+          <div class="font-bold flex items-center gap-2">
+            <i data-lucide="file-plus" class="h-5 w-5 text-[var(--accent)]"></i>
+            Dodaj ogłoszenie o sobie
+          </div>
+          <p class="mt-2 text-sm text-white/70">
+            Ogłoszenie = Twój profil w katalogu. Możesz mieć jedną aktywną wizytówkę (łatwiej utrzymać jakość).
+          </p>
+
+          <div class="mt-4 grid sm:grid-cols-2 gap-3">
+            <div>
+              <label class="label">Tytuł ogłoszenia</label>
+              <input id="listing-title" class="input" placeholder="np. Programista React/Node — szybkie MVP" />
+            </div>
+            <div>
+              <label class="label">Kanał kontaktu (główny)</label>
+              <select id="listing-contact-main" class="input">
+                <option>Discord</option>
+                <option>E-mail</option>
+                <option>Instagram</option>
+                <option>Facebook</option>
+              </select>
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="label">Krótki opis (na kafelku)</label>
+              <input id="listing-short" class="input" placeholder="2–3 zdania: co robisz i dla kogo." />
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="label">Dłuższy opis (w profilu)</label>
+              <textarea id="listing-long" class="input" rows="6" placeholder="Szczegóły usług, proces, terminy, zasady..."></textarea>
+            </div>
+          </div>
+
+          <div class="mt-4 flex items-center gap-2">
+            <button id="btn-publish" class="btn btn-primary px-4 py-3">
+              <i data-lucide="rocket" class="h-4 w-4"></i>
+              <span>Opublikuj / Zaktualizuj</span>
+            </button>
+            <button id="btn-unpublish" class="btn btn-outline px-4 py-3">
+              <i data-lucide="trash-2" class="h-4 w-4"></i>
+              <span>Usuń ogłoszenie</span>
+            </button>
+          </div>
+
+          <div class="mt-3 text-xs text-white/55">
+            (Damy walidację, zapis, i odświeżanie katalogu w JS.)
+          </div>
+        </div>
+      </section>
+
+      <!-- SHOP -->
+      <section id="tab-shop" class="space-y-4">
+        <div class="glass rounded-2xl p-5">
+          <div class="font-bold flex items-center gap-2">
+            <i data-lucide="shopping-bag" class="h-5 w-5 text-[var(--accent)]"></i>
+            Sklep usług
+          </div>
+          <p class="mt-2 text-sm text-white/70">
+            Subskrypcje miesięczne. UI działa, zakup będzie symulowany (demo) w JS.
+          </p>
+
+          <div class="mt-4 space-y-3">
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium pozycjonowanie</span>
+                    <span class="chip"><i data-lucide="trending-up" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Wyżej w katalogu</span>
+                  </div>
+                  <p class="mt-2 text-sm text-white/70">
+                    Twoje ogłoszenie jest wyżej w sortowaniu i może być dodatkowo wyróżnione.
+                  </p>
+                </div>
+                <div class="text-right">
+                  <div class="text-2xl font-extrabold">23.99 PLN</div>
+                  <div class="text-xs text-white/55">/ miesiąc</div>
+                </div>
+              </div>
+
+              <div class="mt-3 flex flex-col sm:flex-row gap-2">
+                <button id="buy-premium" class="btn btn-primary px-4 py-3">
+                  <i data-lucide="credit-card" class="h-4 w-4"></i>
+                  <span>Kup premium</span>
+                </button>
+                <button id="cancel-premium" class="btn btn-outline px-4 py-3">
+                  <i data-lucide="x-circle" class="h-4 w-4"></i>
+                  <span>Anuluj</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Weryfikacja konta</span>
+                    <span class="chip"><i data-lucide="shield-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Większe zaufanie</span>
+                  </div>
+                  <p class="mt-2 text-sm text-white/70">
+                    Znaczek Verified w profilu i na kafelku — zwiększa wiarygodność ogłoszenia.
+                  </p>
+                </div>
+                <div class="text-right">
+                  <div class="text-2xl font-extrabold">19.55 PLN</div>
+                  <div class="text-xs text-white/55">/ miesiąc</div>
+                </div>
+              </div>
+
+              <div class="mt-3 flex flex-col sm:flex-row gap-2">
+                <button id="buy-verify" class="btn btn-primary px-4 py-3">
+                  <i data-lucide="badge-check" class="h-4 w-4"></i>
+                  <span>Kup weryfikację</span>
+                </button>
+                <button id="cancel-verify" class="btn btn-outline px-4 py-3">
+                  <i data-lucide="x-circle" class="h-4 w-4"></i>
+                  <span>Anuluj</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- extra shop features -->
+            <div class="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <div class="flex items-start gap-3">
+                <i data-lucide="sparkles" class="h-5 w-5 text-[var(--accent)] mt-0.5"></i>
+                <div>
+                  <div class="font-semibold">Dodatkowe funkcje (pomysł)</div>
+                  <p class="mt-1 text-sm text-white/70">
+                    Możemy też dodać: wyróżnienie w top-ce (banner), odznakę „Szybka odpowiedź”, statystyki wyświetleń profilu.
+                    UI pod to już przygotuję w JS części.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-xs text-white/55">
+              (Zakupy będą „na niby” w tej wersji: localStorage + statusy w UI.)
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <!-- FOOTER -->
+  <footer id="kontakt" class="relative border-t border-white/10">
+    <div class="mx-auto max-w-7xl px-4 py-12 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <img src="https://i.imgur.com/ikYb7tH.png" alt="logo" class="h-10 w-10 rounded-xl ring-1 ring-white/10" />
+          <div>
+            <div class="font-bold">Velorie Market</div>
+            <div class="text-xs text-white/60">© <span id="footer-year"></span> · Wszelkie prawa zastrzeżone.</div>
+          </div>
+        </div>
+
+        <p class="text-sm text-white/70">
+          Platforma ogłoszeniowa dla freelancerów i zleceniodawców. Bez escrow — łączymy ludzi, a rozliczenia zostają po Waszej stronie.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <a aria-label="Discord" href="#discord" class="chip hover:bg-white/10 transition">Discord</a>
+          <a aria-label="Facebook" href="#facebook" class="chip hover:bg-white/10 transition">Fanpage</a>
+          <a aria-label="E-mail" href="mailto:kontakt@velorie.market" class="chip hover:bg-white/10 transition">E-mail</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="font-semibold mb-3">Skróty</div>
+        <ul class="space-y-2 text-sm text-white/70">
+          <li><a href="#katalog" class="hover:text-white">Katalog</a></li>
+          <li><a href="#jak-to-dziala" class="hover:text-white">Jak to działa</a></li>
+          <li><a href="#funkcje" class="hover:text-white">Funkcje</a></li>
+          <li><a href="#bezpieczenstwo" class="hover:text-white">Zasady</a></li>
+          <li><a href="#faq" class="hover:text-white">FAQ</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="font-semibold mb-3">Zasady</div>
+        <ul class="space-y-2 text-sm text-white/70">
+          <li class="flex items-start gap-2">
+            <i data-lucide="dot" class="h-5 w-5 text-[var(--accent)] -mt-0.5"></i>
+            <span>Brak escrow i brak obsługi płatności</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <i data-lucide="dot" class="h-5 w-5 text-[var(--accent)] -mt-0.5"></i>
+            <span>Kontakt i rozliczenia poza platformą</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <i data-lucide="dot" class="h-5 w-5 text-[var(--accent)] -mt-0.5"></i>
+            <span>Weryfikacja zwiększa wiarygodność</span>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="font-semibold mb-3">Panel</div>
+        <p class="text-sm text-white/70 mb-4">
+          Edytuj profil, dodaj ogłoszenie o sobie i kup subskrypcje (premium pozycjonowanie + weryfikacja).
+        </p>
+        <button id="btn-open-panel-footer" class="w-full justify-center inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-3 font-semibold hover:brightness-110 transition shadow-[0_10px_40px_rgba(255,3,84,0.45)]">
+          <i data-lucide="user" class="h-4 w-4"></i>
+          <span>Otwórz Panel</span>
+        </button>
+        <div class="mt-3 text-xs text-white/50">
+          To jest layout — logika (JS) będzie w części 2.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!--
+    STOP — CZĘŚĆ 1/2 ZAKOŃCZONA.
+    Napisz "2", a dam Ci CZĘŚĆ 2/2: cały <script> z logiką:
+    - data modeli profili
+    - render kafelków + infinite/load more
+    - otwieranie profilu (modal) + next/prev
+    - panel drawer + zakładki
+    - edycja profilu i zapis w localStorage
+    - dodawanie ogłoszenia o sobie
+    - sklep: zakup/anulowanie premium i weryfikacji (statusy + badge)
+    - filtry/sort/search + ulubione
+    - scroll progress, particles, reveal, lucide init
+  -->
+</body>
+</html>
 
