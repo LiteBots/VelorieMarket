@@ -19,7 +19,6 @@
       --bg2:#0a1030;
       --accent:#ff0354;
       --accent2:#7c3aed;
-      --glass: rgba(255,255,255,.07);
       --stroke: rgba(255,255,255,.12);
     }
 
@@ -107,7 +106,7 @@
       -webkit-backdrop-filter: blur(14px);
     }
 
-    /* Fancy focus ring */
+    /* Focus ring */
     .focus-ring:focus{
       outline: none !important;
       box-shadow:
@@ -116,7 +115,7 @@
       border-color: rgba(255,255,255,.22) !important;
     }
 
-    /* Gradient buttons */
+    /* Buttons */
     .btn-primary{
       background: linear-gradient(135deg, rgba(255,3,84,1), rgba(124,58,237,1));
       box-shadow:
@@ -175,162 +174,26 @@
   <div class="grid-bg"></div>
   <div class="noise"></div>
 
-  <!-- Header -->
-  <header class="relative z-10 mx-auto max-w-6xl px-4 pt-6">
-    <div class="glass-soft rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3 min-w-0">
-        <!-- Logo (Imgur direct) -->
+  <!-- Centered layout -->
+  <main class="relative z-10 min-h-screen flex items-center justify-center px-4 py-10">
+    <div class="w-full max-w-xl">
+      <!-- Top brand bar -->
+      <div class="glass-soft rounded-2xl px-4 py-3 flex items-center justify-center gap-3 mb-5">
         <img
           class="brand-logo"
           src="https://i.imgur.com/NDhlWyz.png"
           alt="Logo"
           onerror="this.onerror=null; this.src='https://i.imgur.com/NDhlWyz.jpg';"
         />
-        <div class="leading-tight min-w-0">
-          <div class="font-semibold tracking-wide truncate">Velorie Market</div>
-          <div class="text-xs text-white/55 truncate">Logowanie & Rejestracja</div>
+        <div class="leading-tight">
+          <div class="font-semibold tracking-wide text-center">Velorie Market</div>
+          <div class="text-xs text-white/55 text-center">Logowanie & Rejestracja</div>
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <button id="securityBtn" class="btn-ghost lift rounded-xl px-3 py-2 text-xs inline-flex items-center gap-2">
-          <i data-lucide="shield-check" class="h-4 w-4"></i>
-          Bezpieczeństwo
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <main class="relative z-10 mx-auto max-w-6xl px-4 py-10">
-    <div class="grid lg:grid-cols-2 gap-6 items-stretch">
-
-      <!-- LEFT: platform info + stats -->
+      <!-- Form card -->
       <section class="glass rounded-3xl p-6 lg:p-8">
-        <div class="flex items-start gap-4">
-          <div class="h-12 w-12 rounded-2xl glass-soft grid place-items-center">
-            <i data-lucide="rocket" class="h-6 w-6"></i>
-          </div>
-          <div>
-            <h1 class="text-2xl lg:text-3xl font-semibold tracking-tight">
-              Platforma do zleceń i ofert freelancerów.
-            </h1>
-            <p class="mt-2 text-white/60 leading-relaxed">
-              Jedno konto = pełen dostęp do publikowania ogłoszeń, wyszukiwania wykonawców, szybkiego kontaktu i
-              wygodnego zarządzania profilem. Poniżej masz przykładowe statystyki (możesz je później podpiąć pod API).
-            </p>
-          </div>
-        </div>
-
-        <!-- Stats -->
-        <div class="mt-6 grid sm:grid-cols-2 gap-3">
-          <div class="glass-soft rounded-2xl p-4">
-            <div class="flex items-center justify-between">
-              <div class="text-sm font-medium flex items-center gap-2">
-                <i data-lucide="users" class="h-4 w-4"></i>
-                Użytkownicy
-              </div>
-              <span class="text-xs text-white/55">łącznie</span>
-            </div>
-            <div class="mt-2 text-2xl font-semibold tracking-tight">
-              <span class="counter" data-target="18720">0</span>
-              <span class="text-sm text-white/55">+</span>
-            </div>
-            <div class="mt-1 text-xs text-white/50">Freelancerzy i zleceniodawcy na jednej platformie.</div>
-          </div>
-
-          <div class="glass-soft rounded-2xl p-4">
-            <div class="flex items-center justify-between">
-              <div class="text-sm font-medium flex items-center gap-2">
-                <i data-lucide="briefcase" class="h-4 w-4"></i>
-                Aktywne ogłoszenia
-              </div>
-              <span class="text-xs text-white/55">teraz</span>
-            </div>
-            <div class="mt-2 text-2xl font-semibold tracking-tight">
-              <span class="counter" data-target="1340">0</span>
-              <span class="text-sm text-white/55">+</span>
-            </div>
-            <div class="mt-1 text-xs text-white/50">Nowe oferty, zlecenia i dostępność w czasie rzeczywistym.</div>
-          </div>
-
-          <div class="glass-soft rounded-2xl p-4">
-            <div class="flex items-center justify-between">
-              <div class="text-sm font-medium flex items-center gap-2">
-                <i data-lucide="zap" class="h-4 w-4"></i>
-                Średni czas reakcji
-              </div>
-              <span class="text-xs text-white/55">kontakt</span>
-            </div>
-            <div class="mt-2 text-2xl font-semibold tracking-tight">
-              <span class="counter" data-target="12">0</span>
-              <span class="text-sm text-white/55">min</span>
-            </div>
-            <div class="mt-1 text-xs text-white/50">Szybkie rozmowy i proste ustalanie zakresu.</div>
-          </div>
-
-          <div class="glass-soft rounded-2xl p-4">
-            <div class="flex items-center justify-between">
-              <div class="text-sm font-medium flex items-center gap-2">
-                <i data-lucide="shield" class="h-4 w-4"></i>
-                Uptime
-              </div>
-              <span class="text-xs text-white/55">30 dni</span>
-            </div>
-            <div class="mt-2 text-2xl font-semibold tracking-tight">
-              <span class="counter" data-target="99.9">0</span>
-              <span class="text-sm text-white/55">%</span>
-            </div>
-            <div class="mt-1 text-xs text-white/50">Stabilna infrastruktura (placeholder pod realne dane).</div>
-          </div>
-        </div>
-
-        <!-- Platform bullets -->
-        <div class="mt-6 glass-soft rounded-2xl p-4">
-          <div class="text-sm font-semibold flex items-center gap-2">
-            <i data-lucide="sparkles" class="h-4 w-4"></i>
-            Co dostajesz po rejestracji
-          </div>
-
-          <ul class="mt-3 space-y-2 text-sm text-white/60">
-            <li class="flex gap-2">
-              <i data-lucide="check-circle-2" class="h-4 w-4 mt-0.5 text-white/70"></i>
-              Profil z ofertą, portfolio i dostępnością (dla freelancerów).
-            </li>
-            <li class="flex gap-2">
-              <i data-lucide="check-circle-2" class="h-4 w-4 mt-0.5 text-white/70"></i>
-              Filtry i szybkie wyszukiwanie wykonawców (dla zleceniodawców).
-            </li>
-            <li class="flex gap-2">
-              <i data-lucide="check-circle-2" class="h-4 w-4 mt-0.5 text-white/70"></i>
-              Logowanie przez Discord (SSO) — gotowy przycisk pod OAuth.
-            </li>
-            <li class="flex gap-2">
-              <i data-lucide="check-circle-2" class="h-4 w-4 mt-0.5 text-white/70"></i>
-              Nowoczesny panel konta i ustawień (później podepniesz backend).
-            </li>
-          </ul>
-        </div>
-
-        <!-- Trust strip -->
-        <div class="mt-4 grid grid-cols-3 gap-2">
-          <div class="glass-soft rounded-2xl p-3 text-center">
-            <div class="text-xs text-white/55">Szyfrowanie</div>
-            <div class="mt-1 text-sm font-semibold">TLS</div>
-          </div>
-          <div class="glass-soft rounded-2xl p-3 text-center">
-            <div class="text-xs text-white/55">Hasła</div>
-            <div class="mt-1 text-sm font-semibold">Argon2/bcrypt</div>
-          </div>
-          <div class="glass-soft rounded-2xl p-3 text-center">
-            <div class="text-xs text-white/55">Zabezp.</div>
-            <div class="mt-1 text-sm font-semibold">Rate limit</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- RIGHT: forms -->
-      <section class="glass rounded-3xl p-6 lg:p-8">
-        <!-- Tabs -->
+        <!-- Tabs + tools -->
         <div class="flex items-center justify-between gap-3">
           <div class="inline-flex rounded-2xl glass-soft p-1">
             <button id="tabLogin" class="px-4 py-2 rounded-xl text-sm font-medium lift" aria-selected="true">
@@ -405,7 +268,7 @@
             </button>
           </div>
 
-          <div class="pt-2 text-sm text-white/60">
+          <div class="pt-2 text-sm text-white/60 text-center">
             Nie masz konta?
             <button type="button" id="switchToRegister"
               class="text-white font-semibold hover:opacity-90 underline underline-offset-4">
@@ -527,7 +390,7 @@
             </button>
           </div>
 
-          <div class="pt-2 text-sm text-white/60">
+          <div class="pt-2 text-sm text-white/60 text-center">
             Masz już konto?
             <button type="button" id="switchToLogin"
               class="text-white font-semibold hover:opacity-90 underline underline-offset-4">
@@ -813,56 +676,6 @@
         $("loginPass").focus();
       }, 900);
     });
-
-    // ===== Security button
-    $("securityBtn").addEventListener("click", () => {
-      setStatus("info","Bezpieczeństwo (checklista)","TLS, rate limit, 2FA, CSRF, argon2/bcrypt, oraz Discord OAuth po stronie backendu.");
-    });
-
-    // ===== Animated counters (left side stats)
-    function animateCounters(){
-      const els = document.querySelectorAll(".counter");
-      const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      els.forEach(el => {
-        const targetRaw = el.getAttribute("data-target");
-        const target = Number(targetRaw);
-        if(Number.isNaN(target)) return;
-
-        if(prefersReduced){
-          el.textContent = String(targetRaw);
-          return;
-        }
-
-        const isFloat = String(targetRaw).includes(".");
-        const duration = 900 + Math.random()*500;
-        const start = performance.now();
-
-        function step(t){
-          const p = clamp((t - start)/duration, 0, 1);
-          const eased = 1 - Math.pow(1 - p, 3);
-          const val = target * eased;
-
-          el.textContent = isFloat ? val.toFixed(1) : Math.round(val).toString();
-          if(p < 1) requestAnimationFrame(step);
-          else el.textContent = String(targetRaw);
-        }
-
-        requestAnimationFrame(step);
-      });
-    }
-
-    // Run counters when visible
-    const leftSection = document.querySelector("section.glass");
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if(e.isIntersecting){
-          animateCounters();
-          io.disconnect();
-        }
-      });
-    }, { threshold: 0.25 });
-    io.observe(leftSection);
 
     // ===== Init
     $("year").textContent = new Date().getFullYear();
