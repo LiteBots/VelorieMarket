@@ -40,7 +40,7 @@
       /* sticky helper vars */
       --header-h: 66px;      /* wysokość headera */
       --filters-gap: 12px;   /* odstęp filtrów od headera */
-      --filters-h: 0px;      /* dynamicznie ustawiane w JS */
+      --filters-spacer-h: 0px; /* dynamicznie ustawiane w JS */
     }
 
     html { scroll-behavior: smooth; }
@@ -416,14 +416,14 @@
       display:block;
     }
 
-    /* sticky filters bar (fix: stays on top but does not cover results) */
+    /* sticky filters bar (stable - no flicker) */
     #filters-bar{
       position: sticky;
       top: calc(var(--header-h) + var(--filters-gap));
       z-index: 80;
     }
-    body.filters-stuck #profiles-list{
-      padding-top: calc(var(--filters-h) + 12px);
+    #filters-spacer{
+      height: var(--filters-spacer-h, 0px);
     }
 
     /* skeleton */
@@ -735,6 +735,9 @@
           </div>
         </div>
       </div>
+
+      <!-- STABLE SPACER (fix for sticky flicker) -->
+      <div id="filters-spacer"></div>
 
       <!-- RESULTS -->
       <section class="mt-8">
@@ -1273,7 +1276,7 @@
 <script>
 /**
  * Velorie Market — “UX upgrade” + poprawki:
- * - Filtry + wyszukiwarka sticky i NIE zasłaniają ogłoszeń (dynamiczny padding)
+ * - Filtry + wyszukiwarka sticky BEZ migania (bez IntersectionObserver)
  * - Konto fullscreen + więcej zakładek (Ustawienia, Bezpieczeństwo)
  */
 
@@ -1563,39 +1566,66 @@
     els.forEach((el) => io.observe(el));
   }
 
-  /* ------------------- sticky filters: no cover fix ------------------- */
+  /* ------------------- sticky filters: stable (no flicker) ------------------- */
   function initStickyFiltersFix(){
     const bar = $("#filters-bar");
-    if (!bar) return;
+    const spacer = $("#filters-spacer");
+    if (!bar || !spacer) return;
 
-    const updateH = () => {
-      const rect = bar.getBoundingClientRect();
-      const h = Math.round(rect.height);
-      document.documentElement.style.setProperty("--filters-h", `${h}px`);
+    const root = document.documentElement;
+
+    const getTopLimit = () => {
+      const css = getComputedStyle(root);
+      const headerH = parseFloat(css.getPropertyValue("--header-h")) || 66;
+      const gap = parseFloat(css.getPropertyValue("--filters-gap")) || 12;
+      return headerH + gap;
     };
 
-    const sentinel = document.createElement("div");
-    sentinel.style.position = "relative";
-    sentinel.style.height = "1px";
-    sentinel.style.marginTop = "0px";
-    bar.parentElement.insertBefore(sentinel, bar);
+    const setSpacerH = (h) => {
+      root.style.setProperty("--filters-spacer-h", `${Math.max(0, Math.round(h))}px`);
+    };
 
-    updateH();
+    const measure = () => {
+      const h = bar.offsetHeight;  // stabilne
+      setSpacerH(h + 12);          // + mały oddech
+    };
 
-    const headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--header-h")) || 66;
-    const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--filters-gap")) || 12;
+    let stuck = false;
+    const H = 2; // px histerezy
 
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        const stuck = !entry.isIntersecting;
-        document.body.classList.toggle("filters-stuck", stuck);
-        updateH();
-      },
-      { root: null, threshold: 0, rootMargin: `-${headerH + gap}px 0px 0px 0px` }
-    );
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const limit = getTopLimit();
+        const top = bar.getBoundingClientRect().top;
 
-    io.observe(sentinel);
-    window.addEventListener("resize", updateH, { passive: true });
+        if (!stuck && top <= limit + H) {
+          stuck = true;
+          spacer.style.display = "block";
+        } else if (stuck && top > limit + H + 1) {
+          stuck = false;
+          spacer.style.display = "none";
+        }
+
+        ticking = false;
+      });
+    };
+
+    const ro = new ResizeObserver(() => {
+      measure();
+      if (stuck) spacer.style.display = "block";
+    });
+    ro.observe(bar);
+
+    measure();
+    spacer.style.display = "none";
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", () => { measure(); onScroll(); }, { passive: true });
+
+    onScroll();
   }
 
   /* ------------------------------ overlay ----------------------------- */
@@ -2258,7 +2288,6 @@
     const about = (p.about || p.listing?.long || p.listing?.short || p.tagline || "Brak opisu.").trim();
     $("#modal-about") && ($("#modal-about").textContent = about);
 
-    // avoid stacking listeners: use onclick
     const copyBtn = $("#btn-copy-name");
     if (copyBtn) {
       copyBtn.onclick = () => {
@@ -2679,7 +2708,6 @@
       $(sel)?.addEventListener("change", () => { setSaveStatus("Zmieniono — zapisuję…"); autosave(); });
     });
 
-    // jump search button
     $("#btn-jump-search")?.addEventListener("click", () => $("#search-input")?.focus());
 
     render();
@@ -2687,7 +2715,6 @@
     initReveal();
     try { lucide.createIcons(); } catch {}
 
-    // open modal if hash provided
     const pid = getHashProfileId();
     if (pid) setTimeout(() => openProfileModalById(pid), 150);
   });
