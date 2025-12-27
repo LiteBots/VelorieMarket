@@ -38,6 +38,13 @@
         radial-gradient(1200px 600px at 80% -10%, var(--bg1) 0%, #050919 35%, var(--bg0) 65%, #000000 100%),
         radial-gradient(900px 500px at 15% 110%, rgba(255,3,84,.18) 0%, rgba(255,3,84,0) 60%),
         radial-gradient(800px 500px at 95% 90%, rgba(79,70,229,.16) 0%, rgba(79,70,229,0) 60%);
+      color: #fff;
+    }
+
+    /* reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      html { scroll-behavior: auto; }
+      * { animation: none !important; transition: none !important; }
     }
 
     /* scrollbars */
@@ -199,14 +206,24 @@
       border: 1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
       box-shadow: 0 12px 38px rgba(0,0,0,.28);
+      position: relative;
+    }
+    .thumb::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(90deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.06) 50%, rgba(255,255,255,.03) 100%);
+      opacity: .55;
     }
     .thumb img{
+      position: relative;
       width: 100%;
       height: 100%;
       object-fit: cover;
       display:block;
       transform: scale(1.02);
-      transition: transform .35s ease;
+      transition: transform .35s ease, filter .35s ease;
+      filter: saturate(1.02) contrast(1.02);
     }
     .thumb:hover img{ transform: scale(1.07); }
 
@@ -235,12 +252,21 @@
       box-shadow: 0 12px 28px rgba(0,0,0,.35);
       flex: 0 0 auto;
       background: rgba(255,255,255,.06);
+      position: relative;
+    }
+    .avatar::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.10), transparent 60%);
+      pointer-events:none;
     }
     .avatar img{
       width:100%;
       height:100%;
       object-fit: cover;
       display:block;
+      position: relative;
     }
 
     /* overlay + drawer + modal */
@@ -375,15 +401,23 @@
       border:1px solid rgba(255,255,255,.14);
     }
     .pill button:hover{ background: rgba(255,255,255,.14); }
+
+    /* Toast live region */
+    #toast-wrap{ pointer-events:none; }
+    #toast-wrap > div{ pointer-events:auto; }
+
+    /* small helper: text clamp */
+    .line-clamp-2{
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
   </style>
 
   <script>
     tailwind.config = {
-      theme: {
-        extend: {
-          boxShadow: { glow: "0 16px 70px rgba(255,3,84,0.35)" }
-        }
-      }
+      theme: { extend: { boxShadow: { glow: "0 16px 70px rgba(255,3,84,0.35)" } } }
     };
   </script>
 </head>
@@ -399,7 +433,7 @@
   <!-- HEADER -->
   <header class="sticky top-0 z-[70] backdrop-blur-xl bg-black/20 border-b border-white/10">
     <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-3">
-      <a href="#katalog" class="flex items-center gap-3">
+      <a href="#katalog" class="flex items-center gap-3" aria-label="Przejdź do katalogu">
         <img src="https://i.imgur.com/ikYb7tH.png" alt="Velorie" class="h-10 w-10 rounded-xl ring-1 ring-white/10" />
         <div class="leading-tight">
           <div class="text-lg font-black tracking-tight">Velorie Market</div>
@@ -408,7 +442,7 @@
       </a>
 
       <div class="flex items-center gap-2">
-        <button id="btn-open-saved" class="btn btn-ghost px-4 py-2 text-sm" type="button" aria-label="Włącz filtr: zapisane">
+        <button id="btn-open-saved" class="btn btn-ghost px-4 py-2 text-sm" type="button" aria-pressed="false" aria-label="Włącz filtr: zapisane">
           <i data-lucide="bookmark" class="h-4 w-4"></i>
           <span>Zapisane</span>
           <span id="saved-pill" class="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs font-black">0</span>
@@ -471,9 +505,9 @@
             <!-- Row 1: Search + Sort -->
             <div class="grid lg:grid-cols-12 gap-3 items-end">
               <div class="lg:col-span-6">
-                <label class="label">Szukaj</label>
+                <label class="label" for="search-input">Szukaj</label>
                 <div class="relative">
-                  <input id="search-input" class="input pr-10" placeholder="Szukaj po nazwie, tagach, opisie..." />
+                  <input id="search-input" class="input pr-10" placeholder="Szukaj po nazwie, tagach, opisie..." autocomplete="off" />
                   <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/55">
                     <i data-lucide="search" class="h-4 w-4"></i>
                   </div>
@@ -481,7 +515,7 @@
               </div>
 
               <div class="lg:col-span-3">
-                <label class="label">Branża</label>
+                <label class="label" for="industry-select">Branża</label>
                 <select id="industry-select" class="input">
                   <option value="all">Wszystkie</option>
                   <option value="dev">Programista</option>
@@ -493,7 +527,7 @@
               </div>
 
               <div class="lg:col-span-3">
-                <label class="label">Sortowanie</label>
+                <label class="label" for="sort-select">Sortowanie</label>
                 <select id="sort-select" class="input">
                   <option value="recommended">Polecane</option>
                   <option value="newest">Najnowsze</option>
@@ -526,8 +560,8 @@
               <div class="lg:col-span-6">
                 <label class="label">Budżet (PLN)</label>
                 <div class="grid grid-cols-2 gap-2">
-                  <input id="budget-min" class="input" type="number" min="0" step="10" placeholder="Min. np. 100" />
-                  <input id="budget-max" class="input" type="number" min="0" step="10" placeholder="Max. np. 1000" />
+                  <input id="budget-min" class="input" type="number" min="0" step="10" placeholder="Min. np. 100" inputmode="numeric" />
+                  <input id="budget-max" class="input" type="number" min="0" step="10" placeholder="Max. np. 1000" inputmode="numeric" />
                 </div>
                 <div class="mt-2 flex flex-wrap gap-2">
                   <button class="chip" type="button" data-budget-preset="300">≤ 300</button>
@@ -565,7 +599,7 @@
       </div>
 
       <!-- RESULTS -->
-      <div class="mt-8 space-y-4" id="profiles-list">
+      <div class="mt-8 space-y-4" id="profiles-list" aria-live="polite" aria-busy="false">
         <!-- filled by JS -->
       </div>
 
@@ -608,7 +642,7 @@
       <div class="p-4 flex items-center justify-between gap-3 border-b border-white/10">
         <div class="flex items-center gap-3">
           <div class="avatar">
-            <img id="modal-avatar" src="" alt="Avatar profilu" />
+            <img id="modal-avatar" src="" alt="Avatar profilu" decoding="async" />
           </div>
           <div class="leading-tight">
             <div class="flex items-center gap-2 flex-wrap">
@@ -696,7 +730,7 @@
     <div class="p-4 flex items-center justify-between gap-3 border-b border-white/10">
       <div class="flex items-center gap-3">
         <div class="avatar">
-          <img id="panel-avatar" src="" alt="Ty" />
+          <img id="panel-avatar" src="" alt="Ty" decoding="async" />
         </div>
         <div class="leading-tight">
           <div class="font-black tracking-tight">Konto</div>
@@ -723,20 +757,20 @@
 
     <!-- tabs -->
     <div class="p-4">
-      <div class="grid grid-cols-2 gap-2">
-        <button class="btn btn-ghost px-4 py-3" data-tab="edit" type="button">
+      <div class="grid grid-cols-2 gap-2" role="tablist" aria-label="Zakładki konta">
+        <button class="btn btn-ghost px-4 py-3" data-tab="edit" type="button" role="tab" aria-selected="false">
           <i data-lucide="pencil" class="h-4 w-4"></i>
           <span>Profil</span>
         </button>
-        <button class="btn btn-ghost px-4 py-3" data-tab="preview" type="button">
+        <button class="btn btn-ghost px-4 py-3" data-tab="preview" type="button" role="tab" aria-selected="false">
           <i data-lucide="eye" class="h-4 w-4"></i>
           <span>Podgląd</span>
         </button>
-        <button class="btn btn-ghost px-4 py-3" data-tab="listing" type="button">
+        <button class="btn btn-ghost px-4 py-3" data-tab="listing" type="button" role="tab" aria-selected="false">
           <i data-lucide="file-plus" class="h-4 w-4"></i>
           <span>Ogłoszenie</span>
         </button>
-        <button class="btn btn-primary px-4 py-3" data-tab="shop" type="button">
+        <button class="btn btn-primary px-4 py-3" data-tab="shop" type="button" role="tab" aria-selected="true">
           <i data-lucide="shopping-bag" class="h-4 w-4"></i>
           <span>Plany</span>
         </button>
@@ -749,7 +783,7 @@
     <div class="p-4 space-y-4 overflow-auto" style="height: calc(100vh - 230px);">
 
       <!-- EDIT PROFILE -->
-      <section id="tab-edit" class="space-y-4">
+      <section id="tab-edit" class="space-y-4" role="tabpanel">
         <div class="glass rounded-2xl p-5">
           <div class="font-black flex items-center gap-2">
             <i data-lucide="pencil" class="h-5 w-5 text-[var(--accent)]"></i>
@@ -758,12 +792,12 @@
 
           <div class="mt-4 grid sm:grid-cols-2 gap-3">
             <div>
-              <label class="label">Nick / Imię</label>
+              <label class="label" for="edit-name">Nick / Imię</label>
               <input id="edit-name" class="input" />
               <div class="mt-1 text-xs text-white/45">Min. 2 znaki.</div>
             </div>
             <div>
-              <label class="label">Branża</label>
+              <label class="label" for="edit-industry">Branża</label>
               <select id="edit-industry" class="input">
                 <option value="dev">Programista</option>
                 <option value="gfx">Grafik</option>
@@ -774,12 +808,12 @@
             </div>
 
             <div class="sm:col-span-2">
-              <label class="label">Opis</label>
+              <label class="label" for="edit-about">Opis</label>
               <textarea id="edit-about" class="input" rows="5" placeholder="Napisz kilka zdań o sobie..."></textarea>
             </div>
 
             <div>
-              <label class="label">Dostępność</label>
+              <label class="label" for="edit-availability">Dostępność</label>
               <select id="edit-availability" class="input">
                 <option>24h</option>
                 <option>48h</option>
@@ -789,18 +823,18 @@
             </div>
 
             <div>
-              <label class="label">Budżet minimalny (PLN)</label>
-              <input id="edit-budget" class="input" type="number" min="0" step="1" />
+              <label class="label" for="edit-budget">Budżet minimalny (PLN)</label>
+              <input id="edit-budget" class="input" type="number" min="0" step="1" inputmode="numeric" />
             </div>
 
             <div class="sm:col-span-2">
-              <label class="label">Tagi (oddziel przecinkami)</label>
+              <label class="label" for="edit-tags">Tagi (oddziel przecinkami)</label>
               <input id="edit-tags" class="input" placeholder="React, Node, API..." />
               <div class="mt-1 text-xs text-white/45">Max 12 tagów.</div>
             </div>
 
             <div class="sm:col-span-2">
-              <label class="label">Avatar (URL)</label>
+              <label class="label" for="edit-avatar-url">Avatar (URL)</label>
               <input id="edit-avatar-url" class="input" placeholder="https://..." />
               <div class="mt-1 text-xs text-white/45">Jeśli puste — zostaje obecny.</div>
             </div>
@@ -833,15 +867,15 @@
 
           <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label class="label">Zdjęcie 1 URL</label>
+              <label class="label" for="edit-portfolio-1">Zdjęcie 1 URL</label>
               <input id="edit-portfolio-1" class="input" placeholder="https://..." />
             </div>
             <div>
-              <label class="label">Zdjęcie 2 URL</label>
+              <label class="label" for="edit-portfolio-2">Zdjęcie 2 URL</label>
               <input id="edit-portfolio-2" class="input" placeholder="https://..." />
             </div>
             <div>
-              <label class="label">Zdjęcie 3 URL</label>
+              <label class="label" for="edit-portfolio-3">Zdjęcie 3 URL</label>
               <input id="edit-portfolio-3" class="input" placeholder="https://..." />
             </div>
           </div>
@@ -849,7 +883,7 @@
       </section>
 
       <!-- PREVIEW -->
-      <section id="tab-preview" class="space-y-4 hidden">
+      <section id="tab-preview" class="space-y-4 hidden" role="tabpanel">
         <div class="glass rounded-2xl p-5">
           <div class="font-black flex items-center gap-2">
             <i data-lucide="eye" class="h-5 w-5 text-[var(--accent)]"></i>
@@ -864,7 +898,7 @@
       </section>
 
       <!-- LISTING -->
-      <section id="tab-listing" class="space-y-4 hidden">
+      <section id="tab-listing" class="space-y-4 hidden" role="tabpanel">
         <div class="glass rounded-2xl p-5">
           <div class="font-black flex items-center gap-2">
             <i data-lucide="file-plus" class="h-5 w-5 text-[var(--accent)]"></i>
@@ -876,11 +910,11 @@
 
           <div class="mt-4 grid sm:grid-cols-2 gap-3">
             <div>
-              <label class="label">Tytuł ogłoszenia</label>
+              <label class="label" for="listing-title">Tytuł ogłoszenia</label>
               <input id="listing-title" class="input" placeholder="np. Programista React/Node — szybkie MVP" />
             </div>
             <div>
-              <label class="label">Kanał kontaktu (główny)</label>
+              <label class="label" for="listing-contact-main">Kanał kontaktu (główny)</label>
               <select id="listing-contact-main" class="input">
                 <option>Discord</option>
                 <option>E-mail</option>
@@ -890,12 +924,12 @@
             </div>
 
             <div class="sm:col-span-2">
-              <label class="label">Krótki opis</label>
+              <label class="label" for="listing-short">Krótki opis</label>
               <input id="listing-short" class="input" placeholder="2–3 zdania: co robisz i dla kogo." />
             </div>
 
             <div class="sm:col-span-2">
-              <label class="label">Dłuższy opis</label>
+              <label class="label" for="listing-long">Dłuższy opis</label>
               <textarea id="listing-long" class="input" rows="6" placeholder="Szczegóły usług, proces, terminy, zasady..."></textarea>
             </div>
           </div>
@@ -914,7 +948,7 @@
       </section>
 
       <!-- SHOP -->
-      <section id="tab-shop" class="space-y-4">
+      <section id="tab-shop" class="space-y-4" role="tabpanel">
         <div class="glass rounded-2xl p-5">
           <div class="font-black flex items-center gap-2">
             <i data-lucide="shopping-bag" class="h-5 w-5 text-[var(--accent)]"></i>
@@ -988,13 +1022,13 @@
 
 <script>
 /**
- * Velorie Market — Katalog + Konto + Profil
- * - wyszukiwarka (debounce)
- * - filtry: Premium/Verified/≤72h/Zapisane + budżet min/max + presety
- * - aktywne filtry jako pill chips (z X)
- * - modal profilu: hash #profile=ID + next/prev + ESC + focus trap
- * - konto: edycja profilu + autosave + podgląd + ogłoszenie + plany
- * - zapisane + profile w localStorage
+ * Velorie Market — UX upgrade (SPA-like)
+ * - store + scheduled render (React-ish)
+ * - event delegation
+ * - stable modal handlers (no duplicate listeners)
+ * - hash routing #profile=ID with back/forward support
+ * - better a11y: aria-live toasts, focus trap, ESC, keyboard navigation
+ * - performance: caching filtered list, rAF render, lazy img, minimal DOM rewrites
  */
 
 (() => {
@@ -1021,13 +1055,36 @@
 
   function debounce(fn, delay = 250) {
     let t = null;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+  }
+
+  function rafThrottle(fn){
+    let scheduled = false;
     return (...args) => {
-      clearTimeout(t);
-      t = setTimeout(() => fn(...args), delay);
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => { scheduled = false; fn(...args); });
     };
   }
 
-  const setSaveStatus = (txt) => { $("#save-status") && ($("#save-status").textContent = txt); };
+  function setSaveStatus(txt){ $("#save-status") && ($("#save-status").textContent = txt); }
+
+  function isSafeImageURL(url){
+    const u = String(url || "").trim();
+    if (!u) return false;
+    // allow https only + data:image (optional)
+    if (u.startsWith("data:image/")) return true;
+    try{
+      const parsed = new URL(u);
+      return parsed.protocol === "https:";
+    }catch{
+      return false;
+    }
+  }
+
+  function safeImg(url, fallback = ""){
+    return isSafeImageURL(url) ? url : fallback;
+  }
 
   /* ------------------------------ toast ------------------------------ */
   const Toast = (() => {
@@ -1035,16 +1092,18 @@
     let queue = [];
     let showing = false;
 
-    function ensure() {
+    function ensure(){
       if (wrap) return wrap;
       wrap = document.createElement("div");
       wrap.id = "toast-wrap";
       wrap.className = "fixed bottom-5 left-1/2 -translate-x-1/2 z-[120] space-y-2";
+      wrap.setAttribute("role", "status");
+      wrap.setAttribute("aria-live", "polite");
       document.body.appendChild(wrap);
       return wrap;
     }
 
-    function showNext() {
+    function showNext(){
       if (showing) return;
       const item = queue.shift();
       if (!item) return;
@@ -1054,9 +1113,12 @@
 
       const el = document.createElement("div");
       el.className = "glass rounded-2xl px-4 py-3 text-sm text-white/90 border border-white/10 shadow-glow max-w-[92vw] flex items-center gap-2";
-      el.innerHTML = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white/5 border border-white/10">
-        <i data-lucide="${item.icon || "sparkles"}" class="h-4 w-4 text-[var(--accent)]"></i>
-      </span><span>${escapeHTML(item.message)}</span>`;
+      el.innerHTML = `
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white/5 border border-white/10">
+          <i data-lucide="${item.icon || "sparkles"}" class="h-4 w-4 text-[var(--accent)]"></i>
+        </span>
+        <span class="line-clamp-2">${escapeHTML(item.message)}</span>
+      `;
       wrap.appendChild(el);
       try { lucide.createIcons(); } catch {}
 
@@ -1073,7 +1135,7 @@
     }
 
     return {
-      push(message, icon = "sparkles", ms = 1700) {
+      push(message, icon="sparkles", ms=1700){
         queue.push({ message, icon, ms });
         showNext();
       }
@@ -1086,35 +1148,17 @@
     keySaved: "vm_saved_v2",
     keySubs: "vm_subs_v2",
     keyMe: "vm_me_v2",
-    getProfiles() {
-      const v = localStorage.getItem(this.keyProfiles);
-      return safeJSON.parse(v, null);
-    },
-    setProfiles(list) {
-      localStorage.setItem(this.keyProfiles, safeJSON.stringify(list, "[]"));
-    },
-    getSaved() {
-      const v = localStorage.getItem(this.keySaved);
-      return new Set(safeJSON.parse(v, []));
-    },
-    setSaved(setOrArr) {
+    getProfiles(){ return safeJSON.parse(localStorage.getItem(this.keyProfiles), null); },
+    setProfiles(list){ localStorage.setItem(this.keyProfiles, safeJSON.stringify(list, "[]")); },
+    getSaved(){ return new Set(safeJSON.parse(localStorage.getItem(this.keySaved), [])); },
+    setSaved(setOrArr){
       const arr = Array.isArray(setOrArr) ? setOrArr : Array.from(setOrArr);
       localStorage.setItem(this.keySaved, safeJSON.stringify(arr, "[]"));
     },
-    getSubs() {
-      const v = localStorage.getItem(this.keySubs);
-      return safeJSON.parse(v, { premium: false, verified: false });
-    },
-    setSubs(obj) {
-      localStorage.setItem(this.keySubs, safeJSON.stringify(obj, "{}"));
-    },
-    getMe() {
-      const v = localStorage.getItem(this.keyMe);
-      return safeJSON.parse(v, null);
-    },
-    setMe(obj) {
-      localStorage.setItem(this.keyMe, safeJSON.stringify(obj, "{}"));
-    }
+    getSubs(){ return safeJSON.parse(localStorage.getItem(this.keySubs), { premium:false, verified:false }); },
+    setSubs(obj){ localStorage.setItem(this.keySubs, safeJSON.stringify(obj, "{}")); },
+    getMe(){ return safeJSON.parse(localStorage.getItem(this.keyMe), null); },
+    setMe(obj){ localStorage.setItem(this.keyMe, safeJSON.stringify(obj, "{}")); }
   };
 
   /* ----------------------------- seed data ---------------------------- */
@@ -1184,10 +1228,10 @@
     }
   ];
 
-  function ensureInit() {
+  function ensureInit(){
     if (!LS.getProfiles()) LS.setProfiles(FALLBACK_PROFILES);
 
-    if (!LS.getMe()) {
+    if (!LS.getMe()){
       LS.setMe({
         id: "me",
         name: "zxq0",
@@ -1209,137 +1253,130 @@
     }
 
     if (!localStorage.getItem(LS.keySaved)) LS.setSaved([]);
-    if (!localStorage.getItem(LS.keySubs)) LS.setSubs({ premium: false, verified: false });
+    if (!localStorage.getItem(LS.keySubs)) LS.setSubs({ premium:false, verified:false });
   }
 
-  /* ----------------------------- state ------------------------------ */
-  const state = {
-    q: "",
-    industry: "all",
-    premiumOnly: false,
-    verifiedOnly: false,
-    availableOnly: false,
-    savedOnly: false,
-    sort: "recommended",
-    budgetMin: null,
-    budgetMax: null,
+  /* ------------------------------ store ------------------------------ */
+  const store = (() => {
+    const state = {
+      // filters
+      q: "",
+      industry: "all",
+      premiumOnly: false,
+      verifiedOnly: false,
+      availableOnly: false,
+      savedOnly: false,
+      sort: "recommended",
+      budgetMin: null,
+      budgetMax: null,
 
-    pageSize: 6,
-    shown: 0,
-    lastRenderToken: 0,
+      // list
+      pageSize: 6,
+      shown: 0,
 
-    // modal
-    modalOpen: false,
-    modalList: [],
-    modalIndex: -1,
-    lastFocus: null
-  };
+      // routing/modal
+      modalOpen: false,
+      modalList: [],
+      modalIndex: -1,
+      lastFocus: null,
+
+      // memoization
+      memoKey: "",
+      memoFull: [],
+    };
+
+    const listeners = new Set();
+    const setState = (patch) => {
+      Object.assign(state, patch);
+      listeners.forEach(fn => fn(state));
+    };
+    const subscribe = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
+    return { state, setState, subscribe };
+  })();
 
   /* ------------------------- progress + reveal ------------------------ */
-  function initProgress() {
+  function initProgress(){
     const bar = $("#scroll-progress");
     if (!bar) return;
-    const onScroll = () => {
+    const onScroll = rafThrottle(() => {
       const doc = document.documentElement;
       const max = doc.scrollHeight - doc.clientHeight;
       const p = max <= 0 ? 0 : (doc.scrollTop / max) * 100;
       bar.style.width = `${p}%`;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
+    });
+    window.addEventListener("scroll", onScroll, { passive:true });
     onScroll();
   }
 
-  function initReveal() {
-    const els = $$(".animate-on-scroll");
+  function initReveal(root=document){
+    const els = $$(".animate-on-scroll", root);
     if (!els.length) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("is-visible"); });
-      },
-      { threshold: 0.12 }
-    );
-    els.forEach((el) => io.observe(el));
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("is-visible"); });
+    }, { threshold: 0.12 });
+    els.forEach(el => io.observe(el));
   }
 
-  /* ------------------------------ modal ------------------------------ */
-  function setOverlay(open) {
+  /* --------------------------- routing helpers ------------------------ */
+  function getHashProfileId(){
+    const h = location.hash || "";
+    const m = h.match(/profile=([^&]+)/);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  function setHashProfileId(id){
+    if (!id){
+      if (location.hash.includes("profile=")){
+        history.pushState(null, "", location.pathname + location.search + "#katalog");
+      }
+      return;
+    }
+    history.pushState(null, "", location.pathname + location.search + `#profile=${encodeURIComponent(id)}`);
+  }
+
+  /* ------------------------------ overlay ---------------------------- */
+  function setOverlay(open){
     const ov = $("#overlay");
     if (!ov) return;
     ov.dataset.open = open ? "true" : "false";
     ov.setAttribute("aria-hidden", open ? "false" : "true");
   }
 
-  function setPanelOpen(open) {
+  function lockScroll(locked){
+    document.body.style.overflow = locked ? "hidden" : "";
+  }
+
+  function setPanelOpen(open){
     const panel = $("#user-panel");
     if (!panel) return;
     panel.dataset.open = open ? "true" : "false";
-    setOverlay(open || state.modalOpen);
-    document.body.style.overflow = (open || state.modalOpen) ? "hidden" : "";
+    const modalOpen = store.state.modalOpen;
+    setOverlay(open || modalOpen);
+    lockScroll(open || modalOpen);
   }
 
-  function setModalOpen(open) {
+  function setModalOpen(open){
     const modal = $("#profile-modal");
     if (!modal) return;
-    state.modalOpen = open;
 
-    if (open) state.lastFocus = document.activeElement;
+    if (open) store.setState({ lastFocus: document.activeElement });
     modal.dataset.open = open ? "true" : "false";
 
-    setOverlay(open || ($("#user-panel")?.dataset.open === "true"));
-    document.body.style.overflow = (open || $("#user-panel")?.dataset.open === "true") ? "hidden" : "";
+    store.setState({ modalOpen: open });
+
+    const panelOpen = $("#user-panel")?.dataset.open === "true";
+    setOverlay(open || panelOpen);
+    lockScroll(open || panelOpen);
 
     if (open) setTimeout(() => $("#modal-close")?.focus(), 0);
     else {
-      const el = state.lastFocus;
+      const el = store.state.lastFocus;
       if (el && typeof el.focus === "function") el.focus();
     }
   }
 
-  function getHashProfileId() {
-    const h = location.hash || "";
-    const m = h.match(/profile=([^&]+)/);
-    return m ? decodeURIComponent(m[1]) : null;
-  }
-  function setHashProfileId(id) {
-    if (!id) {
-      if (location.hash.includes("profile=")) {
-        history.replaceState(null, "", location.pathname + location.search + "#katalog");
-      }
-      return;
-    }
-    history.replaceState(null, "", location.pathname + location.search + `#profile=${encodeURIComponent(id)}`);
-  }
-
-  function openProfileModalById(id, list) {
-    const profiles = list || getFilteredProfiles(true);
-    const idx = profiles.findIndex(p => p.id === id);
-    if (idx === -1) {
-      Toast.push("Nie znaleziono profilu.", "alert-triangle");
-      return;
-    }
-    state.modalList = profiles;
-    state.modalIndex = idx;
-    renderModal();
-    setModalOpen(true);
-    setHashProfileId(id);
-  }
-
-  function closeProfileModal() {
-    setModalOpen(false);
-    setHashProfileId(null);
-  }
-
-  function moveModal(delta) {
-    if (!state.modalOpen) return;
-    const len = state.modalList.length;
-    if (!len) return;
-    state.modalIndex = (state.modalIndex + delta + len) % len;
-    renderModal();
-    setHashProfileId(state.modalList[state.modalIndex].id);
-  }
-
-  function modalTrapFocus(e) {
-    if (!state.modalOpen) return;
+  /* --------------------------- focus trap ---------------------------- */
+  function trapFocus(e){
+    if (!store.state.modalOpen) return;
     if (e.key !== "Tab") return;
 
     const modal = $("#profile-modal");
@@ -1356,208 +1393,28 @@
     const last = focusables[focusables.length - 1];
 
     if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
+      e.preventDefault(); last.focus();
     } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
+      e.preventDefault(); first.focus();
     }
   }
 
-  /* --------------------------- drawer/panel --------------------------- */
-  function switchTab(tab) {
-    const ids = ["edit", "preview", "listing", "shop"];
-    ids.forEach((id) => {
-      const sec = $(`#tab-${id}`);
-      if (sec) sec.classList.toggle("hidden", id !== tab);
-    });
-  }
-
-  function bindPanel() {
-    $("#btn-open-panel")?.addEventListener("click", () => setPanelOpen(true));
-    $("#btn-open-panel-inline")?.addEventListener("click", () => setPanelOpen(true));
-    $("#btn-close-panel")?.addEventListener("click", () => setPanelOpen(false));
-    $("#overlay")?.addEventListener("click", () => {
-      if (state.modalOpen) closeProfileModal();
-      else setPanelOpen(false);
-    });
-
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        if (state.modalOpen) closeProfileModal();
-        else if ($("#user-panel")?.dataset.open === "true") setPanelOpen(false);
-      }
-      if (state.modalOpen && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
-        moveModal(e.key === "ArrowLeft" ? -1 : 1);
-      }
-    });
-
-    document.addEventListener("keydown", modalTrapFocus);
-
-    $$("[data-tab]").forEach((btn) => {
-      btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-    });
-
-    $("#btn-open-me-modal")?.addEventListener("click", () => {
-      setPanelOpen(false);
-      openProfileModalById("me");
-    });
-  }
-
-  /* ------------------------------ filters ----------------------------- */
-  function bindFilters() {
-    $("#industry-select")?.addEventListener("change", (e) => {
-      state.industry = e.target.value;
-      resetPagination();
-      render();
-    });
-
-    $("#sort-select")?.addEventListener("change", (e) => {
-      state.sort = e.target.value;
-      resetPagination();
-      render();
-    });
-
-    const onSearch = debounce(() => {
-      state.q = ($("#search-input")?.value || "").trim();
-      resetPagination();
-      render();
-    }, 220);
-
-    $("#search-input")?.addEventListener("input", onSearch);
-
-    const toggleChip = (id, key) => {
-      const el = $(id);
-      if (!el) return;
-      el.addEventListener("click", () => {
-        state[key] = !state[key];
-        el.dataset.active = state[key] ? "true" : "false";
-        el.setAttribute("aria-pressed", state[key] ? "true" : "false");
-        resetPagination();
-        render();
-      });
-    };
-
-    toggleChip("#filter-saved", "savedOnly");
-    toggleChip("#filter-premium", "premiumOnly");
-    toggleChip("#filter-verified", "verifiedOnly");
-    toggleChip("#filter-available", "availableOnly");
-
-    // header shortcut: toggles saved filter + sync chip
-    $("#btn-open-saved")?.addEventListener("click", () => {
-      state.savedOnly = !state.savedOnly;
-      const el = $("#filter-saved");
-      if (el) {
-        el.dataset.active = state.savedOnly ? "true" : "false";
-        el.setAttribute("aria-pressed", state.savedOnly ? "true" : "false");
-      }
-      resetPagination();
-      render();
-      Toast.push(state.savedOnly ? "Filtr: zapisane" : "Wyłączono filtr: zapisane", "bookmark");
-    });
-
-    // budget
-    const onBudget = debounce(() => {
-      const minRaw = $("#budget-min")?.value ?? "";
-      const maxRaw = $("#budget-max")?.value ?? "";
-
-      const minV = Number(minRaw);
-      const maxV = Number(maxRaw);
-
-      state.budgetMin = (minRaw !== "" && Number.isFinite(minV)) ? Math.max(0, minV) : null;
-      state.budgetMax = (maxRaw !== "" && Number.isFinite(maxV)) ? Math.max(0, maxV) : null;
-
-      // if both set and invalid order, swap
-      if (state.budgetMin != null && state.budgetMax != null && state.budgetMin > state.budgetMax) {
-        const t = state.budgetMin;
-        state.budgetMin = state.budgetMax;
-        state.budgetMax = t;
-        $("#budget-min") && ($("#budget-min").value = String(state.budgetMin));
-        $("#budget-max") && ($("#budget-max").value = String(state.budgetMax));
-      }
-
-      resetPagination();
-      render();
-    }, 220);
-
-    $("#budget-min")?.addEventListener("input", onBudget);
-    $("#budget-max")?.addEventListener("input", onBudget);
-
-    $$("[data-budget-preset]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const v = Number(btn.dataset.budgetPreset || 0);
-        const max = $("#budget-max");
-        const min = $("#budget-min");
-        if (v <= 0) {
-          if (min) min.value = "";
-          if (max) max.value = "";
-        } else {
-          if (min) min.value = "";
-          if (max) max.value = String(v);
-        }
-        onBudget();
-      });
-    });
-
-    $("#btn-reset-filters")?.addEventListener("click", () => {
-      state.q = "";
-      state.industry = "all";
-      state.premiumOnly = false;
-      state.verifiedOnly = false;
-      state.availableOnly = false;
-      state.savedOnly = false;
-      state.sort = "recommended";
-      state.budgetMin = null;
-      state.budgetMax = null;
-
-      const industry = $("#industry-select");
-      const sort = $("#sort-select");
-      const q = $("#search-input");
-      if (industry) industry.value = "all";
-      if (sort) sort.value = "recommended";
-      if (q) q.value = "";
-
-      $("#budget-min") && ($("#budget-min").value = "");
-      $("#budget-max") && ($("#budget-max").value = "");
-
-      ["#filter-saved","#filter-premium", "#filter-verified", "#filter-available"].forEach((id) => {
-        const el = $(id);
-        if (!el) return;
-        el.dataset.active = "false";
-        el.setAttribute("aria-pressed", "false");
-      });
-
-      resetPagination();
-      render();
-      Toast.push("Wyczyszczono filtry.", "rotate-ccw");
-    });
-
-    $("#btn-load-more")?.addEventListener("click", () => {
-      state.shown += state.pageSize;
-      renderList();
-    });
-  }
-
-  function resetPagination() {
-    state.shown = 0;
-  }
-
-  /* --------------------------- list logic ----------------------------- */
-  function parseAvailableHours(str) {
+  /* ------------------------------ logic ------------------------------ */
+  function parseAvailableHours(str){
     const s = String(str || "").toLowerCase();
     if (s.includes("tydz")) return 168;
     const m = s.match(/(\d+)\s*h/);
     return m ? Number(m[1]) : 9999;
   }
 
-  function normalizeText(s) {
+  function normalizeText(s){
     return String(s || "")
       .toLowerCase()
       .normalize("NFD")
       .replace(/\p{Diacritic}/gu, "");
   }
 
-  function scoreRecommended(p) {
+  function scoreRecommended(p){
     const premium = p.premium ? 1 : 0;
     const verified = p.verified ? 1 : 0;
     const rating = Number(p.rating || 0);
@@ -1565,57 +1422,70 @@
     return premium * 4 + verified * 2.2 + rating * 1.2 + recency / 1e12;
   }
 
-  function getFilteredProfiles(ignorePagination = false) {
-    const profiles = LS.getProfiles() || [];
-    const savedSet = LS.getSaved();
-    let out = profiles.slice();
-
-    if (state.savedOnly) out = out.filter(p => savedSet.has(p.id));
-    if (state.industry !== "all") out = out.filter((p) => p.industry === state.industry);
-    if (state.premiumOnly) out = out.filter((p) => !!p.premium);
-    if (state.verifiedOnly) out = out.filter((p) => !!p.verified);
-    if (state.availableOnly) out = out.filter((p) => parseAvailableHours(p.availableIn) <= 72);
-
-    // budget
-    if (state.budgetMin != null) out = out.filter(p => Number(p.minBudget || 0) >= state.budgetMin);
-    if (state.budgetMax != null) out = out.filter(p => Number(p.minBudget || 0) <= state.budgetMax);
-
-    // search
-    if (state.q) {
-      const nq = normalizeText(state.q);
-      out = out.filter(p => {
-        const blob = [
-          p.name, p.tagline, (p.tags || []).join(" "),
-          p.industryLabel, p.about, (p.listing?.title || ""), (p.listing?.short || ""), (p.listing?.long || "")
-        ].join(" ");
-        return normalizeText(blob).includes(nq);
-      });
-    }
-
-    // sorting
-    if (state.sort === "newest") out.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    else if (state.sort === "rating") out.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    else if (state.sort === "verified") out.sort((a, b) => Number(!!b.verified) - Number(!!a.verified));
-    else out.sort((a, b) => scoreRecommended(b) - scoreRecommended(a));
-
-    if (ignorePagination) return out;
-
-    if (state.shown <= 0) state.shown = state.pageSize;
-    return out.slice(0, state.shown);
+  function computeMemoKey(){
+    const s = store.state;
+    const savedSize = LS.getSaved().size;
+    return [
+      s.q, s.industry, s.premiumOnly, s.verifiedOnly, s.availableOnly, s.savedOnly, s.sort,
+      s.budgetMin ?? "", s.budgetMax ?? "", savedSize,
+      // profiles length + basic subs to invalidate when panel changes
+      (LS.getProfiles()||[]).length, LS.getSubs().premium, LS.getSubs().verified
+    ].join("|");
   }
 
-  function badgesHTML(p) {
-    const verified = p.verified
-      ? `<span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>`
-      : "";
-    const premium = p.premium
-      ? `<span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>`
-      : "";
+  function getFilteredProfiles(ignorePagination=false){
+    const s = store.state;
+    const memoKey = computeMemoKey();
+
+    if (memoKey !== s.memoKey){
+      let out = (LS.getProfiles() || []).slice();
+      const savedSet = LS.getSaved();
+
+      if (s.savedOnly) out = out.filter(p => savedSet.has(p.id));
+      if (s.industry !== "all") out = out.filter(p => p.industry === s.industry);
+      if (s.premiumOnly) out = out.filter(p => !!p.premium);
+      if (s.verifiedOnly) out = out.filter(p => !!p.verified);
+      if (s.availableOnly) out = out.filter(p => parseAvailableHours(p.availableIn) <= 72);
+
+      if (s.budgetMin != null) out = out.filter(p => Number(p.minBudget || 0) >= s.budgetMin);
+      if (s.budgetMax != null) out = out.filter(p => Number(p.minBudget || 0) <= s.budgetMax);
+
+      if (s.q){
+        const nq = normalizeText(s.q);
+        out = out.filter(p => {
+          const blob = [
+            p.name, p.tagline, (p.tags || []).join(" "),
+            p.industryLabel, p.about, (p.listing?.title||""), (p.listing?.short||""), (p.listing?.long||"")
+          ].join(" ");
+          return normalizeText(blob).includes(nq);
+        });
+      }
+
+      if (s.sort === "newest") out.sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
+      else if (s.sort === "rating") out.sort((a,b)=> (b.rating||0) - (a.rating||0));
+      else if (s.sort === "verified") out.sort((a,b)=> Number(!!b.verified) - Number(!!a.verified));
+      else out.sort((a,b)=> scoreRecommended(b) - scoreRecommended(a));
+
+      store.setState({ memoKey, memoFull: out });
+    }
+
+    const full = store.state.memoFull;
+    if (ignorePagination) return full;
+
+    if (store.state.shown <= 0) store.setState({ shown: store.state.pageSize });
+    return full.slice(0, store.state.shown);
+  }
+
+  function resetPagination(){ store.setState({ shown: 0 }); }
+
+  /* ------------------------------ templating ------------------------- */
+  function badgesHTML(p){
+    const verified = p.verified ? `<span class="badge-verified"><i data-lucide="badge-check" class="h-4 w-4"></i> Verified</span>` : "";
+    const premium = p.premium ? `<span class="badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>` : "";
     return `${verified}${premium}`;
   }
 
-  function profileCardHTML(p, savedSet) {
-    const isSaved = savedSet.has(p.id);
+  function profileCardHTML(p, isSaved){
     const saveLabel = isSaved ? "Zapisano" : "Zapisz";
     const saveIcon = isSaved ? "bookmark-check" : "bookmark";
 
@@ -1628,18 +1498,19 @@
 
     const port = (p.portfolio || []).slice(0, 3);
     const thumbs = [0,1,2].map(i => {
-      const src = port[i] || "";
-      return `<div class="thumb aspect-[4/3]">${src ? `<img src="${escapeHTML(src)}" alt="Portfolio" loading="lazy" />` : ""}</div>`;
+      const src = safeImg(port[i], "");
+      return `<div class="thumb aspect-[4/3]">${src ? `<img src="${escapeHTML(src)}" alt="Portfolio" loading="lazy" decoding="async" />` : ""}</div>`;
     }).join("");
 
     const short = (p.listing?.short || p.tagline || "").trim();
+    const avatar = safeImg(p.avatar, "");
 
     return `
       <article class="profile-card animate-on-scroll p-4 md:p-5" data-profile-id="${escapeHTML(p.id)}">
         <div class="flex flex-col md:flex-row md:items-center gap-4">
-          <button class="text-left flex items-center gap-3 min-w-[260px] group" type="button" data-open="${escapeHTML(p.id)}" aria-label="Otwórz profil ${escapeHTML(p.name)}">
+          <button class="text-left flex items-center gap-3 min-w-[260px] group" type="button" data-open-profile="${escapeHTML(p.id)}" aria-label="Otwórz profil ${escapeHTML(p.name)}">
             <div class="avatar">
-              <img src="${escapeHTML(p.avatar || "")}" alt="Avatar" loading="lazy" />
+              <img src="${escapeHTML(avatar)}" alt="Avatar" loading="lazy" decoding="async" />
             </div>
             <div class="leading-tight">
               <div class="flex items-center gap-2 flex-wrap">
@@ -1647,7 +1518,7 @@
                 ${badgesHTML(p)}
               </div>
               <div class="text-sm text-white/70 font-semibold">${escapeHTML(p.industryLabel || "")}</div>
-              <div class="text-xs text-white/55">${escapeHTML(short)}</div>
+              <div class="text-xs text-white/55 line-clamp-2">${escapeHTML(short)}</div>
             </div>
           </button>
 
@@ -1662,11 +1533,11 @@
           </div>
 
           <div class="flex md:flex-col gap-2 md:items-end">
-            <button class="btn btn-ghost px-4 py-3 w-full md:w-auto btn-save" type="button" data-save="${escapeHTML(p.id)}">
+            <button class="btn btn-ghost px-4 py-3 w-full md:w-auto" type="button" data-toggle-save="${escapeHTML(p.id)}" aria-pressed="${isSaved ? "true":"false"}">
               <i data-lucide="${saveIcon}" class="h-4 w-4"></i>
               <span>${saveLabel}</span>
             </button>
-            <button class="btn btn-outline px-4 py-3 w-full md:w-auto" type="button" data-open="${escapeHTML(p.id)}">
+            <button class="btn btn-outline px-4 py-3 w-full md:w-auto" type="button" data-open-profile="${escapeHTML(p.id)}">
               <i data-lucide="external-link" class="h-4 w-4"></i>
               <span>Profil</span>
             </button>
@@ -1676,8 +1547,8 @@
     `;
   }
 
-  function skeletonHTML(count = 3) {
-    return Array.from({ length: count }).map(() => `
+  function skeletonHTML(count=3){
+    return Array.from({ length: count }).map(()=>`
       <div class="skel p-5">
         <div class="flex items-center gap-3">
           <div class="rounded-2xl bg-white/10 w-14 h-14"></div>
@@ -1696,150 +1567,37 @@
     `).join("");
   }
 
-  function renderActiveFiltersPills() {
-    const wrap = $("#active-filters");
-    if (!wrap) return;
-
-    const pills = [];
-    const actions = [];
-
-    const add = (label, onClear) => {
-      pills.push(`
-        <span class="pill">
-          ${escapeHTML(label)}
-          <button type="button" aria-label="Usuń filtr">×</button>
-        </span>
-      `);
-      actions.push(onClear);
-    };
-
-    if (state.q) add(`Szukaj: ${state.q}`, () => { state.q=""; $("#search-input").value=""; });
-    if (state.industry !== "all") add(`Branża: ${state.industry}`, () => { state.industry="all"; $("#industry-select").value="all"; });
-    if (state.premiumOnly) add("Premium", () => { state.premiumOnly=false; const el=$("#filter-premium"); el.dataset.active="false"; el.setAttribute("aria-pressed","false"); });
-    if (state.verifiedOnly) add("Verified", () => { state.verifiedOnly=false; const el=$("#filter-verified"); el.dataset.active="false"; el.setAttribute("aria-pressed","false"); });
-    if (state.availableOnly) add("≤72h", () => { state.availableOnly=false; const el=$("#filter-available"); el.dataset.active="false"; el.setAttribute("aria-pressed","false"); });
-    if (state.savedOnly) add("Zapisane", () => { state.savedOnly=false; const el=$("#filter-saved"); el.dataset.active="false"; el.setAttribute("aria-pressed","false"); });
-    if (state.budgetMin != null || state.budgetMax != null) {
-      add(`Budżet: ${state.budgetMin ?? 0}–${state.budgetMax ?? "∞"} PLN`, () => {
-        state.budgetMin=null; state.budgetMax=null;
-        $("#budget-min").value=""; $("#budget-max").value="";
-      });
-    }
-
-    if (!pills.length) {
-      wrap.classList.add("hidden");
-      wrap.innerHTML = "";
-      return;
-    }
-
-    wrap.classList.remove("hidden");
-    wrap.innerHTML = pills.join("");
-
-    const nodes = $$(".pill", wrap);
-    nodes.forEach((node, i) => {
-      const btn = node.querySelector("button");
-      const act = actions[i];
-      if (btn && act) {
-        btn.addEventListener("click", () => {
-          act();
-          resetPagination();
-          render();
-        });
-      }
-    });
+  /* -------------------------- modal operations ------------------------ */
+  function openProfileModalById(id, list){
+    const profiles = list || getFilteredProfiles(true);
+    const idx = profiles.findIndex(p => p.id === id);
+    if (idx === -1){ Toast.push("Nie znaleziono profilu.", "alert-triangle"); return; }
+    store.setState({ modalList: profiles, modalIndex: idx });
+    renderModal();
+    setModalOpen(true);
+    setHashProfileId(id);
   }
 
-  function renderList() {
-    const listEl = $("#profiles-list");
-    if (!listEl) return;
-
-    const token = ++state.lastRenderToken;
-    listEl.innerHTML = skeletonHTML(3);
-
-    setTimeout(() => {
-      if (token !== state.lastRenderToken) return;
-
-      const saved = LS.getSaved();
-      const full = getFilteredProfiles(true);
-      const shownList = getFilteredProfiles(false);
-      const total = full.length;
-
-      $("#total-count") && ($("#total-count").textContent = String(total));
-      $("#shown-count") && ($("#shown-count").textContent = String(shownList.length));
-
-      const filtersCount =
-        Number(!!state.q) +
-        Number(state.industry !== "all") +
-        Number(state.premiumOnly) +
-        Number(state.verifiedOnly) +
-        Number(state.availableOnly) +
-        Number(state.savedOnly) +
-        Number(state.budgetMin != null || state.budgetMax != null);
-
-      $("#stat-results") && ($("#stat-results").textContent = String(total));
-      $("#stat-saved") && ($("#stat-saved").textContent = String(saved.size));
-      $("#stat-filters") && ($("#stat-filters").textContent = String(filtersCount));
-
-      $("#saved-pill") && ($("#saved-pill").textContent = String(saved.size));
-      $("#results-hint") && ($("#results-hint").textContent = state.savedOnly ? "• tryb: zapisane" : "");
-
-      renderActiveFiltersPills();
-
-      if (!shownList.length) {
-        listEl.innerHTML = `
-          <div class="glass rounded-2xl p-6 text-white/80">
-            <div class="flex items-center gap-2 text-white/90 font-black">
-              <i data-lucide="search-x" class="h-5 w-5 text-[var(--accent)]"></i>
-              Brak wyników
-            </div>
-            <p class="mt-2 text-sm text-white/70">Zmień filtry lub wyszukiwane hasło.</p>
-          </div>
-        `;
-        try { lucide.createIcons(); } catch {}
-        return;
-      }
-
-      listEl.innerHTML = shownList.map((p) => profileCardHTML(p, saved)).join("");
-
-      $$(".btn-save", listEl).forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const id = btn.dataset.save;
-          if (!id) return;
-          const set = LS.getSaved();
-          if (set.has(id)) {
-            set.delete(id);
-            Toast.push("Usunięto z zapisanych.", "bookmark-minus");
-          } else {
-            set.add(id);
-            Toast.push("Dodano do zapisanych.", "bookmark-plus");
-          }
-          LS.setSaved(set);
-          renderList();
-        });
-      });
-
-      $$("[data-open]", listEl).forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const id = btn.dataset.open;
-          if (!id) return;
-          openProfileModalById(id, full);
-        });
-      });
-
-      const loadMore = $("#btn-load-more");
-      if (loadMore) loadMore.style.display = (state.shown < total) ? "inline-flex" : "none";
-
-      initReveal();
-      try { lucide.createIcons(); } catch {}
-    }, 110);
+  function closeProfileModal(){
+    setModalOpen(false);
+    setHashProfileId(null);
   }
 
-  /* ------------------------------ modal render ------------------------ */
-  function renderModal() {
-    const p = state.modalList[state.modalIndex];
+  function moveModal(delta){
+    if (!store.state.modalOpen) return;
+    const len = store.state.modalList.length;
+    if (!len) return;
+    const nextIndex = (store.state.modalIndex + delta + len) % len;
+    store.setState({ modalIndex: nextIndex });
+    renderModal();
+    setHashProfileId(store.state.modalList[nextIndex].id);
+  }
+
+  function renderModal(){
+    const p = store.state.modalList[store.state.modalIndex];
     if (!p) return;
 
-    $("#modal-avatar") && ($("#modal-avatar").src = p.avatar || "");
+    $("#modal-avatar") && ($("#modal-avatar").src = safeImg(p.avatar,""));
     $("#modal-name") && ($("#modal-name").textContent = p.name || "Profil");
     $("#modal-sub") && ($("#modal-sub").textContent = `${p.industryLabel || ""} • ${p.tagline || ""}`);
 
@@ -1858,55 +1616,49 @@
 
     const port = (p.portfolio || []).slice(0, 3);
     const thumbs = [0,1,2].map(i => {
-      const src = port[i] || "";
-      return `
-        <div class="thumb aspect-[4/3]">
-          ${src ? `<img src="${escapeHTML(src)}" alt="Portfolio" loading="lazy" />` : ""}
-        </div>`;
+      const src = safeImg(port[i], "");
+      return `<div class="thumb aspect-[4/3]">${src ? `<img src="${escapeHTML(src)}" alt="Portfolio" loading="lazy" decoding="async" />` : ""}</div>`;
     }).join("");
     $("#modal-portfolio") && ($("#modal-portfolio").innerHTML = thumbs);
 
     const about = (p.about || p.listing?.long || p.listing?.short || p.tagline || "Brak opisu.").trim();
     $("#modal-about") && ($("#modal-about").textContent = about);
 
-    $("#btn-copy-name")?.addEventListener("click", () => {
-      navigator.clipboard?.writeText(p.name || "").then(
-        () => Toast.push("Skopiowano nick.", "copy"),
-        () => Toast.push("Nie udało się skopiować.", "alert-triangle")
-      );
-    });
-
+    // sync save button
     const saveBtn = $("#btn-save-from-modal");
-    if (saveBtn) {
+    if (saveBtn){
       const set = LS.getSaved();
       const isSaved = set.has(p.id);
-      saveBtn.innerHTML = `<i data-lucide="${isSaved ? "bookmark-check" : "bookmark"}" class="h-4 w-4"></i><span>${isSaved ? "Zapisano" : "Zapisz"}</span>`;
-      saveBtn.onclick = () => {
-        const s = LS.getSaved();
-        if (s.has(p.id)) { s.delete(p.id); Toast.push("Usunięto z zapisanych.", "bookmark-minus"); }
-        else { s.add(p.id); Toast.push("Dodano do zapisanych.", "bookmark-plus"); }
-        LS.setSaved(s);
-        renderList();
-        renderModal();
-      };
+      saveBtn.innerHTML = `<i data-lucide="${isSaved ? "bookmark-check":"bookmark"}" class="h-4 w-4"></i><span>${isSaved ? "Zapisano":"Zapisz"}</span>`;
+      saveBtn.setAttribute("aria-pressed", isSaved ? "true":"false");
     }
 
     try { lucide.createIcons(); } catch {}
   }
 
-  function bindModal() {
-    $("#modal-close")?.addEventListener("click", closeProfileModal);
-    $("#modal-prev")?.addEventListener("click", () => moveModal(-1));
-    $("#modal-next")?.addEventListener("click", () => moveModal(1));
+  /* --------------------------- panel operations ----------------------- */
+  function switchTab(tab){
+    const ids = ["edit","preview","listing","shop"];
+    ids.forEach(id => {
+      const sec = $(`#tab-${id}`);
+      if (sec) sec.classList.toggle("hidden", id !== tab);
+    });
+
+    // aria-selected
+    $$("[data-tab]").forEach(btn => {
+      const selected = btn.dataset.tab === tab;
+      btn.setAttribute("aria-selected", selected ? "true":"false");
+      btn.classList.toggle("btn-primary", selected);
+      btn.classList.toggle("btn-ghost", !selected);
+    });
   }
 
-  /* ------------------------------ panel render ------------------------ */
-  function renderPanelFromMe() {
+  function renderPanelFromMe(){
     const me = LS.getMe();
     if (!me) return;
 
     $("#panel-username") && ($("#panel-username").textContent = me.name || "Użytkownik");
-    $("#panel-avatar") && ($("#panel-avatar").src = me.avatar || "");
+    $("#panel-avatar") && ($("#panel-avatar").src = safeImg(me.avatar,""));
 
     $("#edit-name") && ($("#edit-name").value = me.name || "");
     $("#edit-industry") && ($("#edit-industry").value = me.industry || "dev");
@@ -1938,7 +1690,7 @@
     if (buyV) buyV.disabled = !!subs.verified;
     if (cancelV) cancelV.disabled = !subs.verified;
 
-    [buyP, cancelP, buyV, cancelV].forEach((b) => {
+    [buyP, cancelP, buyV, cancelV].forEach(b => {
       if (!b) return;
       b.classList.toggle("opacity-60", b.disabled);
       b.classList.toggle("pointer-events-none", b.disabled);
@@ -1947,18 +1699,13 @@
     renderPreviewCard();
   }
 
-  function upsertMeIntoProfiles() {
+  function upsertMeIntoProfiles(){
     const me = LS.getMe();
     if (!me) return;
 
     const subs = LS.getSubs();
-
     const industryLabelMap = {
-      dev: "Programista",
-      gfx: "Grafik",
-      video: "Montażysta / Content",
-      tech: "Technik / DevOps",
-      mc: "Budowniczy Minecraft"
+      dev:"Programista", gfx:"Grafik", video:"Montażysta / Content", tech:"Technik / DevOps", mc:"Budowniczy Minecraft"
     };
 
     const published = me.listing?.published !== false;
@@ -1968,7 +1715,7 @@
       name: me.name || "Ja",
       industry: me.industry || "dev",
       industryLabel: industryLabelMap[me.industry] || "Freelancer",
-      tagline: (me.tags || []).slice(0, 6).join(" • "),
+      tagline: (me.tags || []).slice(0,6).join(" • "),
       about: (me.about || me.listing?.long || "").trim(),
       rating: 5.0,
       availableIn: me.availability || "48h",
@@ -1976,20 +1723,17 @@
       location: "Online",
       premium: !!subs.premium,
       verified: !!subs.verified,
-      avatar: me.avatar || "",
-      portfolio: (me.portfolio || ["", "", ""]).slice(0, 3),
+      avatar: safeImg(me.avatar, ""),
+      portfolio: (me.portfolio || ["","",""]).slice(0,3).map(x => safeImg(x,"")),
       createdAt: now(),
       listing: me.listing ? { ...me.listing } : undefined
     };
 
     const profiles = LS.getProfiles() || [];
-    const idx = profiles.findIndex((x) => x.id === "me");
+    const idx = profiles.findIndex(x => x.id === "me");
 
-    if (!published) {
-      if (idx !== -1) {
-        profiles.splice(idx, 1);
-        LS.setProfiles(profiles);
-      }
+    if (!published){
+      if (idx !== -1){ profiles.splice(idx,1); LS.setProfiles(profiles); }
       return;
     }
 
@@ -1999,7 +1743,7 @@
     LS.setProfiles(profiles);
   }
 
-  function renderPreviewCard() {
+  function renderPreviewCard(){
     const me = LS.getMe();
     if (!me) return;
 
@@ -2007,52 +1751,369 @@
     const mock = {
       id: "me",
       name: me.name || "Użytkownik",
-      industryLabel: ({
-        dev: "Programista",
-        gfx: "Grafik",
-        video: "Montażysta / Content",
-        tech: "Technik / DevOps",
-        mc: "Budowniczy Minecraft"
-      })[me.industry] || "Freelancer",
-      tagline: (me.tags || []).slice(0, 6).join(" • "),
+      industryLabel: ({dev:"Programista",gfx:"Grafik",video:"Montażysta / Content",tech:"Technik / DevOps",mc:"Budowniczy Minecraft"})[me.industry] || "Freelancer",
+      tagline: (me.tags || []).slice(0,6).join(" • "),
       rating: 5.0,
       availableIn: me.availability || "48h",
       minBudget: me.minBudget || 0,
       location: "Online",
       premium: !!subs.premium,
       verified: !!subs.verified,
-      avatar: me.avatar || "",
-      portfolio: (me.portfolio || ["","",""]).slice(0,3),
+      avatar: safeImg(me.avatar,""),
+      portfolio: (me.portfolio || ["","",""]).slice(0,3).map(x => safeImg(x,"")),
       listing: { short: me.listing?.short || "" }
     };
 
     const saved = LS.getSaved();
-    const html = profileCardHTML(mock, saved);
+    const html = profileCardHTML(mock, saved.has("me"));
     const wrap = $("#preview-card");
-    if (wrap) {
+    if (wrap){
       wrap.innerHTML = html;
-
-      $$("[data-open]", wrap).forEach(btn => btn.addEventListener("click", () => openProfileModalById("me")));
-      $$(".btn-save", wrap).forEach(btn => btn.addEventListener("click", () => {
-        const set = LS.getSaved();
-        if (set.has("me")) set.delete("me");
-        else set.add("me");
-        LS.setSaved(set);
-        Toast.push("Zaktualizowano zapisane.", "bookmark");
-        renderPreviewCard();
-        renderList();
-      }));
-
+      initReveal(wrap);
       try { lucide.createIcons(); } catch {}
     }
   }
 
-  function bindProfileSave() {
+  /* --------------------------- UI sync helpers ------------------------ */
+  function setChipActive(btn, active){
+    if (!btn) return;
+    btn.dataset.active = active ? "true":"false";
+    btn.setAttribute("aria-pressed", active ? "true":"false");
+  }
+
+  function renderActiveFiltersPills(){
+    const wrap = $("#active-filters");
+    if (!wrap) return;
+
+    const s = store.state;
+    const pills = [];
+    const actions = [];
+
+    const add = (label, onClear) => {
+      pills.push(`
+        <span class="pill" data-pill-index="${actions.length}">
+          ${escapeHTML(label)}
+          <button type="button" aria-label="Usuń filtr">×</button>
+        </span>
+      `);
+      actions.push(onClear);
+    };
+
+    if (s.q) add(`Szukaj: ${s.q}`, () => { store.setState({ q:"" }); $("#search-input").value=""; });
+    if (s.industry !== "all") add(`Branża: ${s.industry}`, () => { store.setState({ industry:"all" }); $("#industry-select").value="all"; });
+    if (s.premiumOnly) add("Premium", () => { store.setState({ premiumOnly:false }); setChipActive($("#filter-premium"), false); });
+    if (s.verifiedOnly) add("Verified", () => { store.setState({ verifiedOnly:false }); setChipActive($("#filter-verified"), false); });
+    if (s.availableOnly) add("≤72h", () => { store.setState({ availableOnly:false }); setChipActive($("#filter-available"), false); });
+    if (s.savedOnly) add("Zapisane", () => { store.setState({ savedOnly:false }); setChipActive($("#filter-saved"), false); $("#btn-open-saved").setAttribute("aria-pressed","false"); });
+    if (s.budgetMin != null || s.budgetMax != null){
+      add(`Budżet: ${s.budgetMin ?? 0}–${s.budgetMax ?? "∞"} PLN`, () => {
+        store.setState({ budgetMin:null, budgetMax:null });
+        $("#budget-min").value=""; $("#budget-max").value="";
+      });
+    }
+
+    if (!pills.length){
+      wrap.classList.add("hidden");
+      wrap.innerHTML = "";
+      return;
+    }
+
+    wrap.classList.remove("hidden");
+    wrap.innerHTML = pills.join("");
+
+    wrap.onclick = (e) => {
+      const pill = e.target.closest(".pill");
+      if (!pill) return;
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      const idx = Number(pill.dataset.pillIndex);
+      const act = actions[idx];
+      if (act){
+        act();
+        resetPagination();
+        scheduleRender();
+      }
+    };
+  }
+
+  /* ------------------------------ list render -------------------------- */
+  let lastListHTML = "";
+  let lastListKey = "";
+
+  function renderList(){
+    const listEl = $("#profiles-list");
+    if (!listEl) return;
+
+    const s = store.state;
+    const saved = LS.getSaved();
+    const full = getFilteredProfiles(true);
+    const shownList = getFilteredProfiles(false);
+    const total = full.length;
+
+    $("#total-count") && ($("#total-count").textContent = String(total));
+    $("#shown-count") && ($("#shown-count").textContent = String(shownList.length));
+
+    const filtersCount =
+      Number(!!s.q) +
+      Number(s.industry !== "all") +
+      Number(s.premiumOnly) +
+      Number(s.verifiedOnly) +
+      Number(s.availableOnly) +
+      Number(s.savedOnly) +
+      Number(s.budgetMin != null || s.budgetMax != null);
+
+    $("#stat-results") && ($("#stat-results").textContent = String(total));
+    $("#stat-saved") && ($("#stat-saved").textContent = String(saved.size));
+    $("#stat-filters") && ($("#stat-filters").textContent = String(filtersCount));
+
+    $("#saved-pill") && ($("#saved-pill").textContent = String(saved.size));
+    $("#results-hint") && ($("#results-hint").textContent = s.savedOnly ? "• tryb: zapisane" : "");
+
+    renderActiveFiltersPills();
+
+    const listKey = `${computeMemoKey()}|shown:${shownList.length}|saved:${saved.size}`;
+    if (listKey !== lastListKey){
+      listEl.setAttribute("aria-busy","true");
+      listEl.innerHTML = skeletonHTML(3);
+
+      setTimeout(() => {
+        const freshSaved = LS.getSaved();
+        const freshFull = getFilteredProfiles(true);
+        const freshShown = getFilteredProfiles(false);
+        const freshTotal = freshFull.length;
+
+        if (!freshShown.length){
+          const emptyHTML = `
+            <div class="glass rounded-2xl p-6 text-white/80">
+              <div class="flex items-center gap-2 text-white/90 font-black">
+                <i data-lucide="search-x" class="h-5 w-5 text-[var(--accent)]"></i>
+                Brak wyników
+              </div>
+              <p class="mt-2 text-sm text-white/70">Zmień filtry lub wyszukiwane hasło.</p>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button class="btn btn-outline px-4 py-2 text-sm" type="button" id="empty-reset">
+                  <i data-lucide="rotate-ccw" class="h-4 w-4"></i> Wyczyść filtry
+                </button>
+                <button class="btn btn-ghost px-4 py-2 text-sm" type="button" id="empty-open-panel">
+                  <i data-lucide="user" class="h-4 w-4"></i> Otwórz konto
+                </button>
+              </div>
+            </div>
+          `;
+          listEl.innerHTML = emptyHTML;
+          $("#empty-reset")?.addEventListener("click", () => $("#btn-reset-filters")?.click());
+          $("#empty-open-panel")?.addEventListener("click", () => setPanelOpen(true));
+          listEl.setAttribute("aria-busy","false");
+          try { lucide.createIcons(); } catch {}
+          return;
+        }
+
+        const html = freshShown.map(p => profileCardHTML(p, freshSaved.has(p.id))).join("");
+        lastListHTML = html;
+        lastListKey = listKey;
+
+        listEl.innerHTML = html;
+        listEl.setAttribute("aria-busy","false");
+
+        const loadMore = $("#btn-load-more");
+        if (loadMore) loadMore.style.display = (store.state.shown < freshTotal) ? "inline-flex" : "none";
+
+        initReveal(listEl);
+        try { lucide.createIcons(); } catch {}
+      }, 110);
+    } else {
+      // no changes, keep dom
+    }
+  }
+
+  /* ------------------------------ global render ------------------------ */
+  function render(){
+    renderPanelFromMe();
+    upsertMeIntoProfiles();
+    renderList();
+    $("#footer-year") && ($("#footer-year").textContent = String(new Date().getFullYear()));
+  }
+
+  const scheduleRender = rafThrottle(render);
+
+  /* ------------------------------ bindings ---------------------------- */
+  function bindPanel(){
+    $("#btn-open-panel")?.addEventListener("click", () => setPanelOpen(true));
+    $("#btn-open-panel-inline")?.addEventListener("click", () => setPanelOpen(true));
+    $("#btn-close-panel")?.addEventListener("click", () => setPanelOpen(false));
+
+    $("#overlay")?.addEventListener("click", () => {
+      if (store.state.modalOpen) closeProfileModal();
+      else setPanelOpen(false);
+    });
+
+    // Tabs
+    document.addEventListener("click", (e) => {
+      const tabBtn = e.target.closest("[data-tab]");
+      if (!tabBtn) return;
+      switchTab(tabBtn.dataset.tab);
+    });
+
+    $("#btn-open-me-modal")?.addEventListener("click", () => {
+      setPanelOpen(false);
+      openProfileModalById("me");
+    });
+  }
+
+  function bindModal(){
+    $("#modal-close")?.addEventListener("click", closeProfileModal);
+    $("#modal-prev")?.addEventListener("click", () => moveModal(-1));
+    $("#modal-next")?.addEventListener("click", () => moveModal(1));
+
+    // stable handlers (no re-adding on each render)
+    $("#btn-copy-name")?.addEventListener("click", () => {
+      const p = store.state.modalList[store.state.modalIndex];
+      if (!p) return;
+      navigator.clipboard?.writeText(p.name || "").then(
+        () => Toast.push("Skopiowano nick.", "copy"),
+        () => Toast.push("Nie udało się skopiować.", "alert-triangle")
+      );
+    });
+
+    $("#btn-save-from-modal")?.addEventListener("click", () => {
+      const p = store.state.modalList[store.state.modalIndex];
+      if (!p) return;
+      const set = LS.getSaved();
+      if (set.has(p.id)){ set.delete(p.id); Toast.push("Usunięto z zapisanych.", "bookmark-minus"); }
+      else { set.add(p.id); Toast.push("Dodano do zapisanych.", "bookmark-plus"); }
+      LS.setSaved(set);
+      renderModal();
+      resetPagination();
+      scheduleRender();
+    });
+  }
+
+  function bindFilters(){
+    $("#industry-select")?.addEventListener("change", (e) => {
+      store.setState({ industry: e.target.value });
+      resetPagination();
+      scheduleRender();
+    });
+
+    $("#sort-select")?.addEventListener("change", (e) => {
+      store.setState({ sort: e.target.value });
+      resetPagination();
+      scheduleRender();
+    });
+
+    const onSearch = debounce(() => {
+      store.setState({ q: ($("#search-input")?.value || "").trim() });
+      resetPagination();
+      scheduleRender();
+    }, 220);
+    $("#search-input")?.addEventListener("input", onSearch);
+
+    const toggleChip = (id, key) => {
+      const el = $(id);
+      if (!el) return;
+      el.addEventListener("click", () => {
+        const next = !store.state[key];
+        store.setState({ [key]: next });
+        setChipActive(el, next);
+        resetPagination();
+        scheduleRender();
+      });
+    };
+
+    toggleChip("#filter-saved", "savedOnly");
+    toggleChip("#filter-premium", "premiumOnly");
+    toggleChip("#filter-verified", "verifiedOnly");
+    toggleChip("#filter-available", "availableOnly");
+
+    $("#btn-open-saved")?.addEventListener("click", () => {
+      const next = !store.state.savedOnly;
+      store.setState({ savedOnly: next });
+      setChipActive($("#filter-saved"), next);
+      $("#btn-open-saved").setAttribute("aria-pressed", next ? "true":"false");
+      resetPagination();
+      scheduleRender();
+      Toast.push(next ? "Filtr: zapisane" : "Wyłączono filtr: zapisane", "bookmark");
+    });
+
+    const onBudget = debounce(() => {
+      const minRaw = $("#budget-min")?.value ?? "";
+      const maxRaw = $("#budget-max")?.value ?? "";
+      const minV = Number(minRaw);
+      const maxV = Number(maxRaw);
+
+      let budgetMin = (minRaw !== "" && Number.isFinite(minV)) ? Math.max(0, minV) : null;
+      let budgetMax = (maxRaw !== "" && Number.isFinite(maxV)) ? Math.max(0, maxV) : null;
+
+      if (budgetMin != null && budgetMax != null && budgetMin > budgetMax){
+        const t = budgetMin; budgetMin = budgetMax; budgetMax = t;
+        $("#budget-min").value = String(budgetMin);
+        $("#budget-max").value = String(budgetMax);
+      }
+
+      store.setState({ budgetMin, budgetMax });
+      resetPagination();
+      scheduleRender();
+    }, 220);
+
+    $("#budget-min")?.addEventListener("input", onBudget);
+    $("#budget-max")?.addEventListener("input", onBudget);
+
+    $$("[data-budget-preset]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const v = Number(btn.dataset.budgetPreset || 0);
+        if (v <= 0){
+          $("#budget-min").value = "";
+          $("#budget-max").value = "";
+        } else {
+          $("#budget-min").value = "";
+          $("#budget-max").value = String(v);
+        }
+        onBudget();
+      });
+    });
+
+    $("#btn-reset-filters")?.addEventListener("click", () => {
+      store.setState({
+        q:"",
+        industry:"all",
+        premiumOnly:false,
+        verifiedOnly:false,
+        availableOnly:false,
+        savedOnly:false,
+        sort:"recommended",
+        budgetMin:null,
+        budgetMax:null
+      });
+
+      $("#industry-select").value = "all";
+      $("#sort-select").value = "recommended";
+      $("#search-input").value = "";
+      $("#budget-min").value = "";
+      $("#budget-max").value = "";
+
+      setChipActive($("#filter-saved"), false);
+      setChipActive($("#filter-premium"), false);
+      setChipActive($("#filter-verified"), false);
+      setChipActive($("#filter-available"), false);
+      $("#btn-open-saved").setAttribute("aria-pressed","false");
+
+      resetPagination();
+      scheduleRender();
+      Toast.push("Wyczyszczono filtry.", "rotate-ccw");
+    });
+
+    $("#btn-load-more")?.addEventListener("click", () => {
+      store.setState({ shown: store.state.shown + store.state.pageSize });
+      scheduleRender();
+    });
+  }
+
+  function bindProfileSave(){
     $("#btn-save-profile")?.addEventListener("click", () => {
       const me = LS.getMe() || {};
 
       const name = ($("#edit-name")?.value || "").trim();
-      if (name.length < 2) {
+      if (name.length < 2){
         Toast.push("Nick jest za krótki (min. 2 znaki).", "alert-triangle");
         $("#edit-name")?.focus();
         return;
@@ -2067,7 +2128,7 @@
       const tags = tagsRaw.split(",").map(s => s.trim()).filter(Boolean).slice(0, 12);
 
       const avatarURLInput = ($("#edit-avatar-url")?.value || "").trim();
-      const avatar = avatarURLInput || me.avatar || "";
+      const avatar = avatarURLInput && isSafeImageURL(avatarURLInput) ? avatarURLInput : (me.avatar || "");
 
       const p1 = ($("#edit-portfolio-1")?.value || "").trim();
       const p2 = ($("#edit-portfolio-2")?.value || "").trim();
@@ -2082,15 +2143,15 @@
         minBudget,
         tags,
         avatar,
-        portfolio: [p1, p2, p3],
-        listing: me.listing || { title: "", contactMain: "Discord", short: "", long: "", published: true }
+        portfolio: [p1,p2,p3],
+        listing: me.listing || { title:"", contactMain:"Discord", short:"", long:"", published:true }
       };
 
       LS.setMe(next);
       renderPanelFromMe();
       upsertMeIntoProfiles();
       resetPagination();
-      renderList();
+      scheduleRender();
       setSaveStatus("Wszystko zapisane");
       Toast.push("Zapisano profil.", "save");
     });
@@ -2101,13 +2162,13 @@
       renderPanelFromMe();
       upsertMeIntoProfiles();
       resetPagination();
-      renderList();
+      scheduleRender();
       setSaveStatus("Wszystko zapisane");
       Toast.push("Przywrócono domyślne dane.", "rotate-ccw");
     });
   }
 
-  function bindListing() {
+  function bindListing(){
     $("#btn-publish")?.addEventListener("click", () => {
       const me = LS.getMe();
       if (!me) return;
@@ -2117,15 +2178,15 @@
       const long = ($("#listing-long")?.value || "").trim();
       const contactMain = $("#listing-contact-main")?.value || "Discord";
 
-      if (title.length < 6) { Toast.push("Uzupełnij tytuł (min. 6 znaków).", "alert-triangle"); $("#listing-title")?.focus(); return; }
-      if (short.length < 12) { Toast.push("Uzupełnij krótki opis (min. 12 znaków).", "alert-triangle"); $("#listing-short")?.focus(); return; }
+      if (title.length < 6){ Toast.push("Uzupełnij tytuł (min. 6 znaków).", "alert-triangle"); $("#listing-title")?.focus(); return; }
+      if (short.length < 12){ Toast.push("Uzupełnij krótki opis (min. 12 znaków).", "alert-triangle"); $("#listing-short")?.focus(); return; }
 
-      me.listing = { ...(me.listing || {}), title, contactMain, short, long, published: true };
+      me.listing = { ...(me.listing || {}), title, contactMain, short, long, published:true };
       LS.setMe(me);
 
       upsertMeIntoProfiles();
       resetPagination();
-      renderList();
+      scheduleRender();
       Toast.push("Ogłoszenie opublikowane / zaktualizowane.", "rocket");
     });
 
@@ -2133,17 +2194,17 @@
       const me = LS.getMe();
       if (!me) return;
 
-      me.listing = { ...(me.listing || {}), published: false };
+      me.listing = { ...(me.listing || {}), published:false };
       LS.setMe(me);
 
       upsertMeIntoProfiles();
       resetPagination();
-      renderList();
+      scheduleRender();
       Toast.push("Ogłoszenie ukryte w katalogu.", "eye-off");
     });
   }
 
-  function bindShop() {
+  function bindShop(){
     $("#buy-premium")?.addEventListener("click", () => {
       const subs = LS.getSubs();
       subs.premium = true;
@@ -2151,7 +2212,7 @@
       renderPanelFromMe();
       upsertMeIntoProfiles();
       resetPagination();
-      renderList();
+      scheduleRender();
       Toast.push("Premium aktywne.", "zap");
     });
 
@@ -2162,7 +2223,7 @@
       renderPanelFromMe();
       upsertMeIntoProfiles();
       resetPagination();
-      renderList();
+      scheduleRender();
       Toast.push("Premium wyłączone.", "x-circle");
     });
 
@@ -2173,7 +2234,7 @@
       renderPanelFromMe();
       upsertMeIntoProfiles();
       resetPagination();
-      renderList();
+      scheduleRender();
       Toast.push("Verified aktywne.", "badge-check");
     });
 
@@ -2184,21 +2245,75 @@
       renderPanelFromMe();
       upsertMeIntoProfiles();
       resetPagination();
-      renderList();
+      scheduleRender();
       Toast.push("Verified wyłączone.", "x-circle");
     });
   }
 
-  /* ------------------------------- render ------------------------------ */
-  function render() {
-    renderPanelFromMe();
-    upsertMeIntoProfiles();
-    renderList();
-    renderActiveFiltersPills();
-    $("#footer-year") && ($("#footer-year").textContent = String(new Date().getFullYear()));
+  function bindDelegatedListClicks(){
+    const listEl = $("#profiles-list");
+    if (!listEl) return;
+
+    listEl.addEventListener("click", (e) => {
+      const saveBtn = e.target.closest("[data-toggle-save]");
+      if (saveBtn){
+        const id = saveBtn.dataset.toggleSave;
+        if (!id) return;
+        const set = LS.getSaved();
+        if (set.has(id)){ set.delete(id); Toast.push("Usunięto z zapisanych.", "bookmark-minus"); }
+        else { set.add(id); Toast.push("Dodano do zapisanych.", "bookmark-plus"); }
+        LS.setSaved(set);
+        resetPagination();
+        scheduleRender();
+        return;
+      }
+
+      const openBtn = e.target.closest("[data-open-profile]");
+      if (openBtn){
+        const id = openBtn.dataset.openProfile;
+        if (!id) return;
+        const full = getFilteredProfiles(true);
+        openProfileModalById(id, full);
+      }
+    });
   }
 
-  /* ------------------------------- boot ------------------------------- */
+  function bindGlobalKeys(){
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape"){
+        if (store.state.modalOpen) closeProfileModal();
+        else if ($("#user-panel")?.dataset.open === "true") setPanelOpen(false);
+      }
+      if (store.state.modalOpen && (e.key === "ArrowLeft" || e.key === "ArrowRight")){
+        moveModal(e.key === "ArrowLeft" ? -1 : 1);
+      }
+    });
+
+    document.addEventListener("keydown", trapFocus);
+  }
+
+  function bindRouting(){
+    // Back/forward should open/close modal properly
+    window.addEventListener("popstate", () => {
+      const pid = getHashProfileId();
+      if (pid){
+        const full = getFilteredProfiles(true);
+        openProfileModalById(pid, full);
+      } else {
+        if (store.state.modalOpen) setModalOpen(false);
+      }
+    });
+
+    // direct hash open
+    window.addEventListener("hashchange", () => {
+      const pid = getHashProfileId();
+      if (!pid) return;
+      const full = getFilteredProfiles(true);
+      openProfileModalById(pid, full);
+    });
+  }
+
+  /* ------------------------------- boot ------------------------------ */
   document.addEventListener("DOMContentLoaded", () => {
     ensureInit();
 
@@ -2209,20 +2324,21 @@
     bindListing();
     bindShop();
     bindModal();
+    bindDelegatedListClicks();
+    bindGlobalKeys();
+    bindRouting();
 
-    // default tab: shop
+    // Default tab: shop
     switchTab("shop");
 
     // initial chip states
-    ["#filter-saved","#filter-premium", "#filter-verified", "#filter-available"].forEach(id => {
-      const el = $(id);
-      if (el) el.dataset.active = "false";
-    });
+    setChipActive($("#filter-saved"), false);
+    setChipActive($("#filter-premium"), false);
+    setChipActive($("#filter-verified"), false);
+    setChipActive($("#filter-available"), false);
 
-    // Autosave for profile fields
-    const autosave = debounce(() => {
-      $("#btn-save-profile")?.click();
-    }, 700);
+    // autosave for profile fields
+    const autosave = debounce(() => $("#btn-save-profile")?.click(), 700);
 
     ["#edit-name","#edit-about","#edit-tags","#edit-avatar-url","#edit-budget","#edit-portfolio-1","#edit-portfolio-2","#edit-portfolio-3"].forEach(sel=>{
       $(sel)?.addEventListener("input", () => { setSaveStatus("Zmieniono — zapisuję…"); autosave(); });
@@ -2231,13 +2347,13 @@
       $(sel)?.addEventListener("change", () => { setSaveStatus("Zmieniono — zapisuję…"); autosave(); });
     });
 
-    render();
-
+    // initial render
+    scheduleRender();
     try { lucide.createIcons(); } catch {}
 
     // open modal if hash provided
     const pid = getHashProfileId();
-    if (pid) setTimeout(() => openProfileModalById(pid), 150);
+    if (pid) setTimeout(() => openProfileModalById(pid, getFilteredProfiles(true)), 120);
   });
 })();
 </script>
