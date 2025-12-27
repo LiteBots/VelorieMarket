@@ -1,4 +1,3 @@
-
 <!-- login.html -->
 <!doctype html>
 <html lang="pl">
@@ -21,11 +20,9 @@
       --accent:#ff0354;
       --accent2:#7c3aed;
       --glass: rgba(255,255,255,.07);
-      --glass2: rgba(255,255,255,.10);
       --stroke: rgba(255,255,255,.12);
     }
 
-    /* Base background */
     body{
       background: radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.18), transparent 60%),
                   radial-gradient(900px 600px at 85% 15%, rgba(255,3,84,.16), transparent 55%),
@@ -135,7 +132,6 @@
     }
     .btn-ghost:hover{ background: rgba(255,255,255,.08); }
 
-    /* Micro-animations */
     .lift{ transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease; }
     .lift:hover{ transform: translateY(-2px); }
 
@@ -161,6 +157,13 @@
       .grid-bg, .blob{ animation: none !important; }
       .lift{ transition: none !important; }
     }
+
+    /* Logo */
+    .brand-logo{
+      height: 34px;
+      width: auto;
+      filter: drop-shadow(0 10px 22px rgba(255,3,84,.12));
+    }
   </style>
 </head>
 
@@ -172,23 +175,27 @@
   <div class="grid-bg"></div>
   <div class="noise"></div>
 
-  <!-- Top mini header -->
+  <!-- Header -->
   <header class="relative z-10 mx-auto max-w-6xl px-4 pt-6">
-    <div class="glass-soft rounded-2xl px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="h-10 w-10 rounded-2xl glass-soft grid place-items-center">
-          <i data-lucide="sparkles" class="h-5 w-5"></i>
-        </div>
-        <div class="leading-tight">
-          <div class="font-semibold tracking-wide">Velorie / Market</div>
-          <div class="text-xs text-white/55">Logowanie & Rejestracja</div>
+    <div class="glass-soft rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <!-- Logo (Imgur direct) -->
+        <img
+          class="brand-logo"
+          src="https://i.imgur.com/NDhlWyz.png"
+          alt="Logo"
+          onerror="this.onerror=null; this.src='https://i.imgur.com/NDhlWyz.jpg';"
+        />
+        <div class="leading-tight min-w-0">
+          <div class="font-semibold tracking-wide truncate">Velorie Market</div>
+          <div class="text-xs text-white/55 truncate">Logowanie & Rejestracja</div>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
-        <button id="themeHintBtn" class="btn-ghost lift rounded-xl px-3 py-2 text-xs inline-flex items-center gap-2">
-          <i data-lucide="shield" class="h-4 w-4"></i>
-          Bezpieczne logowanie
+        <button id="securityBtn" class="btn-ghost lift rounded-xl px-3 py-2 text-xs inline-flex items-center gap-2">
+          <i data-lucide="shield-check" class="h-4 w-4"></i>
+          Bezpieczeństwo
         </button>
       </div>
     </div>
@@ -196,82 +203,140 @@
 
   <main class="relative z-10 mx-auto max-w-6xl px-4 py-10">
     <div class="grid lg:grid-cols-2 gap-6 items-stretch">
-      <!-- Left: marketing / info -->
+
+      <!-- LEFT: platform info + stats -->
       <section class="glass rounded-3xl p-6 lg:p-8">
         <div class="flex items-start gap-4">
           <div class="h-12 w-12 rounded-2xl glass-soft grid place-items-center">
-            <i data-lucide="lock" class="h-6 w-6"></i>
+            <i data-lucide="rocket" class="h-6 w-6"></i>
           </div>
           <div>
             <h1 class="text-2xl lg:text-3xl font-semibold tracking-tight">
-              Konto, które wygląda profesjonalnie.
+              Platforma do zleceń i ofert freelancerów.
             </h1>
             <p class="mt-2 text-white/60 leading-relaxed">
-              Zaloguj się lub utwórz konto w stylu dark + glass + aurora.
-              Formularze mają walidację, przełączanie widoków i przycisk logowania przez Discord.
+              Jedno konto = pełen dostęp do publikowania ogłoszeń, wyszukiwania wykonawców, szybkiego kontaktu i
+              wygodnego zarządzania profilem. Poniżej masz przykładowe statystyki (możesz je później podpiąć pod API).
             </p>
           </div>
         </div>
 
+        <!-- Stats -->
         <div class="mt-6 grid sm:grid-cols-2 gap-3">
           <div class="glass-soft rounded-2xl p-4">
-            <div class="flex items-center gap-2 text-sm font-medium">
-              <i data-lucide="check-circle-2" class="h-4 w-4"></i>
-              Walidacja w locie
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-medium flex items-center gap-2">
+                <i data-lucide="users" class="h-4 w-4"></i>
+                Użytkownicy
+              </div>
+              <span class="text-xs text-white/55">łącznie</span>
             </div>
-            <p class="mt-2 text-sm text-white/55">
-              E-mail, hasła, powtórzenie hasła, rola użytkownika.
-            </p>
+            <div class="mt-2 text-2xl font-semibold tracking-tight">
+              <span class="counter" data-target="18720">0</span>
+              <span class="text-sm text-white/55">+</span>
+            </div>
+            <div class="mt-1 text-xs text-white/50">Freelancerzy i zleceniodawcy na jednej platformie.</div>
           </div>
+
           <div class="glass-soft rounded-2xl p-4">
-            <div class="flex items-center gap-2 text-sm font-medium">
-              <i data-lucide="wand-2" class="h-4 w-4"></i>
-              UX “premium”
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-medium flex items-center gap-2">
+                <i data-lucide="briefcase" class="h-4 w-4"></i>
+                Aktywne ogłoszenia
+              </div>
+              <span class="text-xs text-white/55">teraz</span>
             </div>
-            <p class="mt-2 text-sm text-white/55">
-              Show/Hide hasło, strength meter, skróty klawiszowe.
-            </p>
+            <div class="mt-2 text-2xl font-semibold tracking-tight">
+              <span class="counter" data-target="1340">0</span>
+              <span class="text-sm text-white/55">+</span>
+            </div>
+            <div class="mt-1 text-xs text-white/50">Nowe oferty, zlecenia i dostępność w czasie rzeczywistym.</div>
           </div>
+
           <div class="glass-soft rounded-2xl p-4">
-            <div class="flex items-center gap-2 text-sm font-medium">
-              <i data-lucide="discord" class="h-4 w-4"></i>
-              Discord SSO (przycisk)
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-medium flex items-center gap-2">
+                <i data-lucide="zap" class="h-4 w-4"></i>
+                Średni czas reakcji
+              </div>
+              <span class="text-xs text-white/55">kontakt</span>
             </div>
-            <p class="mt-2 text-sm text-white/55">
-              Podpinaj OAuth po stronie backendu – tu jest gotowy UI.
-            </p>
+            <div class="mt-2 text-2xl font-semibold tracking-tight">
+              <span class="counter" data-target="12">0</span>
+              <span class="text-sm text-white/55">min</span>
+            </div>
+            <div class="mt-1 text-xs text-white/50">Szybkie rozmowy i proste ustalanie zakresu.</div>
           </div>
+
           <div class="glass-soft rounded-2xl p-4">
-            <div class="flex items-center gap-2 text-sm font-medium">
-              <i data-lucide="sparkle" class="h-4 w-4"></i>
-              Gotowe do integracji
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-medium flex items-center gap-2">
+                <i data-lucide="shield" class="h-4 w-4"></i>
+                Uptime
+              </div>
+              <span class="text-xs text-white/55">30 dni</span>
             </div>
-            <p class="mt-2 text-sm text-white/55">
-              Miejsca na endpointy API i przekierowanie po sukcesie.
-            </p>
+            <div class="mt-2 text-2xl font-semibold tracking-tight">
+              <span class="counter" data-target="99.9">0</span>
+              <span class="text-sm text-white/55">%</span>
+            </div>
+            <div class="mt-1 text-xs text-white/50">Stabilna infrastruktura (placeholder pod realne dane).</div>
           </div>
         </div>
 
-        <div class="mt-6 glass-soft rounded-2xl p-4 flex items-start gap-3">
-          <i data-lucide="info" class="h-5 w-5 mt-0.5 text-white/70"></i>
-          <div class="text-sm text-white/60 leading-relaxed">
-            <span class="text-white/80 font-medium">Tip:</span> skrót <span class="px-2 py-0.5 rounded-lg glass-soft">/</span> ustawia fokus na pierwszym polu,
-            <span class="px-2 py-0.5 rounded-lg glass-soft">Esc</span> czyści komunikaty.
+        <!-- Platform bullets -->
+        <div class="mt-6 glass-soft rounded-2xl p-4">
+          <div class="text-sm font-semibold flex items-center gap-2">
+            <i data-lucide="sparkles" class="h-4 w-4"></i>
+            Co dostajesz po rejestracji
+          </div>
+
+          <ul class="mt-3 space-y-2 text-sm text-white/60">
+            <li class="flex gap-2">
+              <i data-lucide="check-circle-2" class="h-4 w-4 mt-0.5 text-white/70"></i>
+              Profil z ofertą, portfolio i dostępnością (dla freelancerów).
+            </li>
+            <li class="flex gap-2">
+              <i data-lucide="check-circle-2" class="h-4 w-4 mt-0.5 text-white/70"></i>
+              Filtry i szybkie wyszukiwanie wykonawców (dla zleceniodawców).
+            </li>
+            <li class="flex gap-2">
+              <i data-lucide="check-circle-2" class="h-4 w-4 mt-0.5 text-white/70"></i>
+              Logowanie przez Discord (SSO) — gotowy przycisk pod OAuth.
+            </li>
+            <li class="flex gap-2">
+              <i data-lucide="check-circle-2" class="h-4 w-4 mt-0.5 text-white/70"></i>
+              Nowoczesny panel konta i ustawień (później podepniesz backend).
+            </li>
+          </ul>
+        </div>
+
+        <!-- Trust strip -->
+        <div class="mt-4 grid grid-cols-3 gap-2">
+          <div class="glass-soft rounded-2xl p-3 text-center">
+            <div class="text-xs text-white/55">Szyfrowanie</div>
+            <div class="mt-1 text-sm font-semibold">TLS</div>
+          </div>
+          <div class="glass-soft rounded-2xl p-3 text-center">
+            <div class="text-xs text-white/55">Hasła</div>
+            <div class="mt-1 text-sm font-semibold">Argon2/bcrypt</div>
+          </div>
+          <div class="glass-soft rounded-2xl p-3 text-center">
+            <div class="text-xs text-white/55">Zabezp.</div>
+            <div class="mt-1 text-sm font-semibold">Rate limit</div>
           </div>
         </div>
       </section>
 
-      <!-- Right: forms -->
+      <!-- RIGHT: forms -->
       <section class="glass rounded-3xl p-6 lg:p-8">
-        <!-- Top tabs -->
+        <!-- Tabs -->
         <div class="flex items-center justify-between gap-3">
           <div class="inline-flex rounded-2xl glass-soft p-1">
-            <button id="tabLogin" class="px-4 py-2 rounded-xl text-sm font-medium lift"
-              aria-selected="true">
+            <button id="tabLogin" class="px-4 py-2 rounded-xl text-sm font-medium lift" aria-selected="true">
               Logowanie
             </button>
-            <button id="tabRegister" class="px-4 py-2 rounded-xl text-sm font-medium lift text-white/70"
-              aria-selected="false">
+            <button id="tabRegister" class="px-4 py-2 rounded-xl text-sm font-medium lift text-white/70" aria-selected="false">
               Rejestracja
             </button>
           </div>
@@ -288,7 +353,7 @@
           </div>
         </div>
 
-        <!-- Toast / status -->
+        <!-- Status -->
         <div id="statusBox" class="mt-4 hidden glass-soft rounded-2xl p-4">
           <div class="flex gap-3">
             <div id="statusIcon" class="h-10 w-10 rounded-2xl glass-soft grid place-items-center"></div>
@@ -299,7 +364,7 @@
           </div>
         </div>
 
-        <!-- LOGIN FORM -->
+        <!-- LOGIN -->
         <form id="loginForm" class="mt-5 space-y-4" autocomplete="on" novalidate>
           <div>
             <label class="text-sm text-white/70">E-mail lub nazwa użytkownika</label>
@@ -319,7 +384,8 @@
               <input id="loginPass" name="password" type="password"
                 class="w-full rounded-2xl px-10 pr-12 py-3 glass-soft focus-ring text-sm placeholder:text-white/35"
                 placeholder="Twoje hasło" />
-              <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost lift rounded-xl px-3 py-2 text-xs"
+              <button type="button"
+                class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost lift rounded-xl px-3 py-2 text-xs"
                 data-toggle-pass="loginPass" aria-label="Pokaż/ukryj hasło">
                 <i data-lucide="eye" class="h-4 w-4"></i>
               </button>
@@ -332,7 +398,8 @@
               Zaloguj
             </button>
 
-            <button type="button" id="loginDiscord" class="btn-ghost lift rounded-2xl px-4 py-3 font-semibold inline-flex items-center justify-center gap-2">
+            <button type="button" id="loginDiscord"
+              class="btn-ghost lift rounded-2xl px-4 py-3 font-semibold inline-flex items-center justify-center gap-2">
               <i data-lucide="discord" class="h-5 w-5"></i>
               Zaloguj poprzez Discord
             </button>
@@ -340,13 +407,14 @@
 
           <div class="pt-2 text-sm text-white/60">
             Nie masz konta?
-            <button type="button" id="switchToRegister" class="text-white font-semibold hover:opacity-90 underline underline-offset-4">
+            <button type="button" id="switchToRegister"
+              class="text-white font-semibold hover:opacity-90 underline underline-offset-4">
               Zarejestruj się
             </button>
           </div>
         </form>
 
-        <!-- REGISTER FORM -->
+        <!-- REGISTER -->
         <form id="registerForm" class="mt-5 space-y-4 hidden" autocomplete="on" novalidate>
           <div>
             <label class="text-sm text-white/70">Nazwa użytkownika</label>
@@ -392,16 +460,14 @@
               <input id="regPass" name="password" type="password"
                 class="w-full rounded-2xl px-10 pr-12 py-3 glass-soft focus-ring text-sm placeholder:text-white/35"
                 placeholder="Utwórz hasło" />
-              <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost lift rounded-xl px-3 py-2 text-xs"
+              <button type="button"
+                class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost lift rounded-xl px-3 py-2 text-xs"
                 data-toggle-pass="regPass" aria-label="Pokaż/ukryj hasło">
                 <i data-lucide="eye" class="h-4 w-4"></i>
               </button>
             </div>
 
-            <div class="mt-3 meter">
-              <i id="strengthBar"></i>
-            </div>
-
+            <div class="mt-3 meter"><i id="strengthBar"></i></div>
             <p id="regPassErr" class="mt-1 text-xs text-rose-300 hidden"></p>
           </div>
 
@@ -412,7 +478,8 @@
               <input id="regPass2" name="password2" type="password"
                 class="w-full rounded-2xl px-10 pr-12 py-3 glass-soft focus-ring text-sm placeholder:text-white/35"
                 placeholder="Powtórz hasło" />
-              <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost lift rounded-xl px-3 py-2 text-xs"
+              <button type="button"
+                class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost lift rounded-xl px-3 py-2 text-xs"
                 data-toggle-pass="regPass2" aria-label="Pokaż/ukryj hasło">
                 <i data-lucide="eye" class="h-4 w-4"></i>
               </button>
@@ -453,7 +520,8 @@
               Zarejestruj
             </button>
 
-            <button type="button" id="regDiscord" class="btn-ghost lift rounded-2xl px-4 py-3 font-semibold inline-flex items-center justify-center gap-2">
+            <button type="button" id="regDiscord"
+              class="btn-ghost lift rounded-2xl px-4 py-3 font-semibold inline-flex items-center justify-center gap-2">
               <i data-lucide="discord" class="h-5 w-5"></i>
               Zaloguj poprzez Discord
             </button>
@@ -461,7 +529,8 @@
 
           <div class="pt-2 text-sm text-white/60">
             Masz już konto?
-            <button type="button" id="switchToLogin" class="text-white font-semibold hover:opacity-90 underline underline-offset-4">
+            <button type="button" id="switchToLogin"
+              class="text-white font-semibold hover:opacity-90 underline underline-offset-4">
               Zaloguj się
             </button>
           </div>
@@ -471,7 +540,7 @@
           <div class="flex items-center justify-between gap-3">
             <span>© <span id="year"></span> Velorie</span>
             <span class="inline-flex items-center gap-2">
-              <i data-lucide="shield" class="h-4 w-4"></i>
+              <i data-lucide="sparkles" class="h-4 w-4"></i>
               UI demo (frontend)
             </span>
           </div>
@@ -492,9 +561,7 @@
       const t = $("statusTitle");
       const p = $("statusText");
 
-      // Reset icon
       icon.innerHTML = "";
-
       const ico = document.createElement("i");
       ico.setAttribute("data-lucide",
         type === "success" ? "check-circle-2" :
@@ -513,7 +580,6 @@
       show(box);
       lucide.createIcons();
     }
-
     function clearStatus(){ hide($("statusBox")); }
 
     function setErr(id, msg){
@@ -526,7 +592,6 @@
     function isEmail(v){
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || "").trim());
     }
-
     function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
 
     // ===== Toggle: Login <-> Register
@@ -537,7 +602,6 @@
 
     function setMode(mode){
       clearStatus();
-      // reset errors
       ["loginIdErr","loginPassErr","regUsernameErr","regEmailErr","regPassErr","regPass2Err","regRoleErr"]
         .forEach(id => setErr(id, ""));
 
@@ -577,7 +641,7 @@
       });
     });
 
-    // ===== Caps lock hint
+    // ===== Caps lock hint + shortcuts
     const capsHint = $("capsHint");
     window.addEventListener("keydown", (e) => {
       if (typeof e.getModifierState === "function") {
@@ -588,7 +652,6 @@
         clearStatus();
         hide(capsHint);
       }
-      // Quick focus
       if(e.key === "/" && !["INPUT","TEXTAREA"].includes(document.activeElement?.tagName)){
         e.preventDefault();
         const isLogin = !loginForm.classList.contains("hidden");
@@ -611,6 +674,7 @@
     // ===== Password strength
     const strengthBar = $("strengthBar");
     const strengthLabel = $("strengthLabel");
+
     function scorePassword(p){
       p = String(p || "");
       let score = 0;
@@ -643,7 +707,7 @@
     $("loginDiscord").addEventListener("click", goDiscord);
     $("regDiscord").addEventListener("click", goDiscord);
 
-    // ===== Login validation + submit demo
+    // ===== Login submit
     loginForm.addEventListener("submit", (e) => {
       e.preventDefault();
       clearStatus();
@@ -655,9 +719,7 @@
       if(!loginId){
         setErr("loginIdErr","Podaj e-mail lub nazwę użytkownika.");
         ok = false;
-      }else{
-        setErr("loginIdErr","");
-      }
+      }else setErr("loginIdErr","");
 
       if(!pass){
         setErr("loginPassErr","Podaj hasło.");
@@ -665,24 +727,19 @@
       }else if(pass.length < 6){
         setErr("loginPassErr","Hasło wygląda na zbyt krótkie (min. 6 znaków).");
         ok = false;
-      }else{
-        setErr("loginPassErr","");
-      }
+      }else setErr("loginPassErr","");
 
       if(!ok){
         setStatus("error","Popraw błędy","Sprawdź pola oznaczone na czerwono.");
         return;
       }
 
-      // DEMO: tu wyślij do API
-      // fetch("/api/auth/login", { method:"POST", headers:{...}, body: JSON.stringify({loginId, pass}) })
-
-      setStatus("success","Zalogowano (demo)","UI wygląda jak produkcyjne — podepnij backend i przekieruj użytkownika.");
-      // Przykład redirect:
+      // TODO: API
+      setStatus("success","Zalogowano (demo)","Podepnij backend i przekieruj użytkownika po sukcesie.");
       // window.location.href = "/market.html";
     });
 
-    // ===== Register validation + submit demo
+    // ===== Register submit
     registerForm.addEventListener("submit", (e) => {
       e.preventDefault();
       clearStatus();
@@ -696,7 +753,6 @@
 
       let ok = true;
 
-      // Username
       if(!username){
         setErr("regUsernameErr","Podaj nazwę użytkownika.");
         ok = false;
@@ -706,67 +762,50 @@
       }else if(!/^[a-zA-Z0-9._-]+$/.test(username)){
         setErr("regUsernameErr","Użyj tylko liter, cyfr oraz . _ -");
         ok = false;
-      }else{
-        setErr("regUsernameErr","");
-      }
+      }else setErr("regUsernameErr","");
 
-      // Email
       if(!email){
         setErr("regEmailErr","Podaj adres e-mail.");
         ok = false;
       }else if(!isEmail(email)){
         setErr("regEmailErr","Podaj poprawny adres e-mail.");
         ok = false;
-      }else{
-        setErr("regEmailErr","");
-      }
+      }else setErr("regEmailErr","");
 
-      // Password
       if(!pass){
         setErr("regPassErr","Ustaw hasło (min. 6 znaków).");
         ok = false;
       }else if(pass.length < 6){
         setErr("regPassErr","Hasło musi mieć minimum 6 znaków.");
         ok = false;
-      }else{
-        setErr("regPassErr","");
-      }
+      }else setErr("regPassErr","");
 
-      // Password2
       if(!pass2){
         setErr("regPass2Err","Powtórz hasło.");
         ok = false;
       }else if(pass2 !== pass){
         setErr("regPass2Err","Hasła nie są identyczne.");
         ok = false;
-      }else{
-        setErr("regPass2Err","");
-      }
+      }else setErr("regPass2Err","");
 
-      // Role
       if(!role){
         setErr("regRoleErr","Wybierz: zleceniobiorca lub zleceniodawca.");
         ok = false;
-      }else{
-        setErr("regRoleErr","");
-      }
+      }else setErr("regRoleErr","");
 
       if(!ok){
         setStatus("error","Popraw błędy","Uzupełnij wymagane pola i spróbuj ponownie.");
         return;
       }
 
-      // DEMO: tu wyślij do API
-      // fetch("/api/auth/register", { method:"POST", body: JSON.stringify({username,email,fullName,pass,role}) })
-
-      // Demo save (opcjonalnie)
+      // TODO: API
       try{
         const demo = { username, email, fullName, role, createdAt: new Date().toISOString() };
         localStorage.setItem("demo_last_register", JSON.stringify(demo));
       }catch(_){}
 
-      setStatus("success","Zarejestrowano (demo)","Teraz możesz się zalogować. Podepnij backend oraz e-mail weryfikacyjny jeśli chcesz.");
-      // Auto-switch to login after small delay
+      setStatus("success","Zarejestrowano (demo)","Teraz możesz się zalogować (podepnij backend/SSO według potrzeb).");
+
       setTimeout(() => {
         setMode("login");
         $("loginId").value = email || username;
@@ -775,17 +814,61 @@
       }, 900);
     });
 
-    // ===== Small extra: status hint button
-    $("themeHintBtn").addEventListener("click", () => {
-      setStatus("info","Bezpieczeństwo","Dopnij: rate limit, 2FA, CSRF, bcrypt/argon2, oraz Discord OAuth (backend).");
+    // ===== Security button
+    $("securityBtn").addEventListener("click", () => {
+      setStatus("info","Bezpieczeństwo (checklista)","TLS, rate limit, 2FA, CSRF, argon2/bcrypt, oraz Discord OAuth po stronie backendu.");
     });
+
+    // ===== Animated counters (left side stats)
+    function animateCounters(){
+      const els = document.querySelectorAll(".counter");
+      const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      els.forEach(el => {
+        const targetRaw = el.getAttribute("data-target");
+        const target = Number(targetRaw);
+        if(Number.isNaN(target)) return;
+
+        if(prefersReduced){
+          el.textContent = String(targetRaw);
+          return;
+        }
+
+        const isFloat = String(targetRaw).includes(".");
+        const duration = 900 + Math.random()*500;
+        const start = performance.now();
+
+        function step(t){
+          const p = clamp((t - start)/duration, 0, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          const val = target * eased;
+
+          el.textContent = isFloat ? val.toFixed(1) : Math.round(val).toString();
+          if(p < 1) requestAnimationFrame(step);
+          else el.textContent = String(targetRaw);
+        }
+
+        requestAnimationFrame(step);
+      });
+    }
+
+    // Run counters when visible
+    const leftSection = document.querySelector("section.glass");
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if(e.isIntersecting){
+          animateCounters();
+          io.disconnect();
+        }
+      });
+    }, { threshold: 0.25 });
+    io.observe(leftSection);
 
     // ===== Init
     $("year").textContent = new Date().getFullYear();
     lucide.createIcons();
     setMode("login");
     updateStrength("");
-
   </script>
 </body>
 </html>
