@@ -1,4 +1,4 @@
-zapamietaj <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
@@ -15,52 +15,159 @@ zapamietaj <!DOCTYPE html>
   <script type="application/ld+json" id="schema-json"></script>
 
   <style>
-    :root { --accent: #ff0354; }
-    html { scroll-behavior: smooth; }
-    body {
-      background-color: #00010f;
-      background-image: radial-gradient(1200px 600px at 80% -10%, #0a1030 0%, #050919 35%, #00010f 65%, #000000 100%);
+    :root{
+      --accent:#ff0354;
+      --accent2:#7c3aed;
+      --bg1:#00010f;
+      --bg2:#0a1030;
+      --stroke: rgba(255,255,255,.12);
     }
 
-    /* wejścia */
-    .animate-on-scroll {
-      opacity: 0;
+    html{scroll-behavior:smooth}
+
+    body{
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.18), transparent 60%),
+        radial-gradient(900px 600px at 85% 15%, rgba(255,3,84,.16), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    /* grid like auth */
+    .grid-bg{
+      position: fixed; inset: 0;
+      pointer-events: none;
+      opacity: .24;
+      background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.95) 0%, rgba(0,0,0,.20) 55%, transparent 75%);
+      transform: translateZ(0);
+      animation: gridFloat 12s ease-in-out infinite;
+    }
+    @keyframes gridFloat{
+      0%,100% { transform: translate3d(0,0,0) scale(1); }
+      50% { transform: translate3d(0,-10px,0) scale(1.02); }
+    }
+
+    /* aurora blobs like auth */
+    .aurora{
+      position: fixed; inset: -20%;
+      pointer-events: none;
+      filter: blur(46px) saturate(125%);
+      opacity: .90;
+      transform: translateZ(0);
+    }
+    .blob{
+      position:absolute;
+      width: 520px; height: 520px;
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,3,84,.35), transparent 60%),
+        radial-gradient(circle at 70% 70%, rgba(124,58,237,.35), transparent 60%);
+      animation: blob 14s ease-in-out infinite;
+      mix-blend-mode: screen;
+    }
+    .blob.b1{ left: 8%; top: 8%; }
+    .blob.b2{
+      width: 620px; height: 620px;
+      left: 62%; top: 18%;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(124,58,237,.38), transparent 60%),
+        radial-gradient(circle at 70% 70%, rgba(255,3,84,.28), transparent 60%);
+      animation-duration: 18s;
+      animation-delay: -3s;
+    }
+    @keyframes blob{
+      0%,100% { transform: translate(0,0) scale(1); }
+      30% { transform: translate(40px, 18px) scale(1.08); }
+      60% { transform: translate(-28px, 34px) scale(0.98); }
+    }
+
+    /* noise overlay like auth */
+    .noise{
+      position: fixed; inset: 0;
+      pointer-events: none;
+      opacity: .09;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+    }
+
+    /* reveal */
+    .animate-on-scroll{
+      opacity:0;
       transform: translateY(24px);
       transition: opacity .6s ease-out, transform .6s ease-out;
       will-change: opacity, transform;
     }
-    .animate-on-scroll.is-visible { opacity: 1; transform: translateY(0); }
+    .animate-on-scroll.is-visible{ opacity:1; transform: translateY(0); }
 
     /* scrollbar */
     ::-webkit-scrollbar { width: 10px; height: 10px; }
     ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 999px; }
     ::-webkit-scrollbar-track { background: rgba(255,255,255,.08); }
 
-    /* particles */
-    @keyframes particle-animation {
-      0%,100% { transform: translateY(0%) translateX(0%) rotate(0deg); }
-      50% { transform: translateY(-10%) translateX(5%) rotate(20deg); }
+    /* glass like auth */
+    .glass{
+      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+      border: 1px solid var(--stroke);
+      box-shadow:
+        0 18px 60px rgba(0,0,0,.50),
+        inset 0 1px 0 rgba(255,255,255,.10);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
     }
-    .particle {
+    .glass-soft{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .lift{ transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease, filter .2s ease; }
+    .lift:hover{ transform: translateY(-2px); }
+
+    /* buttons */
+    .btn-primary{
+      background: linear-gradient(135deg, rgba(255,3,84,1), rgba(124,58,237,1));
+      box-shadow:
+        0 12px 26px rgba(255,3,84,.18),
+        0 10px 32px rgba(124,58,237,.16);
+    }
+    .btn-primary:hover{ filter: brightness(1.06); }
+    .btn-primary:active{ transform: translateY(1px); }
+    .btn-ghost{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .btn-ghost:hover{ background: rgba(255,255,255,.08); }
+
+    /* particles (keep your logic, but match palette) */
+    @keyframes particle-animation{
+      0%,100%{ transform: translateY(0%) translateX(0%) rotate(0deg); }
+      50%{ transform: translateY(-10%) translateX(5%) rotate(20deg); }
+    }
+    .particle{
       animation-name: particle-animation;
       animation-timing-function: ease-in-out;
       animation-iteration-count: infinite;
     }
 
     /* 3D card */
-    .perspective-container { perspective: 1500px; }
-    @keyframes subtle-3d-rotate {
-      0%,100% { transform: rotateX(5deg) rotateY(-8deg); }
-      50% { transform: rotateX(-5deg) rotateY(8deg); }
+    .perspective-container{ perspective: 1500px; }
+    @keyframes subtle-3d-rotate{
+      0%,100%{ transform: rotateX(5deg) rotateY(-8deg); }
+      50%{ transform: rotateX(-5deg) rotateY(8deg); }
     }
-    #market-mockup {
+    #market-mockup{
       transform-style: preserve-3d;
       animation: subtle-3d-rotate 15s ease-in-out infinite;
       transform: rotateX(5deg) rotateY(-8deg);
     }
 
     /* progress bar */
-    #scroll-progress {
+    #scroll-progress{
       position: fixed;
       inset: 0 0 auto 0;
       height: 2px;
@@ -69,10 +176,22 @@ zapamietaj <!DOCTYPE html>
       z-index: 60;
       box-shadow: 0 10px 30px rgba(255,3,84,.35);
     }
+
+    /* reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .grid-bg, .blob, #market-mockup{ animation: none !important; }
+      .lift{ transition: none !important; }
+    }
+
+    /* logo polish */
+    .brand-logo{
+      height: 40px;
+      width: auto;
+      filter: drop-shadow(0 10px 22px rgba(255,3,84,.12));
+    }
   </style>
 
   <script>
-    // Tailwind config (opcjonalnie)
     tailwind.config = {
       theme: {
         extend: {
@@ -85,38 +204,42 @@ zapamietaj <!DOCTYPE html>
   </script>
 </head>
 
-<body class="min-h-screen text-white selection:bg-[#ff0354]/40 selection:text-white">
+<body class="min-h-screen text-white/90 selection:bg-[#ff0354]/40 selection:text-white">
+  <div class="aurora" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+  </div>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
 
   <div id="scroll-progress" aria-hidden="true"></div>
 
   <!-- HEADER -->
-  <header class="sticky top-0 z-40 backdrop-blur-xl bg-black/20 border-b border-white/10">
+  <header class="sticky top-0 z-40 glass-soft">
     <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
       <a href="#hero" class="flex items-center gap-3">
-        <!-- To samo logo co w Velorie.pl -->
-        <img src="https://i.imgur.com/ikYb7tH.png" alt="Velorie" class="h-10 w-10 rounded-xl ring-1 ring-white/10" />
+        <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo" />
         <div class="leading-tight">
           <div class="text-lg font-semibold tracking-tight">Velorie Market</div>
           <div class="text-xs text-white/60">Platforma ogłoszeniowa • Freelancerzy</div>
         </div>
       </a>
 
-      <nav class="hidden md:flex items-center gap-2 text-sm text-white/70">
-        <a href="#o-platformie" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">O platformie</a>
-        <a href="#dla-kogo" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">Dla kogo</a>
-        <a href="#jak-to-dziala" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">Jak to działa</a>
-        <a href="#statystyki" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">Statystyki</a>
-        <a href="#faq" class="rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition">FAQ</a>
+      <nav class="hidden md:flex items-center gap-1 text-sm text-white/70">
+        <a href="#o-platformie" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">O platformie</a>
+        <a href="#dla-kogo" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">Dla kogo</a>
+        <a href="#jak-to-dziala" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">Jak to działa</a>
+        <a href="#statystyki" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">Statystyki</a>
+        <a href="#faq" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">FAQ</a>
       </nav>
 
       <div class="flex items-center gap-2">
-        <a href="#kontakt" class="hidden sm:inline-flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white hover:bg-white/10 transition">
+        <a href="#kontakt" class="hidden sm:inline-flex items-center gap-2 rounded-xl btn-ghost lift px-4 py-2 text-sm font-medium text-white">
           <i data-lucide="mail" class="h-4 w-4"></i>
           <span>Kontakt</span>
         </a>
 
-        <!-- Wymagany przycisk w prawym górnym rogu -->
-        <a href="market.html" class="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold hover:brightness-110 transition shadow-[0_10px_30px_rgba(255,3,84,0.35)]">
+        <a href="market.html" class="inline-flex items-center gap-2 rounded-xl btn-primary lift px-4 py-2 text-sm font-semibold">
           <i data-lucide="user" class="h-4 w-4"></i>
           <span>Zaloguj / Zarejestruj się</span>
         </a>
@@ -124,14 +247,14 @@ zapamietaj <!DOCTYPE html>
     </div>
   </header>
 
-  <main>
+  <main class="relative z-10">
     <!-- HERO -->
     <section id="hero" class="relative overflow-hidden">
       <div id="particles-container" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden"></div>
 
       <div class="mx-auto max-w-7xl px-4 py-20 md:py-28 grid md:grid-cols-2 gap-10 items-center">
         <div id="hero-text" class="space-y-6">
-          <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80">
+          <span class="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1 text-xs text-white/80">
             <i data-lucide="sparkles" class="h-3 w-3"></i>
             <span>Bez escrow • Bez prowizji od płatności • Tylko łączenie ludzi</span>
           </span>
@@ -147,41 +270,40 @@ zapamietaj <!DOCTYPE html>
           </p>
 
           <div class="flex flex-wrap items-center gap-3">
-            <a href="#o-platformie" class="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold hover:brightness-110 transition shadow-[0_10px_40px_rgba(255,3,84,0.45)]">
+            <a href="#o-platformie" class="inline-flex items-center gap-2 rounded-2xl btn-primary lift px-5 py-3 text-sm font-semibold">
               <i data-lucide="info" class="h-4 w-4"></i>
               <span>Dowiedz się więcej</span>
             </a>
-            <a href="#jak-to-dziala" class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition">
+            <a href="#jak-to-dziala" class="inline-flex items-center gap-2 rounded-2xl btn-ghost lift px-5 py-3 text-sm font-semibold text-white">
               <i data-lucide="workflow" class="h-4 w-4"></i>
               <span>Jak to działa</span>
             </a>
           </div>
 
           <div class="flex flex-wrap items-center gap-3 text-xs text-white/60">
-            <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+            <span class="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1">
               <i data-lucide="shield" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
               Brak escrow — nie przetwarzamy płatności
             </span>
-            <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+            <span class="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1">
               <i data-lucide="message-circle" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
               Kontakt: Discord / e-mail / social
             </span>
-            <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+            <span class="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1">
               <i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
               Profile + ogłoszenia + portfolio
             </span>
           </div>
         </div>
 
-        <!-- Mockup w tym samym klimacie -->
+        <!-- Mockup (unchanged structure, more auth-like surfaces) -->
         <div class="animate-on-scroll perspective-container">
           <div id="market-mockup" class="relative mx-auto w-full max-w-2xl">
-            <div class="absolute -inset-4 -z-10 rounded-[2rem] bg-[conic-gradient(from_180deg_at_50%_50%,rgba(255,3,84,0.35),transparent,rgba(79,70,229,0.35),transparent)] blur-2xl"></div>
+            <div class="absolute -inset-4 -z-10 rounded-[2rem] bg-[conic-gradient(from_180deg_at_50%_50%,rgba(255,3,84,0.35),transparent,rgba(124,58,237,0.35),transparent)] blur-2xl"></div>
 
-            <div class="relative rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_10px_50px_rgba(0,0,0,0.4)] p-3">
-              <div class="rounded-[1.5rem] border border-white/10 bg-black/60 p-3">
+            <div class="relative rounded-[2rem] glass p-3">
+              <div class="rounded-[1.5rem] border border-white/10 bg-black/55 p-3">
                 <div class="rounded-2xl bg-gradient-to-br from-white/10 to-white/5 overflow-hidden ring-1 ring-white/10">
-                  <!-- Zastępcza grafika (możesz podmienić na swój screenshot) -->
                   <div class="aspect-video p-5">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
@@ -283,7 +405,7 @@ zapamietaj <!DOCTYPE html>
             </p>
 
             <div class="grid sm:grid-cols-2 gap-4 pt-4">
-              <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+              <div class="animate-on-scroll glass rounded-2xl p-5">
                 <div class="flex items-center gap-2">
                   <i data-lucide="users" class="h-5 w-5 text-[var(--accent)]"></i>
                   <div class="font-semibold">Dla obu stron</div>
@@ -291,7 +413,7 @@ zapamietaj <!DOCTYPE html>
                 <p class="mt-2 text-sm text-white/70">Zleceniodawcy szukają wykonawców, a freelancerzy znajdują oferty.</p>
               </div>
 
-              <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+              <div class="animate-on-scroll glass rounded-2xl p-5">
                 <div class="flex items-center gap-2">
                   <i data-lucide="shield-off" class="h-5 w-5 text-[var(--accent)]"></i>
                   <div class="font-semibold">Bez escrow</div>
@@ -299,7 +421,7 @@ zapamietaj <!DOCTYPE html>
                 <p class="mt-2 text-sm text-white/70">Nie przetwarzamy płatności. Kontakt i rozliczenia są poza platformą.</p>
               </div>
 
-              <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+              <div class="animate-on-scroll glass rounded-2xl p-5">
                 <div class="flex items-center gap-2">
                   <i data-lucide="badge-check" class="h-5 w-5 text-[var(--accent)]"></i>
                   <div class="font-semibold">Portfolio i profil</div>
@@ -307,7 +429,7 @@ zapamietaj <!DOCTYPE html>
                 <p class="mt-2 text-sm text-white/70">Prezentuj doświadczenie, stack, realizacje i linki do sociali.</p>
               </div>
 
-              <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+              <div class="animate-on-scroll glass rounded-2xl p-5">
                 <div class="flex items-center gap-2">
                   <i data-lucide="search-check" class="h-5 w-5 text-[var(--accent)]"></i>
                   <div class="font-semibold">Szybkie dopasowanie</div>
@@ -318,7 +440,7 @@ zapamietaj <!DOCTYPE html>
           </div>
 
           <div class="lg:col-span-5">
-            <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+            <div class="animate-on-scroll glass rounded-2xl p-6">
               <div class="flex items-center justify-between">
                 <div>
                   <div class="text-sm text-white/60">Kluczowa zasada</div>
@@ -372,7 +494,7 @@ zapamietaj <!DOCTYPE html>
 
         <div class="grid md:grid-cols-3 gap-6">
           <!-- Cards -->
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
                 <i data-lucide="code" class="h-5 w-5"></i>
@@ -391,7 +513,7 @@ zapamietaj <!DOCTYPE html>
             </div>
           </div>
 
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
                 <i data-lucide="palette" class="h-5 w-5"></i>
@@ -410,7 +532,7 @@ zapamietaj <!DOCTYPE html>
             </div>
           </div>
 
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
                 <i data-lucide="video" class="h-5 w-5"></i>
@@ -429,7 +551,7 @@ zapamietaj <!DOCTYPE html>
             </div>
           </div>
 
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
                 <i data-lucide="wrench" class="h-5 w-5"></i>
@@ -448,7 +570,7 @@ zapamietaj <!DOCTYPE html>
             </div>
           </div>
 
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
                 <i data-lucide="blocks" class="h-5 w-5"></i>
@@ -467,7 +589,7 @@ zapamietaj <!DOCTYPE html>
             </div>
           </div>
 
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
                 <i data-lucide="briefcase" class="h-5 w-5"></i>
@@ -498,7 +620,7 @@ zapamietaj <!DOCTYPE html>
         </p>
 
         <div class="grid md:grid-cols-3 gap-6">
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
                 <i data-lucide="file-text" class="h-5 w-5"></i>
@@ -510,7 +632,7 @@ zapamietaj <!DOCTYPE html>
             </p>
           </div>
 
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
                 <i data-lucide="scan-search" class="h-5 w-5"></i>
@@ -522,7 +644,7 @@ zapamietaj <!DOCTYPE html>
             </p>
           </div>
 
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
                 <i data-lucide="messages-square" class="h-5 w-5"></i>
@@ -535,7 +657,7 @@ zapamietaj <!DOCTYPE html>
           </div>
         </div>
 
-        <div class="mt-10 animate-on-scroll rounded-2xl border border-white/10 bg-black/30 p-6">
+        <div class="mt-10 animate-on-scroll rounded-2xl glass p-6">
           <div class="flex items-start gap-3">
             <i data-lucide="shield-alert" class="h-5 w-5 text-[var(--accent)] mt-0.5"></i>
             <div>
@@ -574,7 +696,7 @@ zapamietaj <!DOCTYPE html>
         <p class="text-white/60 mb-10 max-w-2xl">Najczęściej zadawane pytania o zasady działania platformy.</p>
 
         <div class="grid lg:grid-cols-2 gap-6">
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <i data-lucide="help-circle" class="h-5 w-5 text-[var(--accent)]"></i>
               <div class="font-bold">Czy Velorie Market pobiera prowizję?</div>
@@ -582,7 +704,7 @@ zapamietaj <!DOCTYPE html>
             <p class="mt-3 text-sm text-white/70">Nie. Ponieważ nie obsługujemy płatności — rozliczenia są poza platformą.</p>
           </div>
 
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <i data-lucide="shield-off" class="h-5 w-5 text-[var(--accent)]"></i>
               <div class="font-bold">Czy jest escrow lub ochrona kupującego?</div>
@@ -590,7 +712,7 @@ zapamietaj <!DOCTYPE html>
             <p class="mt-3 text-sm text-white/70">Nie. Platforma służy tylko do znalezienia kontaktu. Ustalcie zasady współpracy we własnym zakresie.</p>
           </div>
 
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <i data-lucide="message-circle" class="h-5 w-5 text-[var(--accent)]"></i>
               <div class="font-bold">Gdzie odbywa się kontakt?</div>
@@ -598,7 +720,7 @@ zapamietaj <!DOCTYPE html>
             <p class="mt-3 text-sm text-white/70">Najczęściej Discord lub e-mail — możesz też dodać inne linki w profilu.</p>
           </div>
 
-          <div class="animate-on-scroll rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.4)]">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <i data-lucide="badge-check" class="h-5 w-5 text-[var(--accent)]"></i>
               <div class="font-bold">Jak zwiększyć wiarygodność?</div>
@@ -611,11 +733,11 @@ zapamietaj <!DOCTYPE html>
   </main>
 
   <!-- FOOTER -->
-  <footer id="kontakt" class="relative border-t border-white/10">
+  <footer id="kontakt" class="relative border-t border-white/10 glass-soft">
     <div class="mx-auto max-w-7xl px-4 py-12 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
       <div class="space-y-4">
         <div class="flex items-center gap-3">
-          <img src="https://i.imgur.com/ikYb7tH.png" alt="logo" class="h-10 w-10 rounded-xl ring-1 ring-white/10" />
+          <img src="https://i.imgur.com/NDhlWyz.png" alt="logo" class="h-10 w-auto" />
           <div>
             <div class="font-bold">Velorie Market</div>
             <div class="text-xs text-white/60">© <span id="footer-year"></span> · Wszelkie prawa zastrzeżone.</div>
@@ -625,9 +747,9 @@ zapamietaj <!DOCTYPE html>
           Platforma ogłoszeniowa dla freelancerów i zleceniodawców. Bez escrow — łączymy ludzi, a rozliczenia zostają po Waszej stronie.
         </p>
         <div class="flex items-center gap-3">
-          <a aria-label="Discord" href="#discord" class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs hover:bg-white/10">Discord</a>
-          <a aria-label="Facebook" href="#facebook" class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs hover:bg-white/10">Fanpage</a>
-          <a aria-label="E-mail" href="mailto:kontakt@velorie.market" class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs hover:bg-white/10">E-mail</a>
+          <a aria-label="Discord" href="#discord" class="rounded-full btn-ghost lift px-3 py-1 text-xs">Discord</a>
+          <a aria-label="Facebook" href="#facebook" class="rounded-full btn-ghost lift px-3 py-1 text-xs">Fanpage</a>
+          <a aria-label="E-mail" href="mailto:kontakt@velorie.market" class="rounded-full btn-ghost lift px-3 py-1 text-xs">E-mail</a>
         </div>
       </div>
 
@@ -659,7 +781,7 @@ zapamietaj <!DOCTYPE html>
         <p class="text-sm text-white/70 mb-4">
           Zaloguj się lub załóż konto, aby korzystać z funkcji ogłoszeń i profili (na osobnej podstronie).
         </p>
-        <a href="./auth.html" class="w-full justify-center inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-3 font-semibold hover:brightness-110 transition shadow-[0_10px_40px_rgba(255,3,84,0.45)]">
+        <a href="./auth.html" class="w-full justify-center inline-flex items-center gap-2 rounded-2xl btn-primary lift px-4 py-3 font-semibold">
           <i data-lucide="user" class="h-4 w-4"></i>
           <span>Zaloguj / Zarejestruj się</span>
         </a>
@@ -717,7 +839,7 @@ zapamietaj <!DOCTYPE html>
         grid.innerHTML = "";
         statsData.forEach((s, idx) => {
           const card = document.createElement("div");
-          card.className = "p-5 text-center relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_10px_50px_rgba(0,0,0,0.4)] animate-on-scroll";
+          card.className = "p-5 text-center relative rounded-2xl glass animate-on-scroll";
           card.style.transitionDelay = `${idx * 0.06}s`;
           card.innerHTML = `
             <div class="flex items-center justify-center gap-2">
@@ -788,7 +910,7 @@ zapamietaj <!DOCTYPE html>
         document.querySelectorAll(".animate-on-scroll").forEach(el => observer.observe(el));
       };
 
-      // Particles
+      // Particles (palette aligned)
       const createParticles = () => {
         const container = document.getElementById("particles-container");
         if (!container) return;
@@ -796,11 +918,12 @@ zapamietaj <!DOCTYPE html>
         for (let i = 0; i < 28; i++) {
           const particle = document.createElement("span");
           const size = 24 + (i % 5) * 12;
+          const col = (i % 3 === 0) ? "rgba(124,58,237,.75)" : "rgba(255,3,84,.80)";
           particle.className = "absolute rounded-full opacity-20 blur-2xl particle";
           particle.style.cssText = `
             width:${size}px;
             height:${size}px;
-            background:${i % 3 ? ACCENT : "#4f46e5"};
+            background:${col};
             left:${Math.random() * 100}%;
             top:${Math.random() * 100}%;
             animation-duration:${10 + (i % 5)}s;
