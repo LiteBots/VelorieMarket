@@ -1,1 +1,791 @@
 
+<!-- login.html -->
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Logowanie / Rejestracja</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root{
+      --bg1:#00010f;
+      --bg2:#0a1030;
+      --accent:#ff0354;
+      --accent2:#7c3aed;
+      --glass: rgba(255,255,255,.07);
+      --glass2: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.12);
+    }
+
+    /* Base background */
+    body{
+      background: radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.18), transparent 60%),
+                  radial-gradient(900px 600px at 85% 15%, rgba(255,3,84,.16), transparent 55%),
+                  linear-gradient(160deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated grid */
+    .grid-bg{
+      position: fixed; inset: 0;
+      pointer-events: none;
+      opacity: .28;
+      background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.95) 0%, rgba(0,0,0,.25) 55%, transparent 75%);
+      transform: translateZ(0);
+      animation: gridFloat 12s ease-in-out infinite;
+    }
+    @keyframes gridFloat{
+      0%,100% { transform: translate3d(0,0,0) scale(1); }
+      50% { transform: translate3d(0,-10px,0) scale(1.02); }
+    }
+
+    /* Aurora blobs */
+    .aurora{
+      position: fixed; inset: -20%;
+      pointer-events: none;
+      filter: blur(46px) saturate(125%);
+      opacity: .9;
+      transform: translateZ(0);
+    }
+    .blob{
+      position: absolute;
+      width: 520px; height: 520px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, rgba(255,3,84,.35), transparent 60%),
+                  radial-gradient(circle at 70% 70%, rgba(124,58,237,.35), transparent 60%);
+      animation: blob 14s ease-in-out infinite;
+      mix-blend-mode: screen;
+    }
+    .blob.b2{
+      width: 620px; height: 620px;
+      left: 62%; top: 18%;
+      background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.38), transparent 60%),
+                  radial-gradient(circle at 70% 70%, rgba(255,3,84,.28), transparent 60%);
+      animation-duration: 18s;
+      animation-delay: -3s;
+    }
+    .blob.b1{ left: 8%; top: 8%; }
+    @keyframes blob{
+      0%,100% { transform: translate(0,0) scale(1); }
+      30% { transform: translate(40px, 18px) scale(1.08); }
+      60% { transform: translate(-28px, 34px) scale(0.98); }
+    }
+
+    /* Noise overlay */
+    .noise{
+      position: fixed; inset: 0;
+      pointer-events: none;
+      opacity: .09;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+    }
+
+    /* Glass components */
+    .glass{
+      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+      border: 1px solid var(--stroke);
+      box-shadow:
+        0 18px 60px rgba(0,0,0,.50),
+        inset 0 1px 0 rgba(255,255,255,.10);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .glass-soft{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    /* Fancy focus ring */
+    .focus-ring:focus{
+      outline: none !important;
+      box-shadow:
+        0 0 0 2px rgba(255,3,84,.18),
+        0 0 0 6px rgba(124,58,237,.14) !important;
+      border-color: rgba(255,255,255,.22) !important;
+    }
+
+    /* Gradient buttons */
+    .btn-primary{
+      background: linear-gradient(135deg, rgba(255,3,84,1), rgba(124,58,237,1));
+      box-shadow:
+        0 12px 26px rgba(255,3,84,.18),
+        0 10px 32px rgba(124,58,237,.16);
+    }
+    .btn-primary:hover{ filter: brightness(1.05); }
+    .btn-primary:active{ transform: translateY(1px); }
+
+    .btn-ghost{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .btn-ghost:hover{ background: rgba(255,255,255,.08); }
+
+    /* Micro-animations */
+    .lift{ transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease; }
+    .lift:hover{ transform: translateY(-2px); }
+
+    /* Password strength bar */
+    .meter{
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.10);
+      overflow: hidden;
+    }
+    .meter > i{
+      display:block;
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background: linear-gradient(90deg, rgba(255,3,84,1), rgba(124,58,237,1));
+      transition: width .25s ease;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .grid-bg, .blob{ animation: none !important; }
+      .lift{ transition: none !important; }
+    }
+  </style>
+</head>
+
+<body class="text-white/90">
+  <div class="aurora">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+  </div>
+  <div class="grid-bg"></div>
+  <div class="noise"></div>
+
+  <!-- Top mini header -->
+  <header class="relative z-10 mx-auto max-w-6xl px-4 pt-6">
+    <div class="glass-soft rounded-2xl px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-2xl glass-soft grid place-items-center">
+          <i data-lucide="sparkles" class="h-5 w-5"></i>
+        </div>
+        <div class="leading-tight">
+          <div class="font-semibold tracking-wide">Velorie / Market</div>
+          <div class="text-xs text-white/55">Logowanie & Rejestracja</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="themeHintBtn" class="btn-ghost lift rounded-xl px-3 py-2 text-xs inline-flex items-center gap-2">
+          <i data-lucide="shield" class="h-4 w-4"></i>
+          Bezpieczne logowanie
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10 mx-auto max-w-6xl px-4 py-10">
+    <div class="grid lg:grid-cols-2 gap-6 items-stretch">
+      <!-- Left: marketing / info -->
+      <section class="glass rounded-3xl p-6 lg:p-8">
+        <div class="flex items-start gap-4">
+          <div class="h-12 w-12 rounded-2xl glass-soft grid place-items-center">
+            <i data-lucide="lock" class="h-6 w-6"></i>
+          </div>
+          <div>
+            <h1 class="text-2xl lg:text-3xl font-semibold tracking-tight">
+              Konto, które wygląda profesjonalnie.
+            </h1>
+            <p class="mt-2 text-white/60 leading-relaxed">
+              Zaloguj się lub utwórz konto w stylu dark + glass + aurora.
+              Formularze mają walidację, przełączanie widoków i przycisk logowania przez Discord.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-6 grid sm:grid-cols-2 gap-3">
+          <div class="glass-soft rounded-2xl p-4">
+            <div class="flex items-center gap-2 text-sm font-medium">
+              <i data-lucide="check-circle-2" class="h-4 w-4"></i>
+              Walidacja w locie
+            </div>
+            <p class="mt-2 text-sm text-white/55">
+              E-mail, hasła, powtórzenie hasła, rola użytkownika.
+            </p>
+          </div>
+          <div class="glass-soft rounded-2xl p-4">
+            <div class="flex items-center gap-2 text-sm font-medium">
+              <i data-lucide="wand-2" class="h-4 w-4"></i>
+              UX “premium”
+            </div>
+            <p class="mt-2 text-sm text-white/55">
+              Show/Hide hasło, strength meter, skróty klawiszowe.
+            </p>
+          </div>
+          <div class="glass-soft rounded-2xl p-4">
+            <div class="flex items-center gap-2 text-sm font-medium">
+              <i data-lucide="discord" class="h-4 w-4"></i>
+              Discord SSO (przycisk)
+            </div>
+            <p class="mt-2 text-sm text-white/55">
+              Podpinaj OAuth po stronie backendu – tu jest gotowy UI.
+            </p>
+          </div>
+          <div class="glass-soft rounded-2xl p-4">
+            <div class="flex items-center gap-2 text-sm font-medium">
+              <i data-lucide="sparkle" class="h-4 w-4"></i>
+              Gotowe do integracji
+            </div>
+            <p class="mt-2 text-sm text-white/55">
+              Miejsca na endpointy API i przekierowanie po sukcesie.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-6 glass-soft rounded-2xl p-4 flex items-start gap-3">
+          <i data-lucide="info" class="h-5 w-5 mt-0.5 text-white/70"></i>
+          <div class="text-sm text-white/60 leading-relaxed">
+            <span class="text-white/80 font-medium">Tip:</span> skrót <span class="px-2 py-0.5 rounded-lg glass-soft">/</span> ustawia fokus na pierwszym polu,
+            <span class="px-2 py-0.5 rounded-lg glass-soft">Esc</span> czyści komunikaty.
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: forms -->
+      <section class="glass rounded-3xl p-6 lg:p-8">
+        <!-- Top tabs -->
+        <div class="flex items-center justify-between gap-3">
+          <div class="inline-flex rounded-2xl glass-soft p-1">
+            <button id="tabLogin" class="px-4 py-2 rounded-xl text-sm font-medium lift"
+              aria-selected="true">
+              Logowanie
+            </button>
+            <button id="tabRegister" class="px-4 py-2 rounded-xl text-sm font-medium lift text-white/70"
+              aria-selected="false">
+              Rejestracja
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span id="capsHint" class="hidden text-xs text-white/55 glass-soft rounded-xl px-3 py-2">
+              <i data-lucide="keyboard" class="h-4 w-4 inline -mt-0.5 mr-1"></i>
+              Caps Lock włączony
+            </span>
+            <button id="clearBtn" class="btn-ghost lift rounded-xl px-3 py-2 text-xs inline-flex items-center gap-2">
+              <i data-lucide="eraser" class="h-4 w-4"></i>
+              Wyczyść
+            </button>
+          </div>
+        </div>
+
+        <!-- Toast / status -->
+        <div id="statusBox" class="mt-4 hidden glass-soft rounded-2xl p-4">
+          <div class="flex gap-3">
+            <div id="statusIcon" class="h-10 w-10 rounded-2xl glass-soft grid place-items-center"></div>
+            <div class="min-w-0">
+              <div id="statusTitle" class="font-semibold"></div>
+              <div id="statusText" class="text-sm text-white/60"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form id="loginForm" class="mt-5 space-y-4" autocomplete="on" novalidate>
+          <div>
+            <label class="text-sm text-white/70">E-mail lub nazwa użytkownika</label>
+            <div class="mt-2 relative">
+              <i data-lucide="at-sign" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/50"></i>
+              <input id="loginId" name="loginId" type="text"
+                class="w-full rounded-2xl px-10 py-3 glass-soft focus-ring text-sm placeholder:text-white/35"
+                placeholder="np. zxq0 lub email@domena.pl" />
+            </div>
+            <p id="loginIdErr" class="mt-1 text-xs text-rose-300 hidden"></p>
+          </div>
+
+          <div>
+            <label class="text-sm text-white/70">Hasło</label>
+            <div class="mt-2 relative">
+              <i data-lucide="key-round" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/50"></i>
+              <input id="loginPass" name="password" type="password"
+                class="w-full rounded-2xl px-10 pr-12 py-3 glass-soft focus-ring text-sm placeholder:text-white/35"
+                placeholder="Twoje hasło" />
+              <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost lift rounded-xl px-3 py-2 text-xs"
+                data-toggle-pass="loginPass" aria-label="Pokaż/ukryj hasło">
+                <i data-lucide="eye" class="h-4 w-4"></i>
+              </button>
+            </div>
+            <p id="loginPassErr" class="mt-1 text-xs text-rose-300 hidden"></p>
+          </div>
+
+          <div class="flex flex-col gap-2 pt-1">
+            <button type="submit" class="btn-primary lift rounded-2xl px-4 py-3 font-semibold tracking-wide">
+              Zaloguj
+            </button>
+
+            <button type="button" id="loginDiscord" class="btn-ghost lift rounded-2xl px-4 py-3 font-semibold inline-flex items-center justify-center gap-2">
+              <i data-lucide="discord" class="h-5 w-5"></i>
+              Zaloguj poprzez Discord
+            </button>
+          </div>
+
+          <div class="pt-2 text-sm text-white/60">
+            Nie masz konta?
+            <button type="button" id="switchToRegister" class="text-white font-semibold hover:opacity-90 underline underline-offset-4">
+              Zarejestruj się
+            </button>
+          </div>
+        </form>
+
+        <!-- REGISTER FORM -->
+        <form id="registerForm" class="mt-5 space-y-4 hidden" autocomplete="on" novalidate>
+          <div>
+            <label class="text-sm text-white/70">Nazwa użytkownika</label>
+            <div class="mt-2 relative">
+              <i data-lucide="user" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/50"></i>
+              <input id="regUsername" name="username" type="text"
+                class="w-full rounded-2xl px-10 py-3 glass-soft focus-ring text-sm placeholder:text-white/35"
+                placeholder="np. zxq0" />
+            </div>
+            <p id="regUsernameErr" class="mt-1 text-xs text-rose-300 hidden"></p>
+          </div>
+
+          <div>
+            <label class="text-sm text-white/70">Adres e-mail</label>
+            <div class="mt-2 relative">
+              <i data-lucide="mail" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/50"></i>
+              <input id="regEmail" name="email" type="email"
+                class="w-full rounded-2xl px-10 py-3 glass-soft focus-ring text-sm placeholder:text-white/35"
+                placeholder="email@domena.pl" />
+            </div>
+            <p id="regEmailErr" class="mt-1 text-xs text-rose-300 hidden"></p>
+          </div>
+
+          <div>
+            <label class="text-sm text-white/70">Imię i nazwisko <span class="text-white/40">(opcjonalnie)</span></label>
+            <div class="mt-2 relative">
+              <i data-lucide="id-card" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/50"></i>
+              <input id="regFullName" name="fullName" type="text"
+                class="w-full rounded-2xl px-10 py-3 glass-soft focus-ring text-sm placeholder:text-white/35"
+                placeholder="Jan Kowalski" />
+            </div>
+            <p class="mt-1 text-xs text-white/45">Możesz zostawić puste.</p>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between gap-3">
+              <label class="text-sm text-white/70">Hasło <span class="text-white/40">(min. 6 znaków)</span></label>
+              <span id="strengthLabel" class="text-xs text-white/55"></span>
+            </div>
+
+            <div class="mt-2 relative">
+              <i data-lucide="key-round" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/50"></i>
+              <input id="regPass" name="password" type="password"
+                class="w-full rounded-2xl px-10 pr-12 py-3 glass-soft focus-ring text-sm placeholder:text-white/35"
+                placeholder="Utwórz hasło" />
+              <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost lift rounded-xl px-3 py-2 text-xs"
+                data-toggle-pass="regPass" aria-label="Pokaż/ukryj hasło">
+                <i data-lucide="eye" class="h-4 w-4"></i>
+              </button>
+            </div>
+
+            <div class="mt-3 meter">
+              <i id="strengthBar"></i>
+            </div>
+
+            <p id="regPassErr" class="mt-1 text-xs text-rose-300 hidden"></p>
+          </div>
+
+          <div>
+            <label class="text-sm text-white/70">Powtórz hasło</label>
+            <div class="mt-2 relative">
+              <i data-lucide="shield-check" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/50"></i>
+              <input id="regPass2" name="password2" type="password"
+                class="w-full rounded-2xl px-10 pr-12 py-3 glass-soft focus-ring text-sm placeholder:text-white/35"
+                placeholder="Powtórz hasło" />
+              <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost lift rounded-xl px-3 py-2 text-xs"
+                data-toggle-pass="regPass2" aria-label="Pokaż/ukryj hasło">
+                <i data-lucide="eye" class="h-4 w-4"></i>
+              </button>
+            </div>
+            <p id="regPass2Err" class="mt-1 text-xs text-rose-300 hidden"></p>
+          </div>
+
+          <div>
+            <label class="text-sm text-white/70">Kim jesteś?</label>
+            <div class="mt-2 grid sm:grid-cols-2 gap-2">
+              <label class="glass-soft rounded-2xl p-3 flex items-start gap-3 cursor-pointer lift">
+                <input type="radio" name="role" value="freelancer" class="mt-1 accent-[var(--accent)]" />
+                <div class="min-w-0">
+                  <div class="font-semibold text-sm flex items-center gap-2">
+                    <i data-lucide="briefcase" class="h-4 w-4"></i>
+                    Zleceniobiorca (freelancer)
+                  </div>
+                  <div class="text-xs text-white/55 mt-1">Tworzysz oferty i realizujesz zlecenia.</div>
+                </div>
+              </label>
+
+              <label class="glass-soft rounded-2xl p-3 flex items-start gap-3 cursor-pointer lift">
+                <input type="radio" name="role" value="client" class="mt-1 accent-[var(--accent)]" />
+                <div class="min-w-0">
+                  <div class="font-semibold text-sm flex items-center gap-2">
+                    <i data-lucide="users" class="h-4 w-4"></i>
+                    Zleceniodawca
+                  </div>
+                  <div class="text-xs text-white/55 mt-1">Zlecasz projekty i wybierasz wykonawców.</div>
+                </div>
+              </label>
+            </div>
+            <p id="regRoleErr" class="mt-1 text-xs text-rose-300 hidden"></p>
+          </div>
+
+          <div class="flex flex-col gap-2 pt-1">
+            <button type="submit" class="btn-primary lift rounded-2xl px-4 py-3 font-semibold tracking-wide">
+              Zarejestruj
+            </button>
+
+            <button type="button" id="regDiscord" class="btn-ghost lift rounded-2xl px-4 py-3 font-semibold inline-flex items-center justify-center gap-2">
+              <i data-lucide="discord" class="h-5 w-5"></i>
+              Zaloguj poprzez Discord
+            </button>
+          </div>
+
+          <div class="pt-2 text-sm text-white/60">
+            Masz już konto?
+            <button type="button" id="switchToLogin" class="text-white font-semibold hover:opacity-90 underline underline-offset-4">
+              Zaloguj się
+            </button>
+          </div>
+        </form>
+
+        <footer class="mt-6 text-xs text-white/45">
+          <div class="flex items-center justify-between gap-3">
+            <span>© <span id="year"></span> Velorie</span>
+            <span class="inline-flex items-center gap-2">
+              <i data-lucide="shield" class="h-4 w-4"></i>
+              UI demo (frontend)
+            </span>
+          </div>
+        </footer>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // ===== Helpers
+    const $ = (id) => document.getElementById(id);
+    const show = (el) => el.classList.remove('hidden');
+    const hide = (el) => el.classList.add('hidden');
+
+    function setStatus(type, title, text){
+      const box = $("statusBox");
+      const icon = $("statusIcon");
+      const t = $("statusTitle");
+      const p = $("statusText");
+
+      // Reset icon
+      icon.innerHTML = "";
+
+      const ico = document.createElement("i");
+      ico.setAttribute("data-lucide",
+        type === "success" ? "check-circle-2" :
+        type === "error" ? "alert-triangle" :
+        "info"
+      );
+      ico.className = "h-5 w-5";
+
+      icon.className = "h-10 w-10 rounded-2xl glass-soft grid place-items-center " +
+        (type === "success" ? "text-emerald-200" : type === "error" ? "text-rose-200" : "text-white/70");
+
+      icon.appendChild(ico);
+      t.textContent = title || "";
+      p.textContent = text || "";
+
+      show(box);
+      lucide.createIcons();
+    }
+
+    function clearStatus(){ hide($("statusBox")); }
+
+    function setErr(id, msg){
+      const el = $(id);
+      if(!msg){ hide(el); el.textContent = ""; return; }
+      el.textContent = msg;
+      show(el);
+    }
+
+    function isEmail(v){
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || "").trim());
+    }
+
+    function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+
+    // ===== Toggle: Login <-> Register
+    const tabLogin = $("tabLogin");
+    const tabRegister = $("tabRegister");
+    const loginForm = $("loginForm");
+    const registerForm = $("registerForm");
+
+    function setMode(mode){
+      clearStatus();
+      // reset errors
+      ["loginIdErr","loginPassErr","regUsernameErr","regEmailErr","regPassErr","regPass2Err","regRoleErr"]
+        .forEach(id => setErr(id, ""));
+
+      if(mode === "login"){
+        show(loginForm); hide(registerForm);
+        tabLogin.classList.remove("text-white/70");
+        tabRegister.classList.add("text-white/70");
+        tabLogin.setAttribute("aria-selected","true");
+        tabRegister.setAttribute("aria-selected","false");
+        $("loginId").focus();
+      }else{
+        hide(loginForm); show(registerForm);
+        tabRegister.classList.remove("text-white/70");
+        tabLogin.classList.add("text-white/70");
+        tabLogin.setAttribute("aria-selected","false");
+        tabRegister.setAttribute("aria-selected","true");
+        $("regUsername").focus();
+      }
+    }
+
+    tabLogin.addEventListener("click", () => setMode("login"));
+    tabRegister.addEventListener("click", () => setMode("register"));
+    $("switchToRegister").addEventListener("click", () => setMode("register"));
+    $("switchToLogin").addEventListener("click", () => setMode("login"));
+
+    // ===== Show/Hide password buttons
+    document.querySelectorAll("[data-toggle-pass]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const inputId = btn.getAttribute("data-toggle-pass");
+        const input = $(inputId);
+        const icon = btn.querySelector("i");
+        const isHidden = input.type === "password";
+        input.type = isHidden ? "text" : "password";
+        icon.setAttribute("data-lucide", isHidden ? "eye-off" : "eye");
+        lucide.createIcons();
+        input.focus();
+      });
+    });
+
+    // ===== Caps lock hint
+    const capsHint = $("capsHint");
+    window.addEventListener("keydown", (e) => {
+      if (typeof e.getModifierState === "function") {
+        const on = e.getModifierState("CapsLock");
+        on ? show(capsHint) : hide(capsHint);
+      }
+      if(e.key === "Escape"){
+        clearStatus();
+        hide(capsHint);
+      }
+      // Quick focus
+      if(e.key === "/" && !["INPUT","TEXTAREA"].includes(document.activeElement?.tagName)){
+        e.preventDefault();
+        const isLogin = !loginForm.classList.contains("hidden");
+        (isLogin ? $("loginId") : $("regUsername")).focus();
+      }
+    });
+
+    // ===== Clear button
+    $("clearBtn").addEventListener("click", () => {
+      clearStatus();
+      loginForm.reset();
+      registerForm.reset();
+      updateStrength("");
+      ["loginIdErr","loginPassErr","regUsernameErr","regEmailErr","regPassErr","regPass2Err","regRoleErr"]
+        .forEach(id => setErr(id, ""));
+      setStatus("info","Wyczyszczono","Pola formularzy zostały zresetowane.");
+      setTimeout(clearStatus, 1600);
+    });
+
+    // ===== Password strength
+    const strengthBar = $("strengthBar");
+    const strengthLabel = $("strengthLabel");
+    function scorePassword(p){
+      p = String(p || "");
+      let score = 0;
+      if(p.length >= 6) score += 25;
+      if(p.length >= 10) score += 20;
+      if(/[A-Z]/.test(p)) score += 15;
+      if(/[a-z]/.test(p)) score += 10;
+      if(/[0-9]/.test(p)) score += 15;
+      if(/[^A-Za-z0-9]/.test(p)) score += 15;
+      return clamp(score, 0, 100);
+    }
+    function labelForScore(s){
+      if(s < 30) return "Słabe";
+      if(s < 60) return "Średnie";
+      if(s < 85) return "Dobre";
+      return "Bardzo dobre";
+    }
+    function updateStrength(p){
+      const s = scorePassword(p);
+      strengthBar.style.width = s + "%";
+      strengthLabel.textContent = p ? (labelForScore(s) + " • " + s + "%") : "";
+    }
+    $("regPass").addEventListener("input", (e) => updateStrength(e.target.value));
+
+    // ===== Discord buttons (UI demo – podmień URL na swój OAuth)
+    function goDiscord(){
+      // TODO: podmień na realny endpoint, np. /auth/discord
+      setStatus("info","Discord OAuth","Tu podepnij przekierowanie do OAuth (np. /auth/discord).");
+    }
+    $("loginDiscord").addEventListener("click", goDiscord);
+    $("regDiscord").addEventListener("click", goDiscord);
+
+    // ===== Login validation + submit demo
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      clearStatus();
+
+      const loginId = $("loginId").value.trim();
+      const pass = $("loginPass").value;
+
+      let ok = true;
+      if(!loginId){
+        setErr("loginIdErr","Podaj e-mail lub nazwę użytkownika.");
+        ok = false;
+      }else{
+        setErr("loginIdErr","");
+      }
+
+      if(!pass){
+        setErr("loginPassErr","Podaj hasło.");
+        ok = false;
+      }else if(pass.length < 6){
+        setErr("loginPassErr","Hasło wygląda na zbyt krótkie (min. 6 znaków).");
+        ok = false;
+      }else{
+        setErr("loginPassErr","");
+      }
+
+      if(!ok){
+        setStatus("error","Popraw błędy","Sprawdź pola oznaczone na czerwono.");
+        return;
+      }
+
+      // DEMO: tu wyślij do API
+      // fetch("/api/auth/login", { method:"POST", headers:{...}, body: JSON.stringify({loginId, pass}) })
+
+      setStatus("success","Zalogowano (demo)","UI wygląda jak produkcyjne — podepnij backend i przekieruj użytkownika.");
+      // Przykład redirect:
+      // window.location.href = "/market.html";
+    });
+
+    // ===== Register validation + submit demo
+    registerForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      clearStatus();
+
+      const username = $("regUsername").value.trim();
+      const email = $("regEmail").value.trim();
+      const fullName = $("regFullName").value.trim();
+      const pass = $("regPass").value;
+      const pass2 = $("regPass2").value;
+      const role = registerForm.querySelector('input[name="role"]:checked')?.value || "";
+
+      let ok = true;
+
+      // Username
+      if(!username){
+        setErr("regUsernameErr","Podaj nazwę użytkownika.");
+        ok = false;
+      }else if(username.length < 3){
+        setErr("regUsernameErr","Nazwa użytkownika musi mieć min. 3 znaki.");
+        ok = false;
+      }else if(!/^[a-zA-Z0-9._-]+$/.test(username)){
+        setErr("regUsernameErr","Użyj tylko liter, cyfr oraz . _ -");
+        ok = false;
+      }else{
+        setErr("regUsernameErr","");
+      }
+
+      // Email
+      if(!email){
+        setErr("regEmailErr","Podaj adres e-mail.");
+        ok = false;
+      }else if(!isEmail(email)){
+        setErr("regEmailErr","Podaj poprawny adres e-mail.");
+        ok = false;
+      }else{
+        setErr("regEmailErr","");
+      }
+
+      // Password
+      if(!pass){
+        setErr("regPassErr","Ustaw hasło (min. 6 znaków).");
+        ok = false;
+      }else if(pass.length < 6){
+        setErr("regPassErr","Hasło musi mieć minimum 6 znaków.");
+        ok = false;
+      }else{
+        setErr("regPassErr","");
+      }
+
+      // Password2
+      if(!pass2){
+        setErr("regPass2Err","Powtórz hasło.");
+        ok = false;
+      }else if(pass2 !== pass){
+        setErr("regPass2Err","Hasła nie są identyczne.");
+        ok = false;
+      }else{
+        setErr("regPass2Err","");
+      }
+
+      // Role
+      if(!role){
+        setErr("regRoleErr","Wybierz: zleceniobiorca lub zleceniodawca.");
+        ok = false;
+      }else{
+        setErr("regRoleErr","");
+      }
+
+      if(!ok){
+        setStatus("error","Popraw błędy","Uzupełnij wymagane pola i spróbuj ponownie.");
+        return;
+      }
+
+      // DEMO: tu wyślij do API
+      // fetch("/api/auth/register", { method:"POST", body: JSON.stringify({username,email,fullName,pass,role}) })
+
+      // Demo save (opcjonalnie)
+      try{
+        const demo = { username, email, fullName, role, createdAt: new Date().toISOString() };
+        localStorage.setItem("demo_last_register", JSON.stringify(demo));
+      }catch(_){}
+
+      setStatus("success","Zarejestrowano (demo)","Teraz możesz się zalogować. Podepnij backend oraz e-mail weryfikacyjny jeśli chcesz.");
+      // Auto-switch to login after small delay
+      setTimeout(() => {
+        setMode("login");
+        $("loginId").value = email || username;
+        $("loginPass").value = "";
+        $("loginPass").focus();
+      }, 900);
+    });
+
+    // ===== Small extra: status hint button
+    $("themeHintBtn").addEventListener("click", () => {
+      setStatus("info","Bezpieczeństwo","Dopnij: rate limit, 2FA, CSRF, bcrypt/argon2, oraz Discord OAuth (backend).");
+    });
+
+    // ===== Init
+    $("year").textContent = new Date().getFullYear();
+    lucide.createIcons();
+    setMode("login");
+    updateStrength("");
+
+  </script>
+</body>
+</html>
