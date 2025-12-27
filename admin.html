@@ -1,1 +1,1983 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Velorie Market — Admin Panel</title>
+  <meta name="theme-color" content="#0a1030" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 
+  <style>
+    :root{
+      --accent:#ff0354;
+      --accent2:#7c3aed;
+      --bg1:#00010f;
+      --bg2:#0a1030;
+      --stroke: rgba(255,255,255,.12);
+    }
+    html{scroll-behavior:smooth}
+    body{
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.18), transparent 60%),
+        radial-gradient(900px 600px at 85% 15%, rgba(255,3,84,.16), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+    /* grid */
+    .grid-bg{
+      position: fixed; inset: 0; pointer-events:none; opacity:.22;
+      background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.95) 0%, rgba(0,0,0,.22) 55%, transparent 75%);
+      transform: translateZ(0);
+      animation: gridFloat 12s ease-in-out infinite;
+    }
+    @keyframes gridFloat{
+      0%,100% { transform: translate3d(0,0,0) scale(1); }
+      50% { transform: translate3d(0,-10px,0) scale(1.02); }
+    }
+    /* aurora */
+    .aurora{ position:fixed; inset:-20%; pointer-events:none; filter: blur(46px) saturate(125%); opacity:.90; transform: translateZ(0); }
+    .blob{
+      position:absolute; width: 520px; height: 520px; border-radius:999px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,3,84,.35), transparent 60%),
+        radial-gradient(circle at 70% 70%, rgba(124,58,237,.35), transparent 60%);
+      animation: blob 14s ease-in-out infinite;
+      mix-blend-mode: screen;
+    }
+    .blob.b1{ left: 8%; top: 8%; }
+    .blob.b2{
+      width: 620px; height: 620px; left: 62%; top: 18%;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(124,58,237,.38), transparent 60%),
+        radial-gradient(circle at 70% 70%, rgba(255,3,84,.28), transparent 60%);
+      animation-duration: 18s;
+      animation-delay: -3s;
+    }
+    @keyframes blob{
+      0%,100% { transform: translate(0,0) scale(1); }
+      30% { transform: translate(40px, 18px) scale(1.08); }
+      60% { transform: translate(-28px, 34px) scale(0.98); }
+    }
+    /* noise */
+    .noise{
+      position: fixed; inset: 0; pointer-events:none; opacity:.09;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+    }
+
+    /* glass */
+    .glass{
+      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+      border: 1px solid var(--stroke);
+      box-shadow:
+        0 18px 60px rgba(0,0,0,.50),
+        inset 0 1px 0 rgba(255,255,255,.10);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .glass-soft{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .lift{ transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease, filter .2s ease; }
+    .lift:hover{ transform: translateY(-2px); }
+
+    /* buttons */
+    .btn-primary{
+      background: linear-gradient(135deg, rgba(255,3,84,1), rgba(124,58,237,1));
+      box-shadow:
+        0 12px 26px rgba(255,3,84,.18),
+        0 10px 32px rgba(124,58,237,.16);
+    }
+    .btn-primary:hover{ filter: brightness(1.06); }
+    .btn-primary:active{ transform: translateY(1px); }
+    .btn-ghost{ background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); }
+    .btn-ghost:hover{ background: rgba(255,255,255,.08); }
+
+    /* progress */
+    #scroll-progress{
+      position: fixed; inset: 0 0 auto 0; height: 2px; width: 0%;
+      background: var(--accent); z-index: 80;
+      box-shadow: 0 10px 30px rgba(255,3,84,.35);
+    }
+
+    /* reveal */
+    .animate-on-scroll{
+      opacity:0; transform: translateY(18px);
+      transition: opacity .6s ease-out, transform .6s ease-out;
+      will-change: opacity, transform;
+    }
+    .animate-on-scroll.is-visible{ opacity:1; transform: translateY(0); }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 999px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,.08); }
+
+    /* modal */
+    .modal-backdrop{ position:fixed; inset:0; background: rgba(0,0,0,.55); z-index: 90; display:none; }
+    .modal-backdrop.show{ display:block; }
+
+    /* reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .grid-bg, .blob{ animation: none !important; }
+      .lift, .animate-on-scroll{ transition: none !important; }
+    }
+  </style>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: { boxShadow: { glow: "0 10px 40px rgba(255,3,84,0.45)" } }
+      }
+    };
+  </script>
+</head>
+
+<body class="min-h-screen text-white/90 selection:bg-[#ff0354]/40 selection:text-white">
+  <div class="aurora" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+  </div>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
+  <div id="scroll-progress" aria-hidden="true"></div>
+
+  <!-- TOP BAR -->
+  <header class="sticky top-0 z-[70] glass-soft">
+    <div class="mx-auto max-w-[1400px] px-4 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-2xl glass flex items-center justify-center">
+          <i data-lucide="shield" class="h-5 w-5 text-[var(--accent)]"></i>
+        </div>
+        <div class="leading-tight">
+          <div class="text-lg font-semibold tracking-tight">Velorie Market — Admin Panel</div>
+          <div class="text-xs text-white/60">Dashboard • Użytkownicy • VPLN • Ogłoszenia • Transakcje</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="hidden md:flex items-center gap-2 rounded-2xl glass-soft px-3 py-2 text-xs text-white/70">
+          <i data-lucide="clock-3" class="h-4 w-4"></i>
+          <span id="top-time">—</span>
+        </div>
+        <button id="btn-export" class="inline-flex items-center gap-2 rounded-xl btn-ghost lift px-4 py-2 text-sm font-medium">
+          <i data-lucide="download" class="h-4 w-4"></i>
+          <span>Eksport (JSON)</span>
+        </button>
+        <button id="btn-reset-demo" class="inline-flex items-center gap-2 rounded-xl btn-ghost lift px-4 py-2 text-sm font-medium text-white">
+          <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+          <span>Reset demo</span>
+        </button>
+        <button id="btn-logout" class="inline-flex items-center gap-2 rounded-xl btn-primary lift px-4 py-2 text-sm font-semibold">
+          <i data-lucide="log-out" class="h-4 w-4"></i>
+          <span>Wyloguj</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10">
+    <div class="mx-auto max-w-[1400px] px-4 py-6 grid lg:grid-cols-12 gap-6">
+      <!-- SIDEBAR -->
+      <aside class="lg:col-span-3 xl:col-span-2">
+        <div class="glass rounded-3xl p-4 sticky top-[76px]">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm font-semibold">Nawigacja</div>
+            <span class="text-[11px] text-white/60 rounded-full bg-black/30 border border-white/10 px-2 py-1">Admin</span>
+          </div>
+
+          <div class="mt-3 rounded-2xl bg-black/30 border border-white/10 p-3">
+            <div class="flex items-center justify-between">
+              <div class="text-xs text-white/60">Saldo (demo)</div>
+              <div class="text-xs text-white/60">VPLN</div>
+            </div>
+            <div class="mt-1 flex items-end justify-between gap-2">
+              <div class="text-xl font-extrabold tabular-nums" id="kpi-vpln-total">—</div>
+              <div class="text-xs text-white/50">w systemie</div>
+            </div>
+          </div>
+
+          <nav class="mt-4 space-y-2" id="nav">
+            <!-- populated by JS -->
+          </nav>
+
+          <div class="mt-4 pt-4 border-t border-white/10 text-xs text-white/55">
+            <div class="flex items-start gap-2">
+              <i data-lucide="info" class="h-4 w-4 mt-0.5"></i>
+              <p>
+                To jest wersja <span class="text-white/70 font-semibold">frontend demo</span>.
+                Dane trzymane w localStorage, brak backendu.
+              </p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CONTENT -->
+      <section class="lg:col-span-9 xl:col-span-10 space-y-6">
+        <!-- INFO STRIP PREVIEW -->
+        <div class="animate-on-scroll glass rounded-3xl p-4">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                <i data-lucide="megaphone" class="h-5 w-5"></i>
+              </span>
+              <div>
+                <div class="font-semibold">Pasek info (podgląd)</div>
+                <div class="text-sm text-white/60">Tak może wyglądać cienki pasek na samej górze strony głównej.</div>
+              </div>
+            </div>
+            <div class="rounded-2xl bg-black/30 border border-white/10 px-4 py-2 text-sm text-white/75 w-full md:w-auto">
+              <span class="text-white/55">Treść: </span><span id="infobar-preview">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROUTED VIEWS -->
+        <div id="view-container"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- MODAL BACKDROP -->
+  <div id="modal-backdrop" class="modal-backdrop">
+    <div class="mx-auto max-w-4xl px-4 py-10">
+      <div class="glass rounded-3xl p-4 md:p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="text-lg font-bold" id="modal-title">—</div>
+            <div class="text-sm text-white/60" id="modal-subtitle">—</div>
+          </div>
+          <button id="modal-close" class="rounded-xl btn-ghost lift px-3 py-2 text-sm font-semibold">
+            <span class="inline-flex items-center gap-2">
+              <i data-lucide="x" class="h-4 w-4"></i> Zamknij
+            </span>
+          </button>
+        </div>
+        <div class="mt-4" id="modal-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div id="toasts" class="fixed bottom-4 right-4 z-[120] space-y-2"></div>
+
+  <script>
+    /**********************
+     * Velorie Admin Panel (frontend demo)
+     * - LocalStorage DB
+     * - Tabs: Dashboard, VPLN, Użytkownicy, Pasek info, Transakcje, Weryfikacja, Ogłoszenia
+     **********************/
+    const LS_KEYS = {
+      DB: "vm_admin_db_v1",
+      ACTIVE_TAB: "vm_admin_active_tab_v1"
+    };
+
+    const TABS = [
+      { id: "dashboard", label: "Dashboard", icon: "layout-dashboard" },
+      { id: "vpln", label: "VPLN", icon: "wallet" },
+      { id: "users", label: "Użytkownicy", icon: "users" },
+      { id: "infobar", label: "Pasek info", icon: "megaphone" },
+      { id: "transactions", label: "Transakcje", icon: "receipt" },
+      { id: "verification", label: "Weryfikacja", icon: "badge-check" },
+      { id: "listings", label: "Ogłoszenia", icon: "briefcase" }
+    ];
+
+    const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+
+    function nowISO(){ return new Date().toISOString(); }
+    function formatPLN(n){
+      try { return new Intl.NumberFormat("pl-PL", { style:"currency", currency:"PLN" }).format(n); }
+      catch { return (n ?? 0) + " PLN"; }
+    }
+    function formatNum(n){
+      try { return new Intl.NumberFormat("pl-PL").format(n ?? 0); }
+      catch { return String(n ?? 0); }
+    }
+    function formatDT(iso){
+      const d = new Date(iso);
+      if (isNaN(d)) return "—";
+      return d.toLocaleString("pl-PL", { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+    }
+    function maskEmail(email){
+      if (!email || !email.includes("@")) return email || "—";
+      const [a,b] = email.split("@");
+      if (a.length <= 2) return a[0] + "*@" + b;
+      return a.slice(0,2) + "****@" + b;
+    }
+
+    function toast(message, type="ok"){
+      const el = document.createElement("div");
+      el.className =
+        "glass rounded-2xl px-4 py-3 text-sm flex items-start gap-3 shadow-glow";
+      el.innerHTML = `
+        <span class="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-xl ${type==="bad" ? "bg-red-500/15 text-red-200" : "bg-[var(--accent)]/15 text-[var(--accent)]"} ring-1 ring-white/10">
+          <i data-lucide="${type==="bad" ? "alert-triangle" : "check"}" class="h-4 w-4"></i>
+        </span>
+        <div class="flex-1">
+          <div class="font-semibold">${type==="bad" ? "Błąd" : "Gotowe"}</div>
+          <div class="text-white/70">${message}</div>
+        </div>
+      `;
+      document.getElementById("toasts").appendChild(el);
+      lucide.createIcons();
+      setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateY(6px)"; el.style.transition="all .25s ease"; }, 2600);
+      setTimeout(()=> el.remove(), 3100);
+    }
+
+    function loadDB(){
+      const raw = localStorage.getItem(LS_KEYS.DB);
+      if (raw) {
+        try { return JSON.parse(raw); } catch {}
+      }
+      // seed
+      const seed = {
+        infobar: { enabled: true, message: "Witaj w Velorie Market! Pamiętaj: brak escrow — rozliczenia poza platformą.", updatedAt: nowISO() },
+        users: [
+          {
+            id: "u_1001",
+            username: "zxq0",
+            email: "zexq2001@gmail.com",
+            password: "demoPass#123",
+            premium: true,
+            verified: true,
+            vpln: 540,
+            createdAt: "2025-11-12T12:15:00.000Z",
+            logs: [
+              { id: uid(), type:"login", label:"Logowanie", at:"2025-12-19T14:20:00.000Z", meta:{ ip:"127.0.0.1" } },
+              { id: uid(), type:"vpln_topup", label:"Doładowanie VPLN", at:"2025-12-22T10:02:00.000Z", meta:{ amount: 200, method:"BLIK" } },
+              { id: uid(), type:"listing_edit", label:"Edycja ogłoszenia", at:"2025-12-24T09:10:00.000Z", meta:{ listingId:"l_2002" } }
+            ]
+          },
+          {
+            id: "u_1002",
+            username: "Klaudia",
+            email: "klaudia@example.com",
+            password: "klaudia#demo",
+            premium: true,
+            verified: false,
+            vpln: 120,
+            createdAt: "2025-10-02T08:40:00.000Z",
+            logs: [
+              { id: uid(), type:"register", label:"Rejestracja", at:"2025-10-02T08:40:00.000Z", meta:{} },
+              { id: uid(), type:"listing_add", label:"Dodanie ogłoszenia", at:"2025-12-02T15:10:00.000Z", meta:{ listingId:"l_2003" } }
+            ]
+          },
+          {
+            id: "u_1003",
+            username: "kubus",
+            email: "kubus@example.com",
+            password: "kubus#demo",
+            premium: false,
+            verified: true,
+            vpln: 30,
+            createdAt: "2025-09-18T17:05:00.000Z",
+            logs: [
+              { id: uid(), type:"register", label:"Rejestracja", at:"2025-09-18T17:05:00.000Z", meta:{} },
+              { id: uid(), type:"listing_add", label:"Dodanie ogłoszenia", at:"2025-11-12T11:55:00.000Z", meta:{ listingId:"l_2001" } }
+            ]
+          }
+        ],
+        listings: [
+          { id:"l_2001", userId:"u_1003", title:"Konfiguracja serwera (Linux/Proxy) + zabezpieczenia", category:"Technicy", priceMin: 200, priceMax: 600, status:"active", createdAt:"2025-11-12T11:55:00.000Z", updatedAt:"2025-11-12T11:55:00.000Z" },
+          { id:"l_2002", userId:"u_1001", title:"Bot Discord + panel (Node/React) — szybkie MVP", category:"Programiści", priceMin: 500, priceMax: 1500, status:"active", createdAt:"2025-12-10T09:30:00.000Z", updatedAt:"2025-12-24T09:10:00.000Z" },
+          { id:"l_2003", userId:"u_1002", title:"Branding + miniatury (YouTube/TikTok)", category:"Graficy", priceMin: 120, priceMax: 450, status:"paused", createdAt:"2025-12-02T15:10:00.000Z", updatedAt:"2025-12-02T15:10:00.000Z" }
+        ],
+        transactions: [
+          { id:"t_3001", userId:"u_1001", type:"vpln_topup", amountPLN: 49.99, vplnDelta: +200, method:"BLIK", status:"success", createdAt:"2025-12-22T10:02:00.000Z" },
+          { id:"t_3002", userId:"u_1002", type:"subscription", amountPLN: 23.99, vplnDelta: 0, method:"P24", status:"success", createdAt:"2025-12-08T12:08:00.000Z" },
+          { id:"t_3003", userId:"u_1003", type:"verification", amountPLN: 19.55, vplnDelta: 0, method:"PayPal", status:"success", createdAt:"2025-11-05T16:22:00.000Z" }
+        ],
+        verificationRequests: [
+          { id:"vr_4001", userId:"u_1002", note:"Prośba o weryfikację — link do portfolio w profilu.", status:"pending", createdAt:"2025-12-21T18:40:00.000Z" }
+        ],
+        revenue: {
+          totalPLN: 49.99 + 23.99 + 19.55
+        }
+      };
+      localStorage.setItem(LS_KEYS.DB, JSON.stringify(seed));
+      return seed;
+    }
+
+    function saveDB(db){
+      localStorage.setItem(LS_KEYS.DB, JSON.stringify(db));
+    }
+
+    function getActiveTab(){
+      return localStorage.getItem(LS_KEYS.ACTIVE_TAB) || "dashboard";
+    }
+    function setActiveTab(id){
+      localStorage.setItem(LS_KEYS.ACTIVE_TAB, id);
+    }
+
+    function byId(id){ return document.getElementById(id); }
+
+    function openModal({title, subtitle, bodyHTML}){
+      byId("modal-title").textContent = title || "—";
+      byId("modal-subtitle").textContent = subtitle || "";
+      byId("modal-body").innerHTML = bodyHTML || "";
+      byId("modal-backdrop").classList.add("show");
+      lucide.createIcons();
+    }
+    function closeModal(){
+      byId("modal-backdrop").classList.remove("show");
+      byId("modal-body").innerHTML = "";
+    }
+
+    function calcKPIs(db){
+      const totalUsers = db.users.length;
+      const premiumUsers = db.users.filter(u=>u.premium).length;
+      const verifiedUsers = db.users.filter(u=>u.verified).length;
+      const totalVPLN = db.users.reduce((sum,u)=>sum + (u.vpln||0), 0);
+      const totalListings = db.listings.length;
+      const activeListings = db.listings.filter(l=>l.status==="active").length;
+      const pendingVerifications = db.verificationRequests.filter(v=>v.status==="pending").length;
+      const revenueTotal = db.revenue?.totalPLN ?? db.transactions.reduce((s,t)=>s+(t.amountPLN||0),0);
+      return { totalUsers, premiumUsers, verifiedUsers, totalVPLN, totalListings, activeListings, pendingVerifications, revenueTotal };
+    }
+
+    function initScrollProgress(){
+      const bar = byId("scroll-progress");
+      const update = () => {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const p = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        bar.style.width = `${p}%`;
+      };
+      window.addEventListener("scroll", update, { passive: true });
+      update();
+    }
+
+    let observer;
+    function initReveal(){
+      if (observer) observer.disconnect();
+      observer = new IntersectionObserver((entries, obs)=>{
+        entries.forEach(e=>{
+          if (e.isIntersecting){
+            e.target.classList.add("is-visible");
+            obs.unobserve(e.target);
+          }
+        })
+      }, { threshold: 0.12 });
+      document.querySelectorAll(".animate-on-scroll").forEach(el=>observer.observe(el));
+    }
+
+    function renderNav(active){
+      const nav = byId("nav");
+      nav.innerHTML = "";
+      TABS.forEach(t=>{
+        const a = document.createElement("button");
+        const isActive = t.id === active;
+        a.className =
+          "w-full text-left flex items-center gap-3 rounded-2xl px-3 py-3 lift " +
+          (isActive ? "btn-primary" : "btn-ghost");
+        a.innerHTML = `
+          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-black/30 border border-white/10">
+            <i data-lucide="${t.icon}" class="h-4 w-4"></i>
+          </span>
+          <div class="flex-1">
+            <div class="text-sm font-semibold">${t.label}</div>
+            <div class="text-[11px] ${isActive ? "text-white/80" : "text-white/55"}">${tabHint(t.id)}</div>
+          </div>
+          <i data-lucide="chevron-right" class="h-4 w-4 ${isActive ? "opacity-90" : "opacity-40"}"></i>
+        `;
+        a.addEventListener("click", ()=>{
+          setActiveTab(t.id);
+          renderApp();
+          window.scrollTo({top:0, behavior:"smooth"});
+        });
+        nav.appendChild(a);
+      });
+      lucide.createIcons();
+    }
+
+    function tabHint(id){
+      switch(id){
+        case "dashboard": return "Statystyki + szybkie akcje";
+        case "vpln": return "Dodawanie VPLN po ID/e-mail";
+        case "users": return "Lista + szczegóły kont";
+        case "infobar": return "Komunikat na górze strony";
+        case "transactions": return "Wszystkie transakcje";
+        case "verification": return "Prośby o weryfikację";
+        case "listings": return "Edycja i usuwanie ogłoszeń";
+        default: return "";
+      }
+    }
+
+    function renderApp(){
+      const db = loadDB();
+      const activeTab = getActiveTab();
+
+      // update infobar preview
+      byId("infobar-preview").textContent = (db.infobar?.enabled ? (db.infobar?.message || "—") : "(wyłączony)");
+
+      const kpis = calcKPIs(db);
+      byId("kpi-vpln-total").textContent = formatNum(kpis.totalVPLN);
+
+      renderNav(activeTab);
+
+      const vc = byId("view-container");
+      vc.innerHTML = "";
+
+      const view = document.createElement("div");
+      view.className = "space-y-6";
+
+      // Header row
+      view.appendChild(sectionHeader(activeTab, db));
+
+      // Tab content
+      if (activeTab === "dashboard") view.appendChild(viewDashboard(db));
+      if (activeTab === "vpln") view.appendChild(viewVPLN(db));
+      if (activeTab === "users") view.appendChild(viewUsers(db));
+      if (activeTab === "infobar") view.appendChild(viewInfobar(db));
+      if (activeTab === "transactions") view.appendChild(viewTransactions(db));
+      if (activeTab === "verification") view.appendChild(viewVerification(db));
+      if (activeTab === "listings") view.appendChild(viewListings(db));
+
+      vc.appendChild(view);
+
+      lucide.createIcons();
+      initReveal();
+    }
+
+    function sectionHeader(activeTab, db){
+      const map = {
+        dashboard: { title:"Dashboard", desc:"Przegląd kluczowych statystyk i zdrowia platformy." },
+        vpln: { title:"VPLN", desc:"Dodawaj VPLN użytkownikowi po ID lub adresie e-mail." },
+        users: { title:"Użytkownicy", desc:"Lista kont, szczegóły, ogłoszenia, akcje i zarządzanie hasłem." },
+        infobar: { title:"Pasek info", desc:"Ustaw cienki komunikat na samej górze strony głównej." },
+        transactions: { title:"Transakcje", desc:"Wszystkie transakcje wszystkich użytkowników w jednym miejscu." },
+        verification: { title:"Weryfikacja", desc:"Prośby o weryfikację profilu (zaakceptuj/odrzuć)." },
+        listings: { title:"Ogłoszenia", desc:"Wszystkie ogłoszenia — edycja, statusy i usuwanie." }
+      };
+      const meta = map[activeTab] || { title:"Panel", desc:"" };
+      const wrap = document.createElement("div");
+      wrap.className = "animate-on-scroll glass rounded-3xl p-5 md:p-6";
+
+      const kpis = calcKPIs(db);
+      wrap.innerHTML = `
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+              <i data-lucide="${TABS.find(t=>t.id===activeTab)?.icon || "sparkles"}" class="h-5 w-5"></i>
+            </span>
+            <div>
+              <div class="text-xl md:text-2xl font-extrabold">${meta.title}</div>
+              <div class="text-sm text-white/60 mt-1 max-w-2xl">${meta.desc}</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 w-full md:w-auto">
+            ${miniKPI("Użytkownicy", kpis.totalUsers, "users")}
+            ${miniKPI("Premium", kpis.premiumUsers, "crown")}
+            ${miniKPI("Zweryfikowani", kpis.verifiedUsers, "badge-check")}
+            ${miniKPI("Zarobek", formatPLN(kpis.revenueTotal), "coins")}
+          </div>
+        </div>
+      `;
+      return wrap;
+    }
+
+    function miniKPI(label, value, icon){
+      return `
+        <div class="rounded-2xl bg-black/30 border border-white/10 px-3 py-2">
+          <div class="flex items-center gap-2 text-[11px] text-white/55">
+            <i data-lucide="${icon}" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+            <span>${label}</span>
+          </div>
+          <div class="mt-1 text-sm font-bold tabular-nums">${value}</div>
+        </div>
+      `;
+    }
+
+    /***************
+     * Dashboard
+     ***************/
+    function viewDashboard(db){
+      const k = calcKPIs(db);
+      const wrap = document.createElement("div");
+      wrap.className = "space-y-6";
+
+      // Big KPI cards
+      const grid = document.createElement("div");
+      grid.className = "grid md:grid-cols-2 xl:grid-cols-4 gap-4";
+      grid.innerHTML = `
+        ${kpiCard("Zarejestrowani użytkownicy", formatNum(k.totalUsers), "users", "Łączna liczba kont w systemie")}
+        ${kpiCard("Użytkownicy Premium", formatNum(k.premiumUsers), "crown", "Konta z aktywną subskrypcją premium")}
+        ${kpiCard("Użytkownicy Zweryfikowani", formatNum(k.verifiedUsers), "badge-check", "Konta z weryfikacją profilu")}
+        ${kpiCard("Zarobek (łącznie)", formatPLN(k.revenueTotal), "coins", "Suma transakcji płatnych (demo)")}
+      `;
+      wrap.appendChild(grid);
+
+      // Secondary cards
+      const grid2 = document.createElement("div");
+      grid2.className = "grid lg:grid-cols-12 gap-4";
+
+      const quick = document.createElement("div");
+      quick.className = "animate-on-scroll lg:col-span-7 glass rounded-3xl p-5";
+      quick.innerHTML = `
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="font-bold text-lg">Szybkie akcje</div>
+            <div class="text-sm text-white/60">Najczęstsze operacje administracyjne.</div>
+          </div>
+          <span class="text-xs text-white/60 rounded-full bg-black/30 border border-white/10 px-3 py-1">Admin</span>
+        </div>
+
+        <div class="mt-4 grid sm:grid-cols-2 gap-3">
+          ${quickAction("Dodaj VPLN", "wallet", "Przejdź do zakładki VPLN", ()=>{ setActiveTab("vpln"); renderApp(); })}
+          ${quickAction("Pasek info", "megaphone", "Ustaw komunikat na stronę główną", ()=>{ setActiveTab("infobar"); renderApp(); })}
+          ${quickAction("Weryfikacje", "badge-check", "Obsłuż oczekujące prośby", ()=>{ setActiveTab("verification"); renderApp(); })}
+          ${quickAction("Ogłoszenia", "briefcase", "Przeglądaj i edytuj ogłoszenia", ()=>{ setActiveTab("listings"); renderApp(); })}
+        </div>
+
+        <div class="mt-5 rounded-2xl bg-black/30 border border-white/10 p-4 text-sm text-white/70">
+          <div class="flex items-start gap-2">
+            <i data-lucide="shield-alert" class="h-4 w-4 mt-0.5 text-[var(--accent)]"></i>
+            <div>
+              <div class="font-semibold">Wskazówka</div>
+              <div class="text-white/65">Ponieważ brak escrow, warto dodać widoczny komunikat bezpieczeństwa na stronie głównej (Pasek info).</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const health = document.createElement("div");
+      health.className = "animate-on-scroll lg:col-span-5 glass rounded-3xl p-5";
+      const pending = k.pendingVerifications;
+      const activeListings = k.activeListings;
+      const allListings = k.totalListings;
+      health.innerHTML = `
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="font-bold text-lg">Podgląd systemu</div>
+            <div class="text-sm text-white/60">Szybki stan kluczowych obszarów.</div>
+          </div>
+          <i data-lucide="activity" class="h-5 w-5 text-white/50"></i>
+        </div>
+
+        <div class="mt-4 space-y-3">
+          ${meterRow("Oczekujące weryfikacje", pending, pending > 0 ? "Wymaga uwagi" : "Brak", pending > 0)}
+          ${meterRow("Aktywne ogłoszenia", `${activeListings}/${allListings}`, "W ruchu", false)}
+          ${meterRow("Pasek info", db.infobar?.enabled ? "Włączony" : "Wyłączony", db.infobar?.enabled ? "OK" : "Wyłączony", !db.infobar?.enabled)}
+          ${meterRow("Transakcje", formatNum(db.transactions.length), "Historia", false)}
+        </div>
+
+        <div class="mt-5 grid grid-cols-2 gap-3 text-xs">
+          <div class="rounded-2xl bg-black/30 border border-white/10 p-3">
+            <div class="text-white/55">VPLN w systemie</div>
+            <div class="mt-1 text-lg font-extrabold tabular-nums">${formatNum(k.totalVPLN)}</div>
+          </div>
+          <div class="rounded-2xl bg-black/30 border border-white/10 p-3">
+            <div class="text-white/55">Ogłoszenia</div>
+            <div class="mt-1 text-lg font-extrabold tabular-nums">${formatNum(allListings)}</div>
+          </div>
+        </div>
+      `;
+
+      grid2.appendChild(quick);
+      grid2.appendChild(health);
+      wrap.appendChild(grid2);
+
+      // Recent events
+      const recent = document.createElement("div");
+      recent.className = "animate-on-scroll glass rounded-3xl p-5";
+      const logs = db.users.flatMap(u => (u.logs || []).map(l => ({...l, userId: u.id, username: u.username, email: u.email})));
+      logs.sort((a,b)=> new Date(b.at) - new Date(a.at));
+      const top = logs.slice(0, 8);
+      recent.innerHTML = `
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="font-bold text-lg">Ostatnie akcje użytkowników</div>
+            <div class="text-sm text-white/60">Szybki podgląd aktywności kont (demo).</div>
+          </div>
+          <button class="rounded-xl btn-ghost lift px-3 py-2 text-sm font-semibold" id="btn-open-all-logs">
+            <span class="inline-flex items-center gap-2"><i data-lucide="list" class="h-4 w-4"></i> Zobacz więcej</span>
+          </button>
+        </div>
+
+        <div class="mt-4 overflow-hidden rounded-2xl border border-white/10">
+          <table class="w-full text-sm">
+            <thead class="bg-black/40 text-white/70">
+              <tr>
+                <th class="text-left px-4 py-3 font-semibold">Czas</th>
+                <th class="text-left px-4 py-3 font-semibold">Użytkownik</th>
+                <th class="text-left px-4 py-3 font-semibold">Akcja</th>
+                <th class="text-left px-4 py-3 font-semibold">Szczegóły</th>
+              </tr>
+            </thead>
+            <tbody class="bg-black/20">
+              ${
+                top.map(row => `
+                  <tr class="border-t border-white/10">
+                    <td class="px-4 py-3 text-white/70 tabular-nums">${formatDT(row.at)}</td>
+                    <td class="px-4 py-3">
+                      <div class="font-semibold">${row.username}</div>
+                      <div class="text-xs text-white/50">${maskEmail(row.email)}</div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-white/75">
+                        <i data-lucide="${iconForLog(row.type)}" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+                        ${row.label}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-white/60 text-xs">${logMetaText(row.meta)}</td>
+                  </tr>
+                `).join("")
+              }
+            </tbody>
+          </table>
+        </div>
+      `;
+      wrap.appendChild(recent);
+
+      // bind quick action buttons (created via innerHTML)
+      setTimeout(()=>{
+        const btn = byId("btn-open-all-logs");
+        if (btn){
+          btn.addEventListener("click", ()=>{
+            const all = logs.slice(0, 50).map(l => `
+              <div class="rounded-2xl bg-black/30 border border-white/10 p-4">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <div class="font-semibold">${l.username} <span class="text-white/50 text-xs">(${maskEmail(l.email)})</span></div>
+                    <div class="text-xs text-white/50 mt-1">${formatDT(l.at)}</div>
+                  </div>
+                  <span class="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-white/75">
+                    <i data-lucide="${iconForLog(l.type)}" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+                    ${l.label}
+                  </span>
+                </div>
+                <div class="mt-2 text-xs text-white/65">${logMetaText(l.meta)}</div>
+              </div>
+            `).join("");
+            openModal({
+              title: "Akcje użytkowników",
+              subtitle: "Ostatnie 50 zdarzeń (demo)",
+              bodyHTML: `<div class="space-y-3">${all || "<div class='text-white/60'>Brak danych</div>"}</div>`
+            });
+          });
+        }
+      }, 0);
+
+      return wrap;
+    }
+
+    function kpiCard(title, value, icon, desc){
+      return `
+        <div class="animate-on-scroll glass rounded-3xl p-5 lift">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-sm text-white/60">${title}</div>
+              <div class="mt-2 text-2xl md:text-3xl font-extrabold tabular-nums">${value}</div>
+              <div class="mt-2 text-xs text-white/55">${desc}</div>
+            </div>
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+              <i data-lucide="${icon}" class="h-5 w-5"></i>
+            </span>
+          </div>
+        </div>
+      `;
+    }
+
+    function meterRow(label, value, badge, warn){
+      return `
+        <div class="rounded-2xl bg-black/30 border border-white/10 p-4 flex items-center justify-between gap-4">
+          <div>
+            <div class="text-sm font-semibold">${label}</div>
+            <div class="text-xs text-white/55 mt-1">${value}</div>
+          </div>
+          <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border ${
+            warn ? "bg-red-500/10 border-red-400/20 text-red-200" : "bg-[var(--accent)]/10 border-white/10 text-white/75"
+          }">
+            <i data-lucide="${warn ? "alert-triangle" : "check"}" class="h-3.5 w-3.5 ${warn ? "" : "text-[var(--accent)]"}"></i>
+            ${badge}
+          </span>
+        </div>
+      `;
+    }
+
+    function quickAction(title, icon, desc, onClick){
+      const id = "qa_" + uid();
+      setTimeout(()=>{ const b = document.getElementById(id); if (b) b.addEventListener("click", onClick); }, 0);
+      return `
+        <button id="${id}" class="rounded-2xl btn-ghost lift p-4 text-left">
+          <div class="flex items-start gap-3">
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-black/30 border border-white/10">
+              <i data-lucide="${icon}" class="h-4 w-4 text-[var(--accent)]"></i>
+            </span>
+            <div class="flex-1">
+              <div class="font-semibold">${title}</div>
+              <div class="text-xs text-white/60 mt-1">${desc}</div>
+            </div>
+            <i data-lucide="arrow-right" class="h-4 w-4 text-white/50 mt-1"></i>
+          </div>
+        </button>
+      `;
+    }
+
+    function iconForLog(type){
+      if (type==="vpln_topup") return "wallet";
+      if (type==="listing_edit") return "pencil";
+      if (type==="listing_add") return "plus";
+      if (type==="login") return "log-in";
+      if (type==="register") return "user-plus";
+      return "activity";
+    }
+    function logMetaText(meta){
+      if (!meta) return "—";
+      const parts = [];
+      if (meta.amount != null) parts.push(`kwota: ${formatNum(meta.amount)} VPLN`);
+      if (meta.method) parts.push(`metoda: ${meta.method}`);
+      if (meta.listingId) parts.push(`ogłoszenie: ${meta.listingId}`);
+      if (meta.ip) parts.push(`ip: ${meta.ip}`);
+      return parts.join(" • ") || JSON.stringify(meta);
+    }
+
+    /***************
+     * VPLN TAB
+     ***************/
+    function viewVPLN(db){
+      const wrap = document.createElement("div");
+      wrap.className = "space-y-6";
+
+      const card = document.createElement("div");
+      card.className = "animate-on-scroll glass rounded-3xl p-5 md:p-6";
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="font-bold text-lg">Dodaj VPLN użytkownikowi</div>
+            <div class="text-sm text-white/60 mt-1">Wyszukaj po <span class="text-white/70 font-semibold">ID</span> lub <span class="text-white/70 font-semibold">adresie e-mail</span>, podaj kwotę i zatwierdź.</div>
+          </div>
+          <span class="inline-flex items-center gap-2 rounded-full bg-[var(--accent)]/15 text-[var(--accent)] px-3 py-1 text-xs font-semibold">
+            <i data-lucide="wallet" class="h-4 w-4"></i> VPLN
+          </span>
+        </div>
+
+        <div class="mt-5 grid md:grid-cols-12 gap-4">
+          <div class="md:col-span-5">
+            <label class="text-xs text-white/60">ID lub e-mail</label>
+            <input id="vpln-target" placeholder="np. u_1001 albo klaudia@example.com" class="mt-2 w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40" />
+          </div>
+          <div class="md:col-span-3">
+            <label class="text-xs text-white/60">Kwota VPLN</label>
+            <input id="vpln-amount" type="number" min="1" step="1" placeholder="np. 50" class="mt-2 w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40" />
+          </div>
+          <div class="md:col-span-4 flex items-end gap-2">
+            <button id="btn-vpln-find" class="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl btn-ghost lift px-4 py-3 font-semibold">
+              <i data-lucide="search" class="h-4 w-4"></i> Znajdź
+            </button>
+            <button id="btn-vpln-add" class="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl btn-primary lift px-4 py-3 font-semibold">
+              <i data-lucide="plus" class="h-4 w-4"></i> Dodaj
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-5 rounded-2xl bg-black/30 border border-white/10 p-4">
+          <div class="text-xs text-white/60">Podgląd użytkownika</div>
+          <div class="mt-2" id="vpln-preview">
+            <div class="text-sm text-white/55">Wpisz ID lub e-mail i kliknij „Znajdź”.</div>
+          </div>
+        </div>
+
+        <div class="mt-4 text-xs text-white/50">
+          *W demo zapisujemy też wpis do logów użytkownika oraz transakcję typu „admin_vpln_adjust”.
+        </div>
+      `;
+
+      wrap.appendChild(card);
+
+      setTimeout(()=>{
+        const preview = byId("vpln-preview");
+        const find = byId("btn-vpln-find");
+        const add = byId("btn-vpln-add");
+
+        function findUser(){
+          const q = (byId("vpln-target").value || "").trim().toLowerCase();
+          if (!q) { toast("Wpisz ID lub e-mail.", "bad"); return null; }
+          const u = db.users.find(x => x.id.toLowerCase()===q || x.email.toLowerCase()===q);
+          if (!u) {
+            preview.innerHTML = `<div class="text-sm text-white/55">Nie znaleziono użytkownika.</div>`;
+            toast("Nie znaleziono użytkownika.", "bad");
+            return null;
+          }
+          preview.innerHTML = `
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <div class="font-semibold">${u.username} <span class="text-white/50 text-xs">(${u.id})</span></div>
+                <div class="text-xs text-white/50 mt-1">${u.email}</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs text-white/70">VPLN: <b class="text-white">${formatNum(u.vpln)}</b></span>
+                <span class="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs ${u.premium ? "text-white" : "text-white/60"}">
+                  <i data-lucide="crown" class="inline h-3.5 w-3.5 ${u.premium ? "text-[var(--accent)]" : "text-white/35"}"></i>
+                  Premium: <b>${u.premium ? "TAK" : "NIE"}</b>
+                </span>
+                <span class="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs ${u.verified ? "text-white" : "text-white/60"}">
+                  <i data-lucide="badge-check" class="inline h-3.5 w-3.5 ${u.verified ? "text-[var(--accent)]" : "text-white/35"}"></i>
+                  Verified: <b>${u.verified ? "TAK" : "NIE"}</b>
+                </span>
+              </div>
+            </div>
+          `;
+          lucide.createIcons();
+          return u;
+        }
+
+        find.addEventListener("click", ()=> findUser());
+
+        add.addEventListener("click", ()=>{
+          const u = findUser();
+          if (!u) return;
+          const amt = Number(byId("vpln-amount").value);
+          if (!Number.isFinite(amt) || amt <= 0) { toast("Podaj poprawną kwotę VPLN.", "bad"); return; }
+
+          // update user
+          u.vpln = (u.vpln || 0) + Math.floor(amt);
+          u.logs = u.logs || [];
+          u.logs.unshift({ id: uid(), type:"vpln_topup", label:"Doładowanie VPLN (admin)", at: nowISO(), meta:{ amount: Math.floor(amt), method:"ADMIN" } });
+
+          // record tx + revenue (admin adjustment doesn't count to revenue)
+          db.transactions.unshift({
+            id: "t_" + uid(),
+            userId: u.id,
+            type: "admin_vpln_adjust",
+            amountPLN: 0,
+            vplnDelta: +Math.floor(amt),
+            method: "ADMIN",
+            status: "success",
+            createdAt: nowISO()
+          });
+
+          saveDB(db);
+          toast(`Dodano ${formatNum(amt)} VPLN użytkownikowi ${u.username}.`);
+          renderApp();
+        });
+      }, 0);
+
+      return wrap;
+    }
+
+    /***************
+     * USERS TAB
+     ***************/
+    function viewUsers(db){
+      const wrap = document.createElement("div");
+      wrap.className = "space-y-6";
+
+      const top = document.createElement("div");
+      top.className = "animate-on-scroll glass rounded-3xl p-5 md:p-6";
+      top.innerHTML = `
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <div class="font-bold text-lg">Użytkownicy</div>
+            <div class="text-sm text-white/60 mt-1">Lista kont + podgląd szczegółów (ogłoszenia, akcje, VPLN, hasło).</div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            <input id="users-search" placeholder="Szukaj: username / e-mail / ID" class="w-full sm:w-80 rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40" />
+            <button id="btn-user-add" class="inline-flex items-center justify-center gap-2 rounded-2xl btn-primary lift px-4 py-3 font-semibold">
+              <i data-lucide="user-plus" class="h-4 w-4"></i> Dodaj demo user
+            </button>
+          </div>
+        </div>
+      `;
+      wrap.appendChild(top);
+
+      const list = document.createElement("div");
+      list.className = "animate-on-scroll glass rounded-3xl p-0 overflow-hidden";
+      list.innerHTML = `
+        <div class="px-5 py-4 border-b border-white/10 bg-black/20 flex items-center justify-between">
+          <div class="text-sm font-semibold">Lista użytkowników</div>
+          <div class="text-xs text-white/60">${formatNum(db.users.length)} rekordów</div>
+        </div>
+        <div class="overflow-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-black/40 text-white/70">
+              <tr>
+                <th class="text-left px-5 py-3 font-semibold">Użytkownik</th>
+                <th class="text-left px-5 py-3 font-semibold">E-mail</th>
+                <th class="text-left px-5 py-3 font-semibold">Subskrypcja</th>
+                <th class="text-left px-5 py-3 font-semibold">VPLN</th>
+                <th class="text-left px-5 py-3 font-semibold">Akcje</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody" class="bg-black/20"></tbody>
+          </table>
+        </div>
+      `;
+      wrap.appendChild(list);
+
+      setTimeout(()=>{
+        const tbody = byId("users-tbody");
+        const search = byId("users-search");
+
+        const renderRows = () => {
+          const q = (search.value || "").trim().toLowerCase();
+          const rows = db.users
+            .filter(u => !q || u.username.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.id.toLowerCase().includes(q))
+            .sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+
+          tbody.innerHTML = rows.map(u=>{
+            const subs = [
+              u.premium ? `<span class="inline-flex items-center gap-2 rounded-full bg-[var(--accent)]/15 text-white border border-white/10 px-3 py-1 text-xs font-semibold"><i data-lucide="crown" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Premium</span>` : `<span class="inline-flex items-center gap-2 rounded-full bg-white/5 text-white/70 border border-white/10 px-3 py-1 text-xs font-semibold"><i data-lucide="minus" class="h-3.5 w-3.5"></i> Brak</span>`,
+              u.verified ? `<span class="inline-flex items-center gap-2 rounded-full bg-white/5 text-white border border-white/10 px-3 py-1 text-xs font-semibold"><i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Verified</span>` : `<span class="inline-flex items-center gap-2 rounded-full bg-white/5 text-white/70 border border-white/10 px-3 py-1 text-xs font-semibold"><i data-lucide="badge" class="h-3.5 w-3.5"></i> Nie</span>`
+            ].join(" ");
+
+            return `
+              <tr class="border-t border-white/10">
+                <td class="px-5 py-4">
+                  <div class="font-semibold">${u.username}</div>
+                  <div class="text-xs text-white/50 mt-1">${u.id}</div>
+                </td>
+                <td class="px-5 py-4 text-white/70">${u.email}</td>
+                <td class="px-5 py-4">${subs}</td>
+                <td class="px-5 py-4 font-bold tabular-nums">${formatNum(u.vpln)}</td>
+                <td class="px-5 py-4">
+                  <button class="rounded-xl btn-ghost lift px-3 py-2 text-sm font-semibold" data-open-user="${u.id}">
+                    <span class="inline-flex items-center gap-2"><i data-lucide="search" class="h-4 w-4"></i> Szczegóły</span>
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join("");
+
+          lucide.createIcons();
+
+          document.querySelectorAll("[data-open-user]").forEach(btn=>{
+            btn.addEventListener("click", ()=>{
+              const id = btn.getAttribute("data-open-user");
+              openUserModal(db, id);
+            });
+          });
+        };
+
+        renderRows();
+        search.addEventListener("input", ()=> renderRows());
+
+        byId("btn-user-add").addEventListener("click", ()=>{
+          const n = db.users.length + 1000;
+          const nu = {
+            id: "u_" + n,
+            username: "user" + n,
+            email: `user${n}@example.com`,
+            password: "demo#" + Math.floor(Math.random()*9000+1000),
+            premium: Math.random() > 0.6,
+            verified: Math.random() > 0.6,
+            vpln: Math.floor(Math.random()*200),
+            createdAt: nowISO(),
+            logs: [{ id: uid(), type:"register", label:"Rejestracja", at: nowISO(), meta:{} }]
+          };
+          db.users.unshift(nu);
+          saveDB(db);
+          toast("Dodano demo użytkownika.");
+          renderApp();
+        });
+      }, 0);
+
+      return wrap;
+    }
+
+    function openUserModal(db, userId){
+      const u = db.users.find(x=>x.id===userId);
+      if (!u) { toast("Nie znaleziono użytkownika.", "bad"); return; }
+
+      const userListings = db.listings.filter(l=>l.userId===u.id).sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt));
+      const logs = (u.logs || []).slice().sort((a,b)=>new Date(b.at)-new Date(a.at));
+
+      const body = `
+        <div class="grid lg:grid-cols-12 gap-4">
+          <div class="lg:col-span-5 space-y-4">
+            <div class="rounded-3xl bg-black/30 border border-white/10 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="text-lg font-bold">${u.username}</div>
+                  <div class="text-xs text-white/50 mt-1">${u.id} • ${u.email}</div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs ${u.premium ? "text-white" : "text-white/60"}">
+                    <i data-lucide="crown" class="inline h-3.5 w-3.5 ${u.premium ? "text-[var(--accent)]" : "text-white/35"}"></i>
+                    Premium: <b>${u.premium ? "TAK" : "NIE"}</b>
+                  </span>
+                  <span class="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs ${u.verified ? "text-white" : "text-white/60"}">
+                    <i data-lucide="badge-check" class="inline h-3.5 w-3.5 ${u.verified ? "text-[var(--accent)]" : "text-white/35"}"></i>
+                    Verified: <b>${u.verified ? "TAK" : "NIE"}</b>
+                  </span>
+                </div>
+              </div>
+
+              <div class="mt-4 grid grid-cols-2 gap-3 text-xs">
+                <div class="rounded-2xl bg-black/30 border border-white/10 p-3">
+                  <div class="text-white/55">VPLN</div>
+                  <div class="mt-1 text-lg font-extrabold tabular-nums">${formatNum(u.vpln)}</div>
+                </div>
+                <div class="rounded-2xl bg-black/30 border border-white/10 p-3">
+                  <div class="text-white/55">Ogłoszenia</div>
+                  <div class="mt-1 text-lg font-extrabold tabular-nums">${formatNum(userListings.length)}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-3xl bg-black/30 border border-white/10 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-bold">Hasło</div>
+                  <div class="text-xs text-white/55 mt-1">Kliknij „Pokaż hasło”, aby je zobaczyć (demo).</div>
+                </div>
+                <button id="btn-show-pass" class="rounded-xl btn-ghost lift px-3 py-2 text-sm font-semibold">
+                  <span class="inline-flex items-center gap-2"><i data-lucide="eye" class="h-4 w-4"></i> Pokaż hasło</span>
+                </button>
+              </div>
+
+              <div class="mt-3 rounded-2xl bg-black/30 border border-white/10 p-3 text-sm">
+                <div class="text-xs text-white/55">Aktualne</div>
+                <div class="mt-1 font-mono text-white/80" id="pass-value">••••••••</div>
+              </div>
+
+              <div class="mt-3 grid sm:grid-cols-3 gap-3">
+                <div class="sm:col-span-2">
+                  <label class="text-xs text-white/60">Nowe hasło</label>
+                  <input id="pass-new" placeholder="np. NoweHaslo#2026" class="mt-2 w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40" />
+                </div>
+                <div class="flex items-end">
+                  <button id="btn-change-pass" class="w-full inline-flex items-center justify-center gap-2 rounded-2xl btn-primary lift px-4 py-3 font-semibold">
+                    <i data-lucide="key" class="h-4 w-4"></i> Zmień
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-3 text-xs text-white/50">
+                *W prawdziwym systemie <b>nie przechowuj</b> haseł wprost. To tylko UI/flow.
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-7 space-y-4">
+            <div class="rounded-3xl bg-black/30 border border-white/10 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-bold">Ogłoszenia użytkownika</div>
+                  <div class="text-xs text-white/55 mt-1">Kliknij, aby edytować/usuwać ogłoszenie (admin).</div>
+                </div>
+                <span class="text-xs text-white/60 rounded-full bg-white/5 border border-white/10 px-3 py-1">${formatNum(userListings.length)} szt.</span>
+              </div>
+
+              <div class="mt-4 space-y-2">
+                ${
+                  userListings.length
+                    ? userListings.map(l => `
+                      <div class="rounded-2xl bg-black/30 border border-white/10 p-4">
+                        <div class="flex items-start justify-between gap-3">
+                          <div class="min-w-0">
+                            <div class="font-semibold truncate">${l.title}</div>
+                            <div class="text-xs text-white/55 mt-1">${l.id} • ${l.category} • ${formatNum(l.priceMin)}–${formatNum(l.priceMax)} PLN</div>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs ${l.status==="active" ? "text-white" : "text-white/60"}">
+                              <i data-lucide="${l.status==="active" ? "check-circle-2" : "pause-circle"}" class="inline h-3.5 w-3.5 ${l.status==="active" ? "text-[var(--accent)]" : "text-white/35"}"></i>
+                              ${l.status}
+                            </span>
+                            <button class="rounded-xl btn-ghost lift px-3 py-2 text-sm font-semibold" data-edit-listing="${l.id}">
+                              <span class="inline-flex items-center gap-2"><i data-lucide="pencil" class="h-4 w-4"></i> Edytuj</span>
+                            </button>
+                            <button class="rounded-xl btn-ghost lift px-3 py-2 text-sm font-semibold text-red-200" data-delete-listing="${l.id}">
+                              <span class="inline-flex items-center gap-2"><i data-lucide="trash-2" class="h-4 w-4"></i> Usuń</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    `).join("")
+                    : `<div class="text-sm text-white/60">Brak ogłoszeń.</div>`
+                }
+              </div>
+            </div>
+
+            <div class="rounded-3xl bg-black/30 border border-white/10 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-bold">Akcje na koncie</div>
+                  <div class="text-xs text-white/55 mt-1">Historia działań (doładowania VPLN, edycje ogłoszeń itd.).</div>
+                </div>
+                <span class="text-xs text-white/60 rounded-full bg-white/5 border borderwhite/10 px-3 py-1">${formatNum(logs.length)} zdarzeń</span>
+              </div>
+
+              <div class="mt-4 overflow-hidden rounded-2xl border border-white/10">
+                <table class="w-full text-sm">
+                  <thead class="bg-black/40 text-white/70">
+                    <tr>
+                      <th class="text-left px-4 py-3 font-semibold">Czas</th>
+                      <th class="text-left px-4 py-3 font-semibold">Akcja</th>
+                      <th class="text-left px-4 py-3 font-semibold">Szczegóły</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-black/20">
+                    ${
+                      logs.slice(0, 20).map(l => `
+                        <tr class="border-t border-white/10">
+                          <td class="px-4 py-3 text-white/70 tabular-nums">${formatDT(l.at)}</td>
+                          <td class="px-4 py-3">
+                            <span class="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-white/75">
+                              <i data-lucide="${iconForLog(l.type)}" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+                              ${l.label}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 text-white/60 text-xs">${logMetaText(l.meta)}</td>
+                        </tr>
+                      `).join("")
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      openModal({
+        title: `Użytkownik: ${u.username}`,
+        subtitle: `Zarządzanie kontem • ${u.id}`,
+        bodyHTML: body
+      });
+
+      setTimeout(()=>{
+        const btnShow = document.getElementById("btn-show-pass");
+        const passValue = document.getElementById("pass-value");
+        const btnChange = document.getElementById("btn-change-pass");
+        const passNew = document.getElementById("pass-new");
+
+        if (btnShow && passValue){
+          let shown = false;
+          btnShow.addEventListener("click", ()=>{
+            shown = !shown;
+            passValue.textContent = shown ? (u.password || "(brak)") : "••••••••";
+            btnShow.innerHTML = shown
+              ? `<span class="inline-flex items-center gap-2"><i data-lucide="eye-off" class="h-4 w-4"></i> Ukryj hasło</span>`
+              : `<span class="inline-flex items-center gap-2"><i data-lucide="eye" class="h-4 w-4"></i> Pokaż hasło</span>`;
+            lucide.createIcons();
+          });
+        }
+
+        if (btnChange && passNew){
+          btnChange.addEventListener("click", ()=>{
+            const np = (passNew.value || "").trim();
+            if (np.length < 6) { toast("Hasło musi mieć min. 6 znaków (demo).", "bad"); return; }
+            u.password = np;
+
+            u.logs = u.logs || [];
+            u.logs.unshift({ id: uid(), type:"password_change", label:"Zmiana hasła (admin)", at: nowISO(), meta:{} });
+
+            saveDB(db);
+            toast("Zmieniono hasło użytkownika.");
+            // update UI
+            passNew.value = "";
+            passValue.textContent = "••••••••";
+            renderApp();
+          });
+        }
+
+        // listing edit/delete bindings in modal
+        document.querySelectorAll("[data-edit-listing]").forEach(b=>{
+          b.addEventListener("click", ()=>{
+            const lid = b.getAttribute("data-edit-listing");
+            openListingEditModal(db, lid, { returnToUser: u.id });
+          });
+        });
+        document.querySelectorAll("[data-delete-listing]").forEach(b=>{
+          b.addEventListener("click", ()=>{
+            const lid = b.getAttribute("data-delete-listing");
+            const l = db.listings.find(x=>x.id===lid);
+            if (!l) return;
+            if (!confirm(`Usunąć ogłoszenie ${lid}?`)) return;
+            db.listings = db.listings.filter(x=>x.id!==lid);
+            u.logs = u.logs || [];
+            u.logs.unshift({ id: uid(), type:"listing_delete", label:"Usunięcie ogłoszenia (admin)", at: nowISO(), meta:{ listingId: lid } });
+            saveDB(db);
+            toast("Usunięto ogłoszenie.");
+            closeModal();
+            renderApp();
+            // reopen user modal for updated view
+            setTimeout(()=> openUserModal(loadDB(), u.id), 50);
+          });
+        });
+
+        lucide.createIcons();
+      }, 0);
+    }
+
+    /***************
+     * INFOBAR TAB
+     ***************/
+    function viewInfobar(db){
+      const wrap = document.createElement("div");
+      wrap.className = "space-y-6";
+
+      const card = document.createElement("div");
+      card.className = "animate-on-scroll glass rounded-3xl p-5 md:p-6";
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="font-bold text-lg">Pasek info na stronie głównej</div>
+            <div class="text-sm text-white/60 mt-1">Ustaw cienki pasek komunikatu, który wyświetla się na górze strony głównej.</div>
+          </div>
+          <span class="inline-flex items-center gap-2 rounded-full bg-[var(--accent)]/15 text-[var(--accent)] px-3 py-1 text-xs font-semibold">
+            <i data-lucide="megaphone" class="h-4 w-4"></i> InfoBar
+          </span>
+        </div>
+
+        <div class="mt-5 grid lg:grid-cols-12 gap-4">
+          <div class="lg:col-span-8">
+            <label class="text-xs text-white/60">Treść wiadomości</label>
+            <textarea id="infobar-message" rows="4" class="mt-2 w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40" placeholder="Wpisz komunikat...">${(db.infobar?.message || "").replaceAll("<","&lt;").replaceAll(">","&gt;")}</textarea>
+          </div>
+          <div class="lg:col-span-4 space-y-3">
+            <div class="rounded-2xl bg-black/30 border border-white/10 p-4">
+              <div class="flex items-center justify-between">
+                <div class="text-sm font-semibold">Status</div>
+                <label class="inline-flex items-center gap-2 text-sm">
+                  <input id="infobar-enabled" type="checkbox" class="h-4 w-4 accent-[var(--accent)]" ${db.infobar?.enabled ? "checked" : ""} />
+                  <span class="text-white/70">Włączony</span>
+                </label>
+              </div>
+              <div class="mt-2 text-xs text-white/50">Ostatnia zmiana: <span class="tabular-nums">${db.infobar?.updatedAt ? formatDT(db.infobar.updatedAt) : "—"}</span></div>
+            </div>
+
+            <button id="btn-infobar-save" class="w-full inline-flex items-center justify-center gap-2 rounded-2xl btn-primary lift px-4 py-3 font-semibold">
+              <i data-lucide="save" class="h-4 w-4"></i> Zapisz
+            </button>
+
+            <div class="rounded-2xl bg-black/30 border border-white/10 p-4 text-xs text-white/60">
+              <div class="flex items-start gap-2">
+                <i data-lucide="info" class="h-4 w-4 mt-0.5"></i>
+                <div>
+                  W produkcji: dodaj pasek w <code class="text-white/70">index.html</code> i pobieraj treść z API.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      wrap.appendChild(card);
+
+      setTimeout(()=>{
+        byId("btn-infobar-save").addEventListener("click", ()=>{
+          db.infobar = db.infobar || { enabled:true, message:"", updatedAt: nowISO() };
+          db.infobar.message = (byId("infobar-message").value || "").trim();
+          db.infobar.enabled = !!byId("infobar-enabled").checked;
+          db.infobar.updatedAt = nowISO();
+          saveDB(db);
+          toast("Zapisano pasek info.");
+          renderApp();
+        });
+      }, 0);
+
+      return wrap;
+    }
+
+    /***************
+     * TRANSACTIONS TAB
+     ***************/
+    function viewTransactions(db){
+      const wrap = document.createElement("div");
+      wrap.className = "space-y-6";
+
+      const card = document.createElement("div");
+      card.className = "animate-on-scroll glass rounded-3xl p-0 overflow-hidden";
+      card.innerHTML = `
+        <div class="px-5 py-4 border-b border-white/10 bg-black/20 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <div class="text-sm font-semibold">Transakcje</div>
+            <div class="text-xs text-white/55 mt-1">Wszystkie transakcje wszystkich użytkowników (demo).</div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="tx-search" placeholder="Szukaj: ID / user / typ / metoda" class="w-full sm:w-80 rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40" />
+            <select id="tx-type" class="w-full sm:w-52 rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40">
+              <option value="">Wszystkie typy</option>
+              <option value="vpln_topup">VPLN top-up</option>
+              <option value="subscription">Subskrypcja</option>
+              <option value="verification">Weryfikacja</option>
+              <option value="admin_vpln_adjust">Admin VPLN</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-black/40 text-white/70">
+              <tr>
+                <th class="text-left px-5 py-3 font-semibold">Czas</th>
+                <th class="text-left px-5 py-3 font-semibold">ID</th>
+                <th class="text-left px-5 py-3 font-semibold">Użytkownik</th>
+                <th class="text-left px-5 py-3 font-semibold">Typ</th>
+                <th class="text-left px-5 py-3 font-semibold">Kwota</th>
+                <th class="text-left px-5 py-3 font-semibold">VPLN</th>
+                <th class="text-left px-5 py-3 font-semibold">Metoda</th>
+                <th class="text-left px-5 py-3 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody id="tx-tbody" class="bg-black/20"></tbody>
+          </table>
+        </div>
+      `;
+      wrap.appendChild(card);
+
+      setTimeout(()=>{
+        const tbody = byId("tx-tbody");
+        const search = byId("tx-search");
+        const typeSel = byId("tx-type");
+
+        const render = () => {
+          const q = (search.value || "").trim().toLowerCase();
+          const t = (typeSel.value || "").trim();
+
+          const rows = db.transactions
+            .filter(x => !t || x.type === t)
+            .filter(x => {
+              if (!q) return true;
+              const u = db.users.find(u=>u.id===x.userId);
+              const hay = [
+                x.id, x.type, x.method, x.status,
+                u?.username, u?.email, u?.id
+              ].join(" ").toLowerCase();
+              return hay.includes(q);
+            })
+            .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+
+          tbody.innerHTML = rows.map(x=>{
+            const u = db.users.find(u=>u.id===x.userId);
+            return `
+              <tr class="border-t border-white/10">
+                <td class="px-5 py-4 text-white/70 tabular-nums">${formatDT(x.createdAt)}</td>
+                <td class="px-5 py-4 font-mono text-xs text-white/70">${x.id}</td>
+                <td class="px-5 py-4">
+                  <div class="font-semibold">${u?.username || "—"}</div>
+                  <div class="text-xs text-white/50">${maskEmail(u?.email || "")}</div>
+                </td>
+                <td class="px-5 py-4">
+                  <span class="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-white/75">
+                    <i data-lucide="receipt" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+                    ${x.type}
+                  </span>
+                </td>
+                <td class="px-5 py-4 font-semibold tabular-nums">${formatPLN(x.amountPLN || 0)}</td>
+                <td class="px-5 py-4 font-semibold tabular-nums ${x.vplnDelta>0 ? "text-emerald-200" : x.vplnDelta<0 ? "text-red-200" : "text-white/70"}">${x.vplnDelta ? (x.vplnDelta>0?"+":"") + formatNum(x.vplnDelta) : "—"}</td>
+                <td class="px-5 py-4 text-white/70">${x.method || "—"}</td>
+                <td class="px-5 py-4">
+                  <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border ${
+                    x.status==="success" ? "bg-[var(--accent)]/10 border-white/10 text-white/80" : "bg-red-500/10 border-red-400/20 text-red-200"
+                  }">
+                    <i data-lucide="${x.status==="success" ? "check" : "x"}" class="h-3.5 w-3.5 ${x.status==="success" ? "text-[var(--accent)]" : ""}"></i>
+                    ${x.status}
+                  </span>
+                </td>
+              </tr>
+            `;
+          }).join("");
+
+          lucide.createIcons();
+        };
+
+        render();
+        search.addEventListener("input", render);
+        typeSel.addEventListener("change", render);
+      }, 0);
+
+      return wrap;
+    }
+
+    /***************
+     * VERIFICATION TAB
+     ***************/
+    function viewVerification(db){
+      const wrap = document.createElement("div");
+      wrap.className = "space-y-6";
+
+      const pending = db.verificationRequests.filter(v=>v.status==="pending").sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+      const history = db.verificationRequests.filter(v=>v.status!=="pending").sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+
+      const card = document.createElement("div");
+      card.className = "animate-on-scroll glass rounded-3xl p-5 md:p-6";
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="font-bold text-lg">Prośby o weryfikację</div>
+            <div class="text-sm text-white/60 mt-1">Tutaj wpadają zgłoszenia weryfikacji profilu.</div>
+          </div>
+          <span class="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-white/70">
+            <i data-lucide="badge-check" class="h-4 w-4 text-[var(--accent)]"></i>
+            Oczekujące: <b class="text-white">${formatNum(pending.length)}</b>
+          </span>
+        </div>
+
+        <div class="mt-5 grid lg:grid-cols-2 gap-4">
+          <div class="rounded-3xl bg-black/30 border border-white/10 p-4">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold">Oczekujące</div>
+              <div class="text-xs text-white/60">${formatNum(pending.length)} szt.</div>
+            </div>
+            <div class="mt-3 space-y-2" id="vr-pending"></div>
+          </div>
+
+          <div class="rounded-3xl bg-black/30 border border-white/10 p-4">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold">Historia</div>
+              <div class="text-xs text-white/60">${formatNum(history.length)} szt.</div>
+            </div>
+            <div class="mt-3 space-y-2" id="vr-history"></div>
+          </div>
+        </div>
+      `;
+      wrap.appendChild(card);
+
+      setTimeout(()=>{
+        const pendEl = byId("vr-pending");
+        const histEl = byId("vr-history");
+
+        pendEl.innerHTML = pending.length ? pending.map(v=>{
+          const u = db.users.find(x=>x.id===v.userId);
+          return `
+            <div class="rounded-2xl bg-black/30 border border-white/10 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-semibold">${u?.username || "—"} <span class="text-white/50 text-xs">(${v.id})</span></div>
+                  <div class="text-xs text-white/50 mt-1">${formatDT(v.createdAt)} • ${maskEmail(u?.email || "")}</div>
+                  <div class="text-xs text-white/70 mt-2">${(v.note || "—").replaceAll("<","&lt;").replaceAll(">","&gt;")}</div>
+                </div>
+                <div class="flex flex-col gap-2">
+                  <button class="rounded-xl btn-primary lift px-3 py-2 text-sm font-semibold" data-vr-approve="${v.id}">
+                    <span class="inline-flex items-center gap-2"><i data-lucide="check" class="h-4 w-4"></i> Akceptuj</span>
+                  </button>
+                  <button class="rounded-xl btn-ghost lift px-3 py-2 text-sm font-semibold text-red-200" data-vr-reject="${v.id}">
+                    <span class="inline-flex items-center gap-2"><i data-lucide="x" class="h-4 w-4"></i> Odrzuć</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("") : `<div class="text-sm text-white/60">Brak oczekujących weryfikacji.</div>`;
+
+        histEl.innerHTML = history.length ? history.slice(0, 10).map(v=>{
+          const u = db.users.find(x=>x.id===v.userId);
+          return `
+            <div class="rounded-2xl bg-black/30 border border-white/10 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-semibold">${u?.username || "—"} <span class="text-white/50 text-xs">(${v.id})</span></div>
+                  <div class="text-xs text-white/50 mt-1">${formatDT(v.createdAt)}</div>
+                </div>
+                <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border ${
+                  v.status==="approved" ? "bg-[var(--accent)]/10 border-white/10 text-white/80" : "bg-red-500/10 border-red-400/20 text-red-200"
+                }">
+                  <i data-lucide="${v.status==="approved" ? "check" : "x"}" class="h-3.5 w-3.5 ${v.status==="approved" ? "text-[var(--accent)]" : ""}"></i>
+                  ${v.status}
+                </span>
+              </div>
+              <div class="text-xs text-white/65 mt-2">${(v.note || "—").replaceAll("<","&lt;").replaceAll(">","&gt;")}</div>
+            </div>
+          `;
+        }).join("") : `<div class="text-sm text-white/60">Brak historii.</div>`;
+
+        lucide.createIcons();
+
+        document.querySelectorAll("[data-vr-approve]").forEach(b=>{
+          b.addEventListener("click", ()=>{
+            const id = b.getAttribute("data-vr-approve");
+            const req = db.verificationRequests.find(x=>x.id===id);
+            if (!req) return;
+            req.status = "approved";
+            const u = db.users.find(x=>x.id===req.userId);
+            if (u) {
+              u.verified = true;
+              u.logs = u.logs || [];
+              u.logs.unshift({ id: uid(), type:"verification", label:"Weryfikacja zatwierdzona (admin)", at: nowISO(), meta:{} });
+            }
+            saveDB(db);
+            toast("Zatwierdzono weryfikację.");
+            renderApp();
+          });
+        });
+        document.querySelectorAll("[data-vr-reject]").forEach(b=>{
+          b.addEventListener("click", ()=>{
+            const id = b.getAttribute("data-vr-reject");
+            const req = db.verificationRequests.find(x=>x.id===id);
+            if (!req) return;
+            req.status = "rejected";
+            const u = db.users.find(x=>x.id===req.userId);
+            if (u) {
+              u.logs = u.logs || [];
+              u.logs.unshift({ id: uid(), type:"verification", label:"Weryfikacja odrzucona (admin)", at: nowISO(), meta:{} });
+            }
+            saveDB(db);
+            toast("Odrzucono weryfikację.");
+            renderApp();
+          });
+        });
+      }, 0);
+
+      return wrap;
+    }
+
+    /***************
+     * LISTINGS TAB
+     ***************/
+    function viewListings(db){
+      const wrap = document.createElement("div");
+      wrap.className = "space-y-6";
+
+      const card = document.createElement("div");
+      card.className = "animate-on-scroll glass rounded-3xl p-0 overflow-hidden";
+      card.innerHTML = `
+        <div class="px-5 py-4 border-b border-white/10 bg-black/20 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
+          <div>
+            <div class="text-sm font-semibold">Ogłoszenia</div>
+            <div class="text-xs text-white/55 mt-1">Wszystkie ogłoszenia na platformie — edycja, statusy i usuwanie.</div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="ls-search" placeholder="Szukaj: tytuł / ID / user" class="w-full sm:w-80 rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40" />
+            <select id="ls-status" class="w-full sm:w-48 rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40">
+              <option value="">Wszystkie statusy</option>
+              <option value="active">active</option>
+              <option value="paused">paused</option>
+              <option value="deleted">deleted</option>
+            </select>
+            <button id="btn-listing-add" class="inline-flex items-center justify-center gap-2 rounded-2xl btn-primary lift px-4 py-3 font-semibold">
+              <i data-lucide="plus" class="h-4 w-4"></i> Dodaj demo
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-black/40 text-white/70">
+              <tr>
+                <th class="text-left px-5 py-3 font-semibold">Ogłoszenie</th>
+                <th class="text-left px-5 py-3 font-semibold">Użytkownik</th>
+                <th class="text-left px-5 py-3 font-semibold">Kategoria</th>
+                <th class="text-left px-5 py-3 font-semibold">Budżet</th>
+                <th class="text-left px-5 py-3 font-semibold">Status</th>
+                <th class="text-left px-5 py-3 font-semibold">Akcje</th>
+              </tr>
+            </thead>
+            <tbody id="ls-tbody" class="bg-black/20"></tbody>
+          </table>
+        </div>
+      `;
+
+      wrap.appendChild(card);
+
+      setTimeout(()=>{
+        const tbody = byId("ls-tbody");
+        const search = byId("ls-search");
+        const status = byId("ls-status");
+
+        const render = () => {
+          const q = (search.value || "").trim().toLowerCase();
+          const s = (status.value || "").trim();
+
+          const rows = db.listings
+            .filter(l => !s || l.status === s)
+            .filter(l => {
+              if (!q) return true;
+              const u = db.users.find(x=>x.id===l.userId);
+              const hay = [l.id, l.title, l.category, l.status, u?.username, u?.email].join(" ").toLowerCase();
+              return hay.includes(q);
+            })
+            .sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt));
+
+          tbody.innerHTML = rows.map(l=>{
+            const u = db.users.find(x=>x.id===l.userId);
+            return `
+              <tr class="border-t border-white/10">
+                <td class="px-5 py-4">
+                  <div class="font-semibold">${l.title}</div>
+                  <div class="text-xs text-white/50 mt-1">${l.id} • Aktualizacja: ${formatDT(l.updatedAt)}</div>
+                </td>
+                <td class="px-5 py-4">
+                  <div class="font-semibold">${u?.username || "—"}</div>
+                  <div class="text-xs text-white/50 mt-1">${maskEmail(u?.email || "")}</div>
+                </td>
+                <td class="px-5 py-4 text-white/70">${l.category}</td>
+                <td class="px-5 py-4 font-semibold tabular-nums">${formatNum(l.priceMin)}–${formatNum(l.priceMax)} PLN</td>
+                <td class="px-5 py-4">
+                  <span class="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs ${l.status==="active" ? "text-white" : "text-white/60"}">
+                    <i data-lucide="${l.status==="active" ? "check-circle-2" : "pause-circle"}" class="h-3.5 w-3.5 ${l.status==="active" ? "text-[var(--accent)]" : "text-white/35"}"></i>
+                    ${l.status}
+                  </span>
+                </td>
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-2">
+                    <button class="rounded-xl btn-ghost lift px-3 py-2 text-sm font-semibold" data-ls-edit="${l.id}">
+                      <span class="inline-flex items-center gap-2"><i data-lucide="pencil" class="h-4 w-4"></i> Edytuj</span>
+                    </button>
+                    <button class="rounded-xl btn-ghost lift px-3 py-2 text-sm font-semibold text-red-200" data-ls-delete="${l.id}">
+                      <span class="inline-flex items-center gap-2"><i data-lucide="trash-2" class="h-4 w-4"></i> Usuń</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join("");
+
+          lucide.createIcons();
+
+          document.querySelectorAll("[data-ls-edit]").forEach(b=>{
+            b.addEventListener("click", ()=>{
+              const id = b.getAttribute("data-ls-edit");
+              openListingEditModal(db, id);
+            });
+          });
+          document.querySelectorAll("[data-ls-delete]").forEach(b=>{
+            b.addEventListener("click", ()=>{
+              const id = b.getAttribute("data-ls-delete");
+              const l = db.listings.find(x=>x.id===id);
+              if (!l) return;
+              if (!confirm(`Usunąć ogłoszenie ${id}?`)) return;
+              db.listings = db.listings.filter(x=>x.id!==id);
+              const u = db.users.find(x=>x.id===l.userId);
+              if (u){
+                u.logs = u.logs || [];
+                u.logs.unshift({ id: uid(), type:"listing_delete", label:"Usunięcie ogłoszenia (admin)", at: nowISO(), meta:{ listingId: id } });
+              }
+              saveDB(db);
+              toast("Usunięto ogłoszenie.");
+              renderApp();
+            });
+          });
+        };
+
+        render();
+        search.addEventListener("input", render);
+        status.addEventListener("change", render);
+
+        byId("btn-listing-add").addEventListener("click", ()=>{
+          const u = db.users[Math.floor(Math.random()*db.users.length)];
+          const id = "l_" + (2000 + Math.floor(Math.random()*900));
+          db.listings.unshift({
+            id,
+            userId: u.id,
+            title: "Nowe ogłoszenie (demo) — " + ["Web", "Grafika", "Montaż", "Minecraft"][Math.floor(Math.random()*4)],
+            category: ["Programiści","Graficy","Content Creatorzy","Technicy","Budowniczowie Minecraft"][Math.floor(Math.random()*5)],
+            priceMin: 100 + Math.floor(Math.random()*400),
+            priceMax: 700 + Math.floor(Math.random()*1200),
+            status: "active",
+            createdAt: nowISO(),
+            updatedAt: nowISO()
+          });
+          u.logs = u.logs || [];
+          u.logs.unshift({ id: uid(), type:"listing_add", label:"Dodanie ogłoszenia", at: nowISO(), meta:{ listingId: id } });
+          saveDB(db);
+          toast("Dodano demo ogłoszenie.");
+          renderApp();
+        });
+      }, 0);
+
+      return wrap;
+    }
+
+    function openListingEditModal(db, listingId, opts = {}){
+      const l = db.listings.find(x=>x.id===listingId);
+      if (!l) { toast("Nie znaleziono ogłoszenia.", "bad"); return; }
+      const u = db.users.find(x=>x.id===l.userId);
+
+      const body = `
+        <div class="grid lg:grid-cols-12 gap-4">
+          <div class="lg:col-span-7 space-y-3">
+            <div class="rounded-3xl bg-black/30 border border-white/10 p-4">
+              <div class="text-sm text-white/60">Tytuł</div>
+              <input id="edit-title" value="${escapeAttr(l.title)}" class="mt-2 w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40" />
+            </div>
+
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div class="rounded-3xl bg-black/30 border border-white/10 p-4">
+                <div class="text-sm text-white/60">Kategoria</div>
+                <input id="edit-category" value="${escapeAttr(l.category)}" class="mt-2 w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40" />
+              </div>
+              <div class="rounded-3xl bg-black/30 border border-white/10 p-4">
+                <div class="text-sm text-white/60">Status</div>
+                <select id="edit-status" class="mt-2 w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40">
+                  ${["active","paused"].map(s=>`<option value="${s}" ${l.status===s?"selected":""}>${s}</option>`).join("")}
+                </select>
+              </div>
+            </div>
+
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div class="rounded-3xl bg-black/30 border border-white/10 p-4">
+                <div class="text-sm text-white/60">Budżet min (PLN)</div>
+                <input id="edit-min" type="number" min="0" value="${l.priceMin}" class="mt-2 w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40" />
+              </div>
+              <div class="rounded-3xl bg-black/30 border border-white/10 p-4">
+                <div class="text-sm text-white/60">Budżet max (PLN)</div>
+                <input id="edit-max" type="number" min="0" value="${l.priceMax}" class="mt-2 w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40" />
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-5 space-y-3">
+            <div class="rounded-3xl bg-black/30 border border-white/10 p-4">
+              <div class="font-semibold">Autor</div>
+              <div class="text-sm text-white/70 mt-1">${u?.username || "—"}</div>
+              <div class="text-xs text-white/50 mt-1">${u?.id || "—"} • ${maskEmail(u?.email || "")}</div>
+              <div class="mt-3 text-xs text-white/55">Ostatnia aktualizacja: <span class="tabular-nums">${formatDT(l.updatedAt)}</span></div>
+            </div>
+
+            <button id="btn-save-listing" class="w-full inline-flex items-center justify-center gap-2 rounded-2xl btn-primary lift px-4 py-3 font-semibold">
+              <i data-lucide="save" class="h-4 w-4"></i> Zapisz zmiany
+            </button>
+
+            <button id="btn-delete-listing" class="w-full inline-flex items-center justify-center gap-2 rounded-2xl btn-ghost lift px-4 py-3 font-semibold text-red-200">
+              <i data-lucide="trash-2" class="h-4 w-4"></i> Usuń ogłoszenie
+            </button>
+
+            <div class="rounded-2xl bg-black/30 border border-white/10 p-4 text-xs text-white/60">
+              <div class="flex items-start gap-2">
+                <i data-lucide="info" class="h-4 w-4 mt-0.5"></i>
+                <div>
+                  Zapis powoduje dodanie wpisu do logów użytkownika: „Edycja ogłoszenia (admin)”.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      openModal({
+        title: `Edycja ogłoszenia: ${listingId}`,
+        subtitle: `${u?.username || "—"} • ${l.category}`,
+        bodyHTML: body
+      });
+
+      setTimeout(()=>{
+        const btnSave = document.getElementById("btn-save-listing");
+        const btnDel = document.getElementById("btn-delete-listing");
+        btnSave.addEventListener("click", ()=>{
+          const title = (document.getElementById("edit-title").value || "").trim();
+          const cat = (document.getElementById("edit-category").value || "").trim();
+          const status = document.getElementById("edit-status").value;
+          const min = Number(document.getElementById("edit-min").value);
+          const max = Number(document.getElementById("edit-max").value);
+
+          if (!title || title.length < 4) { toast("Tytuł jest za krótki.", "bad"); return; }
+          if (!cat) { toast("Podaj kategorię.", "bad"); return; }
+          if (!Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max < 0 || max < min) {
+            toast("Budżet jest niepoprawny.", "bad"); return;
+          }
+
+          l.title = title;
+          l.category = cat;
+          l.status = status;
+          l.priceMin = Math.floor(min);
+          l.priceMax = Math.floor(max);
+          l.updatedAt = nowISO();
+
+          if (u){
+            u.logs = u.logs || [];
+            u.logs.unshift({ id: uid(), type:"listing_edit", label:"Edycja ogłoszenia (admin)", at: nowISO(), meta:{ listingId: l.id } });
+          }
+
+          saveDB(db);
+          toast("Zapisano zmiany ogłoszenia.");
+          closeModal();
+          renderApp();
+
+          // optional: return back to user modal
+          if (opts.returnToUser){
+            setTimeout(()=> openUserModal(loadDB(), opts.returnToUser), 50);
+          }
+        });
+
+        btnDel.addEventListener("click", ()=>{
+          if (!confirm(`Usunąć ogłoszenie ${l.id}?`)) return;
+          db.listings = db.listings.filter(x=>x.id!==l.id);
+          if (u){
+            u.logs = u.logs || [];
+            u.logs.unshift({ id: uid(), type:"listing_delete", label:"Usunięcie ogłoszenia (admin)", at: nowISO(), meta:{ listingId: l.id } });
+          }
+          saveDB(db);
+          toast("Usunięto ogłoszenie.");
+          closeModal();
+          renderApp();
+          if (opts.returnToUser){
+            setTimeout(()=> openUserModal(loadDB(), opts.returnToUser), 50);
+          }
+        });
+
+        lucide.createIcons();
+      }, 0);
+    }
+
+    function escapeAttr(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("\"","&quot;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+    }
+
+    /***************
+     * INIT + GLOBAL ACTIONS
+     ***************/
+    document.addEventListener("DOMContentLoaded", ()=>{
+      // time
+      const tick = () => {
+        const d = new Date();
+        byId("top-time").textContent = d.toLocaleString("pl-PL", { weekday:"short", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+      };
+      tick();
+      setInterval(tick, 10_000);
+
+      // modal close
+      byId("modal-close").addEventListener("click", closeModal);
+      byId("modal-backdrop").addEventListener("click", (e)=>{
+        if (e.target === byId("modal-backdrop")) closeModal();
+      });
+      window.addEventListener("keydown", (e)=>{
+        if (e.key === "Escape" && byId("modal-backdrop").classList.contains("show")) closeModal();
+      });
+
+      // export
+      byId("btn-export").addEventListener("click", ()=>{
+        const db = loadDB();
+        const blob = new Blob([JSON.stringify(db, null, 2)], { type:"application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "velorie_admin_demo_export.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        toast("Wyeksportowano dane demo do JSON.");
+      });
+
+      // reset demo
+      byId("btn-reset-demo").addEventListener("click", ()=>{
+        if (!confirm("Zresetować dane demo? (localStorage)")) return;
+        localStorage.removeItem(LS_KEYS.DB);
+        localStorage.removeItem(LS_KEYS.ACTIVE_TAB);
+        toast("Zresetowano demo.");
+        renderApp();
+      });
+
+      // logout (demo)
+      byId("btn-logout").addEventListener("click", ()=>{
+        toast("Wylogowano (demo).");
+      });
+
+      // progress
+      initScrollProgress();
+
+      // first render
+      renderApp();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
