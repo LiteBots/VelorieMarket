@@ -35,9 +35,9 @@
 
       --ease: cubic-bezier(.2,.9,.2,1);
 
-      /* sticky/fixed filters */
-      --header-h: 66px;      /* real measured at runtime */
-      --filters-gap: 12px;
+      /* header/filtrowy offset */
+      --header-h: 66px;      /* ustawiane runtime */
+      --filters-gap: 12px;   /* odstęp pod headerem */
     }
 
     html{ scroll-behavior:smooth; }
@@ -303,6 +303,7 @@
       transition: transform .16s var(--ease), background .16s var(--ease), border-color .16s var(--ease), box-shadow .16s var(--ease);
       position:relative;
       overflow:hidden;
+      contain: layout paint; /* mały boost na listach */
     }
     .profile-card::before{
       content:"";
@@ -420,31 +421,13 @@
     }
     .drawer[data-open="true"]{ transform: translateY(0%); }
 
-    /* skeleton */
-    .skel{
-      border-radius: var(--radius-xl);
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.05);
-      overflow:hidden;
-      position:relative;
+    /* sticky filters (PROSTY FIX: filtry jadą z Tobą w viewport) */
+    #filters-bar{
+      position: sticky;
+      top: calc(var(--header-h) + var(--filters-gap));
+      z-index: 90;
+      transform: translateZ(0);
     }
-    .skel::after{
-      content:"";
-      position:absolute;
-      inset:-40% -60%;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.10) 50%, transparent 100%);
-      transform: rotate(8deg);
-      animation: shimmer 1.1s infinite;
-    }
-    @keyframes shimmer{
-      0%{ transform: translateX(-42%) rotate(8deg); }
-      100%{ transform: translateX(42%) rotate(8deg); }
-    }
-
-    /* FIXED FILTERS (no empty space bug) */
-    #filters-bar{ position:relative; z-index:85; transform: translateZ(0); will-change: transform; }
-    body.filters-fixed #filters-bar{ position:fixed; z-index:85; }
-    #filters-spacer{ height:0px; }
 
     /* bottom bar */
     #mobile-bar{
@@ -470,7 +453,6 @@
       .grid-bg, .aurora::before, .aurora::after{ animation:none !important; }
       .reveal{ transition:none !important; }
       .modal-card{ animation:none !important; transform:none !important; }
-      .skel::after{ animation:none !important; }
       .btn, .profile-card, .thumb img{ transition:none !important; }
     }
   </style>
@@ -606,10 +588,7 @@
         </div>
       </section>
 
-      <!-- spacer for fixed filters -->
-      <div id="filters-spacer" class="mt-6"></div>
-
-      <!-- FILTERS BAR -->
+      <!-- FILTERS BAR (sticky, bez JS-owego fixed + bez spacerów = mniej lagów i pewne działanie) -->
       <div id="filters-bar" class="mt-6">
         <div class="glass rounded-[26px] p-4 md:p-5 reveal">
           <div class="flex flex-col gap-4">
@@ -1235,21 +1214,15 @@
 
   <script>
     /***********************************************************************
-     * Velorie Market — market.html (UX upgrade)
-     * - filtry: search/industry/sort + szybkie: saved/premium/verified/<=72h
-     * - budżet min/max + presety
-     * - aktywne filtry jako chipsy
-     * - localStorage: profiles/saved/subs/me/settings
-     * - modal profilu: prev/next, kopiuj nick, zapisane, hash #profile=ID
-     * - drawer konto: tabs, autosave (debounce), publikuj/ukryj ogłoszenie, plany
-     * - FIX: brak “pustej przestrzeni” przy zjechaniu w dół (filters fixed + spacer)
+     * Velorie Market — market.html (UX upgrade) — FIXED
+     * ✅ Naprawa filtrów: teraz są CSS sticky i jadą z Tobą (bez ciężkiego JS fixed)
+     * ✅ Mniej lagów: render listy bez skeleton timeoutów (od razu), mniej “kombinowania” na scrollu
      ***********************************************************************/
 
     (function(){
       const $ = (sel, root=document) => root.querySelector(sel);
       const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 
-      const clamp = (n,a,b) => Math.max(a, Math.min(b,n));
       const now = () => Date.now();
 
       function safeParse(v, fallback){
@@ -1278,6 +1251,20 @@
           clearTimeout(t);
           t=setTimeout(()=>fn(...args), delay);
         };
+      }
+
+      /* ---------------------- Header height -> CSS var (żeby sticky był pod headerem) ---------------------- */
+      function bindHeaderHeightVar(){
+        const header = $("#app-header");
+        if(!header) return;
+
+        const set = () => {
+          const h = Math.round(header.getBoundingClientRect().height || 66);
+          document.documentElement.style.setProperty("--header-h", h + "px");
+        };
+
+        set();
+        window.addEventListener("resize", set, {passive:true});
       }
 
       /* ---------------------- Toasts ---------------------- */
@@ -1595,79 +1582,7 @@
         focusTrapState.delete(modal);
       }
 
-      /* ---------------------- Fixed filters (FIX for empty space) ---------------------- */
-      function initFixedFilters(){
-        const filters=$("#filters-bar");
-        const spacer=$("#filters-spacer");
-        const header=$("#app-header");
-        if(!filters || !spacer || !header) return;
-
-        const measureHeader = () => {
-          const h = Math.round(header.getBoundingClientRect().height);
-          document.documentElement.style.setProperty("--header-h", h+"px");
-          return h;
-        };
-
-        const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--filters-gap")) || 12;
-
-        // sentinel right before filters
-        const sentinel=document.createElement("div");
-        sentinel.style.height="1px";
-        sentinel.style.marginTop="0px";
-        spacer.before(sentinel);
-
-        let isFixed=false;
-
-        const measureFiltersHeight=()=> Math.max(0, Math.round(filters.getBoundingClientRect().height));
-
-        const applyFixed=(fixed)=>{
-          if(fixed===isFixed) return;
-          isFixed=fixed;
-
-          if(fixed){
-            document.body.classList.add("filters-fixed");
-            const h=measureFiltersHeight();
-            spacer.style.height = h+"px";
-
-            const headerH=measureHeader();
-            const parentRect = filters.parentElement.getBoundingClientRect();
-
-            filters.style.top = (headerH + gap) + "px";
-            filters.style.left = Math.round(parentRect.left) + "px";
-            filters.style.width = Math.round(parentRect.width) + "px";
-          }else{
-            document.body.classList.remove("filters-fixed");
-            spacer.style.height="0px";
-            filters.style.top="";
-            filters.style.left="";
-            filters.style.width="";
-          }
-        };
-
-        const io=new IntersectionObserver(([entry])=>{
-          const headerH = measureHeader();
-          // when sentinel is not intersecting (scrolled past), fix filters
-          applyFixed(!entry.isIntersecting);
-        },{
-          threshold:0,
-          root:null,
-          // keep room for header + gap
-          rootMargin: `-${measureHeader()+gap}px 0px 0px 0px`
-        });
-
-        io.observe(sentinel);
-
-        const onResize=()=>{
-          measureHeader();
-          if(!isFixed) return;
-          // reapply
-          applyFixed(false);
-          requestAnimationFrame(()=>applyFixed(true));
-        };
-        window.addEventListener("resize", onResize, {passive:true});
-      }
-
-      /* ---------------------- Scroll progress ---------------------- */
+      /* ---------------------- Scroll progress (lekko) ---------------------- */
       function initProgress(){
         const bar=$("#scroll-progress");
         if(!bar) return;
@@ -1700,12 +1615,22 @@
       }
 
       /* ---------------------- Data access ---------------------- */
+      function industryLabel(code){
+        switch(code){
+          case "dev": return "Programista";
+          case "gfx": return "Grafik";
+          case "video": return "Montażysta / Content";
+          case "tech": return "Technik / DevOps";
+          case "mc": return "Budowniczy Minecraft";
+          default: return "Freelancer";
+        }
+      }
+
       function getAllProfiles(){
         const profiles = LS.getProfiles() || [];
         const me = LS.getMe();
         const subs = LS.getSubs();
 
-        // Compose "me" profile into list if published
         let list = profiles.slice();
         if(me && me.listing?.published){
           const meProfile = {
@@ -1729,22 +1654,10 @@
             ],
             createdAt: now() - 1000*60*60*24*1
           };
-          // replace if exists
           list = list.filter(p=>p.id!==meProfile.id);
           list.unshift(meProfile);
         }
         return list;
-      }
-
-      function industryLabel(code){
-        switch(code){
-          case "dev": return "Programista";
-          case "gfx": return "Grafik";
-          case "video": return "Montażysta / Content";
-          case "tech": return "Technik / DevOps";
-          case "mc": return "Budowniczy Minecraft";
-          default: return "Freelancer";
-        }
       }
 
       function matchesBudget(p){
@@ -1760,8 +1673,7 @@
         const q = normalizeText(state.q).trim();
         if(!q) return true;
         const hay = normalizeText([
-          p.name, p.tagline, p.industryLabel, p.about,
-          ...(Array.isArray(p.tags) ? p.tags : [])
+          p.name, p.tagline, p.industryLabel, p.about
         ].filter(Boolean).join(" "));
         return hay.includes(q);
       }
@@ -1791,7 +1703,6 @@
             return scoreRecommended(b)-scoreRecommended(a);
           });
         }else{
-          // recommended
           list.sort((a,b)=>scoreRecommended(b)-scoreRecommended(a));
         }
 
@@ -1812,6 +1723,7 @@
       function profileCardHTML(p){
         const settings = LS.getSettings();
         const saved = isSaved(p.id);
+
         const tagsLine = [];
         if(!settings.hideRating) tagsLine.push(`<span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena ${escapeHTML(String(p.rating ?? "—"))}</span>`);
         tagsLine.push(`<span class="chip"><i data-lucide="clock-3" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: ${escapeHTML(p.availableIn||"—")}</span>`);
@@ -1872,31 +1784,6 @@
         `;
       }
 
-      function skeletonCardHTML(){
-        return `
-          <div class="skel p-4 md:p-5">
-            <div class="flex items-center gap-3">
-              <div class="rounded-[18px] bg-white/5 border border-white/10 w-[58px] h-[58px]"></div>
-              <div class="flex-1 space-y-2">
-                <div class="h-4 w-40 rounded bg-white/5 border border-white/10"></div>
-                <div class="h-3 w-64 rounded bg-white/5 border border-white/10"></div>
-              </div>
-              <div class="w-24 h-10 rounded-[16px] bg-white/5 border border-white/10"></div>
-            </div>
-            <div class="mt-4 flex gap-2">
-              <div class="h-8 w-24 rounded-full bg-white/5 border border-white/10"></div>
-              <div class="h-8 w-24 rounded-full bg-white/5 border border-white/10"></div>
-              <div class="h-8 w-24 rounded-full bg-white/5 border border-white/10"></div>
-            </div>
-            <div class="mt-4 grid grid-cols-3 gap-2">
-              <div class="aspect-[16/10] rounded-[18px] bg-white/5 border border-white/10"></div>
-              <div class="aspect-[16/10] rounded-[18px] bg-white/5 border border-white/10"></div>
-              <div class="aspect-[16/10] rounded-[18px] bg-white/5 border border-white/10"></div>
-            </div>
-          </div>
-        `;
-      }
-
       function updateStats(list){
         const savedCount = LS.getSaved().size;
         $("#stat-saved").textContent = String(savedCount);
@@ -1910,8 +1797,29 @@
         $("#saved-pill").textContent = String(savedCount);
         $("#saved-pill-m").textContent = String(savedCount);
         $("#m-saved-count").textContent = String(savedCount);
+      }
 
-        $("#stat-saved").textContent = String(savedCount);
+      function sortLabel(v){
+        switch(v){
+          case "newest": return "Najnowsze";
+          case "rating": return "Ocena";
+          case "verified": return "Zweryfikowani";
+          default: return "Polecane";
+        }
+      }
+
+      function countActiveFilters(){
+        let c=0;
+        if(state.q.trim()) c++;
+        if(state.industry!=="all") c++;
+        if(state.sort!=="recommended") c++;
+        if(state.savedOnly) c++;
+        if(state.premiumOnly) c++;
+        if(state.verifiedOnly) c++;
+        if(state.availableOnly) c++;
+        if(state.budgetMin!=null) c++;
+        if(state.budgetMax!=null) c++;
+        return c;
       }
 
       function renderActiveFilters(){
@@ -1942,31 +1850,6 @@
 
         wrap.innerHTML = pills.join("");
         wrap.classList.toggle("hidden", pills.length===0);
-
-        try{ lucide.createIcons(); }catch{}
-      }
-
-      function sortLabel(v){
-        switch(v){
-          case "newest": return "Najnowsze";
-          case "rating": return "Ocena";
-          case "verified": return "Zweryfikowani";
-          default: return "Polecane";
-        }
-      }
-
-      function countActiveFilters(){
-        let c=0;
-        if(state.q.trim()) c++;
-        if(state.industry!=="all") c++;
-        if(state.sort!=="recommended") c++;
-        if(state.savedOnly) c++;
-        if(state.premiumOnly) c++;
-        if(state.verifiedOnly) c++;
-        if(state.availableOnly) c++;
-        if(state.budgetMin!=null) c++;
-        if(state.budgetMax!=null) c++;
-        return c;
       }
 
       function renderList(resetShown=true){
@@ -1974,73 +1857,60 @@
         if(resetShown){
           state.shown = Math.min(state.pageSize, list.length);
         }
+
         updateStats(list);
         renderActiveFilters();
 
         const container=$("#profiles-list");
         if(!container) return;
 
-        // If list big, show skeleton briefly (demo)
-        container.innerHTML = "";
-        const token = now();
-        state._renderToken = token;
-
-        const showSkeleton = list.length > 0;
-        if(showSkeleton){
-          const n = Math.min(3, Math.max(1, Math.min(state.shown, 3)));
-          container.innerHTML = Array.from({length:n}).map(()=>skeletonCardHTML()).join("");
-        }
-
-        setTimeout(()=>{
-          if(state._renderToken !== token) return;
-          if(!list.length){
-            container.innerHTML = `
-              <div class="glass rounded-[26px] p-6 text-white/70">
-                <div class="flex items-start gap-3">
-                  <i data-lucide="search-x" class="h-5 w-5 text-[var(--accent)] mt-0.5"></i>
-                  <div>
-                    <div class="font-black text-white">Brak wyników</div>
-                    <div class="text-sm text-white/65 mt-1">Spróbuj zmienić filtry lub wyczyścić wyszukiwanie.</div>
-                    <button id="btn-empty-reset" class="mt-4 btn btn-outline px-4 py-3" type="button">
-                      <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
-                      Wyczyść filtry
-                    </button>
-                  </div>
+        if(!list.length){
+          container.innerHTML = `
+            <div class="glass rounded-[26px] p-6 text-white/70">
+              <div class="flex items-start gap-3">
+                <i data-lucide="search-x" class="h-5 w-5 text-[var(--accent)] mt-0.5"></i>
+                <div>
+                  <div class="font-black text-white">Brak wyników</div>
+                  <div class="text-sm text-white/65 mt-1">Spróbuj zmienić filtry lub wyczyścić wyszukiwanie.</div>
+                  <button id="btn-empty-reset" class="mt-4 btn btn-outline px-4 py-3" type="button">
+                    <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+                    Wyczyść filtry
+                  </button>
                 </div>
               </div>
-            `;
-            try{ lucide.createIcons(); }catch{}
-            $("#btn-empty-reset")?.addEventListener("click", resetFilters);
-            $("#btn-load-more").disabled = true;
-            $("#btn-load-more").classList.add("opacity-50","pointer-events-none");
-            return;
-          }
-
-          const shownList = list.slice(0, state.shown);
-          container.innerHTML = shownList.map(profileCardHTML).join("");
+            </div>
+          `;
+          $("#btn-load-more").disabled = true;
+          $("#btn-load-more").classList.add("opacity-50","pointer-events-none");
           try{ lucide.createIcons(); }catch{}
+          $("#btn-empty-reset")?.addEventListener("click", resetFilters);
+          return;
+        }
 
-          // load more button state
-          const canMore = state.shown < list.length;
-          $("#btn-load-more").disabled = !canMore;
-          $("#btn-load-more").classList.toggle("opacity-50", !canMore);
-          $("#btn-load-more").classList.toggle("pointer-events-none", !canMore);
+        const shownList = list.slice(0, state.shown);
+        container.innerHTML = shownList.map(profileCardHTML).join("");
 
-          // bind card actions
-          $$("#profiles-list [data-action='open']").forEach(btn=>{
-            btn.addEventListener("click", ()=>{
-              const id=btn.getAttribute("data-id");
-              openProfileModalById(id, shownList /* modal navigation should follow current filtered list, not only shown */);
-            });
+        const canMore = state.shown < list.length;
+        $("#btn-load-more").disabled = !canMore;
+        $("#btn-load-more").classList.toggle("opacity-50", !canMore);
+        $("#btn-load-more").classList.toggle("pointer-events-none", !canMore);
+
+        // bind actions
+        $$("#profiles-list [data-action='open']").forEach(btn=>{
+          btn.addEventListener("click", ()=>{
+            const id=btn.getAttribute("data-id");
+            openProfileModalById(id, getFilteredProfiles());
           });
-          $$("#profiles-list [data-action='save']").forEach(btn=>{
-            btn.addEventListener("click", ()=>{
-              const id=btn.getAttribute("data-id");
-              toggleSaved(id);
-              renderList(false);
-            });
+        });
+        $$("#profiles-list [data-action='save']").forEach(btn=>{
+          btn.addEventListener("click", ()=>{
+            const id=btn.getAttribute("data-id");
+            toggleSaved(id);
+            renderList(false);
           });
-        }, showSkeleton ? 140 : 0);
+        });
+
+        try{ lucide.createIcons(); }catch{}
       }
 
       /* ---------------------- Saved ---------------------- */
@@ -2069,7 +1939,6 @@
         const sub = `${p.industryLabel || industryLabel(p.industry)} • ${p.location||"Online"} • ${p.availableIn||"—"}${p.minBudget?` • od ${formatMoney(p.minBudget)}`:""}`;
         $("#modal-sub").textContent = sub;
 
-        // chips
         const chips=[];
         if(!LS.getSettings().hideRating) chips.push(`<span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena ${escapeHTML(String(p.rating ?? "—"))}</span>`);
         chips.push(`<span class="chip"><i data-lucide="clock-3" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(p.availableIn||"—")}</span>`);
@@ -2077,7 +1946,6 @@
         if(!LS.getSettings().hideBudget && p.minBudget) chips.push(`<span class="chip"><i data-lucide="banknote" class="h-3.5 w-3.5 text-[var(--accent)]"></i> od ${escapeHTML(formatMoney(p.minBudget))}</span>`);
         $("#modal-chips").innerHTML = chips.join("");
 
-        // portfolio
         const portfolio=(p.portfolio||[]).slice(0,3);
         $("#modal-portfolio").innerHTML = portfolio.map((src,i)=>`
           <div class="thumb aspect-[16/10]">
@@ -2087,7 +1955,6 @@
 
         $("#modal-about").textContent = p.about || "";
 
-        // save button text
         const saved=isSaved(p.id);
         const b=$("#btn-save-from-modal");
         b.innerHTML = `<i data-lucide="bookmark" class="h-4 w-4"></i> ${saved ? "Zapisano" : "Zapisz"}`;
@@ -2108,13 +1975,15 @@
         setModalContent(p);
         setModalOpen(true);
 
-        // hash
-        setHashProfile(p.id);
+        const url = new URL(window.location.href);
+        url.hash = `profile=${encodeURIComponent(p.id)}`;
+        history.replaceState(null, "", url.toString());
       }
 
       function closeProfileModal(){
-        // clear hash
-        clearHashProfile();
+        const url = new URL(window.location.href);
+        url.hash = "katalog";
+        history.replaceState(null, "", url.toString());
         setModalOpen(false);
       }
 
@@ -2125,18 +1994,9 @@
         state.modalIndex = (state.modalIndex + delta + list.length) % list.length;
         const p=list[state.modalIndex];
         setModalContent(p);
-        setHashProfile(p.id);
-      }
 
-      function setHashProfile(id){
         const url = new URL(window.location.href);
-        url.hash = `profile=${encodeURIComponent(id)}`;
-        history.replaceState(null, "", url.toString());
-      }
-      function clearHashProfile(){
-        const url = new URL(window.location.href);
-        // keep location as #katalog if you want; for now clear entirely
-        url.hash = "katalog";
+        url.hash = `profile=${encodeURIComponent(p.id)}`;
         history.replaceState(null, "", url.toString());
       }
 
@@ -2171,8 +2031,6 @@
         setChip("#filter-premium", state.premiumOnly);
         setChip("#filter-verified", state.verifiedOnly);
         setChip("#filter-available", state.availableOnly);
-
-        // header saved pill already handled by updateStats
       }
 
       function resetFilters(){
@@ -2210,7 +2068,6 @@
 
         $("#filter-saved")?.addEventListener("click", ()=>{
           state.savedOnly = !state.savedOnly;
-          // keep header action consistent
           syncFilterUI();
           renderList(true);
         });
@@ -2258,7 +2115,6 @@
 
         $("#btn-reset-filters")?.addEventListener("click", resetFilters);
 
-        // active filter pills remove
         $("#active-filters")?.addEventListener("click", (e)=>{
           const t=e.target.closest("[data-action='remove-pill']");
           if(!t) return;
@@ -2279,11 +2135,9 @@
           renderList(true);
         });
 
-        // load more
         $("#btn-load-more")?.addEventListener("click", ()=>{
           const list=getFilteredProfiles();
           state.shown = Math.min(state.shown + state.pageSize, list.length);
-          $("#shown-count").textContent = String(state.shown);
           renderList(false);
         });
       }
@@ -2317,13 +2171,11 @@
 
         $("#btn-close-panel")?.addEventListener("click", ()=>setPanelOpen(false));
 
-        // overlay click closes topmost
         $("#overlay")?.addEventListener("click", ()=>{
           if(state.modalOpen) closeProfileModal();
           else if($("#user-panel")?.dataset.open==="true") setPanelOpen(false);
         });
 
-        // keyboard shortcuts
         document.addEventListener("keydown", (e)=>{
           if(e.key==="Escape"){
             if(state.modalOpen) closeProfileModal();
@@ -2373,7 +2225,7 @@
         });
       }
 
-      /* ---------------------- Panel binds ---------------------- */
+      /* ---------------------- Panel stuff (zostawione jak było) ---------------------- */
       function setSaveStatus(txt){
         const el=$("#save-status");
         if(el) el.textContent = txt;
@@ -2392,7 +2244,6 @@
             const sec=$("#tab-"+t);
             if(sec) sec.classList.toggle("hidden", t!==tab);
           });
-          // render preview if needed
           if(tab==="preview") renderPreviewCard();
           if(tab==="settings") syncSettingsUI();
           try{ lucide.createIcons(); }catch{}
@@ -2402,8 +2253,16 @@
           btn.addEventListener("click", ()=>setTab(btn.getAttribute("data-tab")));
         });
 
-        // default tab
         setTab("shop");
+      }
+
+      function updatePlanUI(){
+        const subs=LS.getSubs();
+        const planEl=$("#plan-status");
+        const p=[];
+        if(subs.premium) p.push("Premium");
+        if(subs.verified) p.push("Verified");
+        planEl.textContent = p.length ? p.join(" + ") : "Standard";
       }
 
       function renderPreviewCard(){
@@ -2434,7 +2293,6 @@
         $("#preview-card").innerHTML = profileCardHTML(meProfile);
         try{ lucide.createIcons(); }catch{}
 
-        // bind preview actions
         $("#preview-card [data-action='open']")?.addEventListener("click", ()=>{
           openProfileModalById(meProfile.id, getFilteredProfiles());
         });
@@ -2451,7 +2309,6 @@
         $("#panel-avatar").src = me.avatar || "";
         $("#panel-username").textContent = me.name || "Użytkownik";
 
-        // edit fields
         $("#edit-name").value = me.name || "";
         $("#edit-industry").value = me.industry || "dev";
         $("#edit-about").value = me.about || "";
@@ -2464,7 +2321,6 @@
         $("#edit-portfolio-2").value = me.portfolio?.[1] || "";
         $("#edit-portfolio-3").value = me.portfolio?.[2] || "";
 
-        // listing
         $("#listing-title").value = me.listing?.title || "";
         $("#listing-contact-main").value = me.listing?.contactMain || "Discord";
         $("#listing-short").value = me.listing?.short || "";
@@ -2475,7 +2331,6 @@
         const me=LS.getMe();
         if(!me) return;
 
-        // profile
         const name=$("#edit-name").value.trim();
         const industry=$("#edit-industry").value;
         const about=$("#edit-about").value;
@@ -2497,7 +2352,6 @@
         if(avatarUrl) me.avatar = avatarUrl;
         me.portfolio = [p1,p2,p3];
 
-        // listing
         me.listing = me.listing || {};
         me.listing.title = $("#listing-title").value;
         me.listing.contactMain = $("#listing-contact-main").value;
@@ -2508,19 +2362,17 @@
         setSaveStatus("Zapisano automatycznie");
         setTimeout(()=>setSaveStatus("Wszystko zapisane"), 900);
 
-        // update panel header avatar/name
         $("#panel-avatar").src = me.avatar || "";
         $("#panel-username").textContent = me.name || "Użytkownik";
 
-        // rerender list if my listing is published
         renderList(false);
       }, 350);
 
       function bindPanelForms(){
-        // autosave on input
-        ["edit-name","edit-industry","edit-about","edit-availability","edit-budget","edit-tags","edit-avatar-url",
-         "edit-portfolio-1","edit-portfolio-2","edit-portfolio-3",
-         "listing-title","listing-contact-main","listing-short","listing-long"
+        [
+          "edit-name","edit-industry","edit-about","edit-availability","edit-budget","edit-tags","edit-avatar-url",
+          "edit-portfolio-1","edit-portfolio-2","edit-portfolio-3",
+          "listing-title","listing-contact-main","listing-short","listing-long"
         ].forEach(id=>{
           $("#"+id)?.addEventListener("input", ()=>{
             setSaveStatus("Edytujesz…");
@@ -2533,7 +2385,6 @@
         });
 
         $("#btn-save-profile")?.addEventListener("click", ()=>{
-          autosave.flush?.(); // if existed, but here no
           notify("Zapisano profil", "save");
           renderPreviewCard();
           renderList(false);
@@ -2545,8 +2396,7 @@
         });
 
         $("#btn-open-me-modal")?.addEventListener("click", ()=>{
-          const list=getFilteredProfiles();
-          openProfileModalById("me", list);
+          openProfileModalById("me", getFilteredProfiles());
         });
 
         $("#btn-publish")?.addEventListener("click", ()=>{
@@ -2569,7 +2419,6 @@
           renderList(false);
         });
 
-        // shop
         $("#btn-buy-premium")?.addEventListener("click", ()=>{
           const subs=LS.getSubs();
           subs.premium = true;
@@ -2608,16 +2457,7 @@
         });
       }
 
-      function updatePlanUI(){
-        const subs=LS.getSubs();
-        const planEl=$("#plan-status");
-        const p=[];
-        if(subs.premium) p.push("Premium");
-        if(subs.verified) p.push("Verified");
-        planEl.textContent = p.length ? p.join(" + ") : "Standard";
-      }
-
-      /* ---------------------- Settings tab ---------------------- */
+      /* ---------------------- Settings ---------------------- */
       function syncSettingsUI(){
         const s=LS.getSettings();
         $("#set-toast").checked = !!s.toast;
@@ -2640,7 +2480,6 @@
           notify("Zapisano ustawienia", "settings");
           renderList(false);
           if(state.modalOpen){
-            // refresh modal content
             const p = state.modalList?.[state.modalIndex];
             if(p) setModalContent(p);
           }
@@ -2662,11 +2501,12 @@
       function boot(){
         ensureInit();
 
+        bindHeaderHeightVar();
+
         $("#footer-year").textContent = "© " + new Date().getFullYear();
         updatePlanUI();
 
         initProgress();
-        initFixedFilters();
         initReveal();
 
         bindFilters();
@@ -2678,14 +2518,11 @@
         bindPanelForms();
         bindSettings();
 
-        // initial UI state
         syncFilterUI();
         renderList(true);
 
-        // open from hash if present
         setTimeout(()=>{ tryOpenFromHash(); }, 30);
 
-        // lucide icons
         try{ lucide.createIcons(); }catch{}
       }
 
