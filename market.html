@@ -43,6 +43,7 @@
     html{ scroll-behavior:smooth; }
     body{
       background-color: var(--bg0);
+      /* WALLET-LIKE BACKGROUND (same as wallet.html) */
       background-image:
         radial-gradient(1200px 700px at 70% -10%, rgba(10,16,48,1) 0%, rgba(6,6,18,.9) 35%, rgba(0,1,15,1) 70%),
         radial-gradient(900px 550px at 12% 110%, rgba(255,3,84,.18) 0%, rgba(255,3,84,0) 62%),
@@ -68,65 +69,15 @@
       box-shadow: 0 16px 60px rgba(255,3,84,.25);
     }
 
-    /* noise overlay */
-    .noise::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      opacity:.06;
-      mix-blend-mode: overlay;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='190' height='190'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='190' height='190' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
-      background-size:190px 190px;
+    /* WALLET-LIKE PARTICLES (instead of noise/grid) */
+    @keyframes particle-animation {
+      0%, 100% { transform: translateY(0%) translateX(0%) rotate(0deg); }
+      50% { transform: translateY(-10%) translateX(5%) rotate(20deg); }
     }
-
-    /* animated grid */
-    .grid-bg{
-      position:absolute;
-      inset:-1px;
-      pointer-events:none;
-      opacity:.18;
-      background-image:
-        linear-gradient(to right, rgba(255,255,255,.06) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px);
-      background-size:44px 44px;
-      mask-image: radial-gradient(60% 60% at 50% 35%, black 0%, transparent 70%);
-      animation:gridFloat 14s var(--ease) infinite;
-    }
-    @keyframes gridFloat{
-      0%,100%{ transform: translateY(0); }
-      50%{ transform: translateY(10px); }
-    }
-
-    /* aurora blobs */
-    .aurora{
-      position:absolute;
-      inset:-200px -200px auto -200px;
-      height:520px;
-      pointer-events:none;
-      filter: blur(40px);
-      opacity:.7;
-    }
-    .aurora::before, .aurora::after{
-      content:"";
-      position:absolute;
-      width:520px;
-      height:520px;
-      border-radius:999px;
-      background: radial-gradient(circle at 30% 30%, rgba(255,3,84,.38), rgba(255,3,84,0) 60%);
-      animation: blob 16s var(--ease) infinite;
-    }
-    .aurora::after{
-      right:8%;
-      top:40px;
-      width:560px;
-      height:560px;
-      background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.30), rgba(124,58,237,0) 62%);
-      animation-duration:18s;
-    }
-    @keyframes blob{
-      0%,100%{ transform: translate(0,0) scale(1); }
-      50%{ transform: translate(40px, 14px) scale(1.06); }
+    .particle{
+      animation-name: particle-animation;
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
     }
 
     /* reveal */
@@ -140,18 +91,20 @@
 
     /* glass */
     .glass{
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.045));
-      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.10);
       box-shadow: var(--shadow);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
     }
+
+    /* (wallet-like) softer glass used in account drawer */
     .glass-soft{
-      background: rgba(0,0,0,.40);
+      background: rgba(0,0,0,.35);
       border: 1px solid rgba(255,255,255,.10);
       box-shadow: 0 12px 55px rgba(0,0,0,.55);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
     }
 
     /* gradient border wrapper */
@@ -394,7 +347,7 @@
       overflow:hidden;
       border-radius:28px;
       border:1px solid rgba(255,255,255,.12);
-      background: linear-gradient(180deg, rgba(5,6,10,.80), rgba(5,6,10,.70));
+      background: rgba(0,0,0,.45);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       box-shadow: 0 22px 100px rgba(0,0,0,.70);
@@ -451,7 +404,6 @@
 
     @media (prefers-reduced-motion: reduce){
       html{ scroll-behavior:auto; }
-      .grid-bg, .aurora::before, .aurora::after{ animation:none !important; }
       .reveal{ transition:none !important; }
       .modal-card{ animation:none !important; transform:none !important; }
       .btn, .profile-card, .thumb img{ transition:none !important; }
@@ -474,11 +426,8 @@
 <body class="min-h-screen text-white selection:bg-[#ff0354]/40 selection:text-white">
   <div id="scroll-progress" aria-hidden="true"></div>
 
-  <!-- BACKGROUND -->
-  <div class="pointer-events-none fixed inset-0 -z-10 noise">
-    <div class="aurora"></div>
-    <div class="grid-bg"></div>
-  </div>
+  <!-- WALLET-LIKE PARTICLES BACKGROUND -->
+  <div id="particles-container" aria-hidden="true" class="pointer-events-none fixed inset-0 overflow-hidden -z-10"></div>
 
   <!-- HEADER -->
   <header id="app-header" class="sticky top-0 z-[95] backdrop-blur-xl bg-black/25 border-b border-white/10">
@@ -849,11 +798,11 @@
     </div>
   </section>
 
-  <!-- ACCOUNT DRAWER (fullscreen) — LOOK LIKE PROTOTYP #1 -->
+  <!-- ACCOUNT DRAWER (fullscreen) — NOW WALLET.HTML COLORS/STYLE -->
   <aside id="user-panel" class="drawer glass-soft" data-open="false" aria-label="Panel konta">
 
-    <!-- TOP BAR jak w prototypie #1 -->
-    <div class="sticky top-0 z-[2] backdrop-blur-xl bg-black/25 border-b border-white/10">
+    <!-- TOP BAR (wallet-like) -->
+    <div class="sticky top-0 z-[2] backdrop-blur-xl bg-black/20 border-b border-white/10">
       <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
         <a href="#katalog" class="flex items-center gap-3 flex-shrink-0">
           <div class="h-10 w-10 rounded-xl ring-1 ring-white/10 bg-white/5 flex items-center justify-center font-black">V</div>
@@ -864,12 +813,12 @@
         </a>
 
         <div class="flex items-center gap-2 flex-shrink-0">
-          <div class="hidden sm:flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium">
+          <div class="hidden sm:flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium border border-white/10">
             <i data-lucide="wallet" class="h-4 w-4 text-[var(--accent)]"></i>
-            <span id="header-vpln-balance">0 VPLN</span>
+            <span id="header-vpln-balance">0.00 VPLN</span>
           </div>
 
-          <button id="btn-close-panel" class="inline-flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium hover:bg-white/10 transition" type="button">
+          <button id="btn-close-panel" class="inline-flex items-center gap-2 rounded-lg bg-white/5 border border-white/10 px-4 py-2 text-sm font-medium hover:bg-white/10 transition" type="button">
             <i data-lucide="x" class="h-4 w-4"></i>
             <span class="hidden sm:inline">Zamknij</span>
           </button>
@@ -882,7 +831,7 @@
       </div>
     </div>
 
-    <!-- BODY: sidebar + content (jak w prototypie #1) -->
+    <!-- BODY: sidebar + content -->
     <div class="mx-auto max-w-7xl p-4 md:p-8 w-full">
       <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
 
@@ -902,44 +851,43 @@
             </div>
 
             <nav class="flex flex-col gap-2">
-              <button class="flex items-center gap-4 px-5 py-4 rounded-lg bg-white/10 font-semibold text-white transition text-base"
+              <button class="flex items-center gap-4 px-5 py-4 rounded-lg bg-white/10 font-semibold text-white transition text-base border border-white/10"
                       data-tab="edit" type="button">
                 <i data-lucide="pencil" class="h-6 w-6 text-[var(--accent)]"></i>
                 <span>Profil</span>
               </button>
 
-              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base"
+              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base border border-transparent hover:border-white/10"
                       data-tab="preview" type="button">
                 <i data-lucide="eye" class="h-6 w-6"></i>
                 <span>Podgląd</span>
               </button>
 
-              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base"
+              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base border border-transparent hover:border-white/10"
                       data-tab="listing" type="button">
                 <i data-lucide="file-plus" class="h-6 w-6"></i>
                 <span>Ogłoszenie</span>
               </button>
 
-              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base"
+              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base border border-transparent hover:border-white/10"
                       data-tab="shop" type="button">
                 <i data-lucide="shopping-bag" class="h-6 w-6"></i>
                 <span>Plany</span>
               </button>
 
-              <!-- Link do prototypu #1 (docelowo wallet.html) -->
               <a href="./wallet.html"
-                 class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base">
+                 class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base border border-transparent hover:border-white/10">
                 <i data-lucide="wallet" class="h-6 w-6"></i>
                 <span>Portfel</span>
               </a>
 
-              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base"
+              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base border border-transparent hover:border-white/10"
                       data-tab="settings" type="button">
                 <i data-lucide="settings" class="h-6 w-6"></i>
                 <span>Ustawienia</span>
               </button>
 
-              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base"
+              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base border border-transparent hover:border-white/10"
                       data-tab="security" type="button">
                 <i data-lucide="shield" class="h-6 w-6"></i>
                 <span>Bezpieczeństwo</span>
@@ -951,7 +899,7 @@
         <!-- CONTENT -->
         <section class="lg:col-span-4 space-y-4">
 
-          <!-- Pasek statusu -->
+          <!-- Status bar -->
           <div class="glass rounded-[22px] p-4 flex items-center justify-between gap-3">
             <div class="flex items-center gap-2 text-sm text-white/80">
               <i data-lucide="circle-check" class="h-4 w-4 text-[var(--accent)]"></i>
@@ -1270,10 +1218,9 @@
 
   <script>
     /***********************************************************************
-     * Velorie Market — market.html (UX upgrade) — ACCOUNT LIKE PROTOTYP #1
-     * ✅ Konto: layout header + sidebar + content jak w prototypie #1
-     * ✅ VPLN w panelu konta (header-vpln-balance) z JWT authToken (opcjonalnie)
-     * ✅ Logout jak w prototypie #1
+     * Velorie Market — market.html (UX upgrade)
+     * ✅ Konto: w kolorach/stylu jak wallet.html (bg + glass + header)
+     * ✅ Portfel: link ./wallet.html
      ***********************************************************************/
 
     (function(){
@@ -1675,6 +1622,26 @@
           });
         },{threshold:0.12});
         els.forEach(el=>io.observe(el));
+      }
+
+      /* ---------------------- Wallet-like particles ---------------------- */
+      function createParticles(){
+        const container = document.getElementById("particles-container");
+        if(!container) return;
+        const particleCount = 28;
+        for(let i=0;i<particleCount;i++){
+          const particle = document.createElement("span");
+          const size = 24 + (i % 5) * 12;
+          particle.className = "absolute rounded-full opacity-20 blur-2xl particle";
+          particle.style.width = `${size}px`;
+          particle.style.height = `${size}px`;
+          particle.style.background = (i % 3) ? "var(--accent)" : "#4f46e5";
+          particle.style.left = `${Math.random() * 100}%`;
+          particle.style.top = `${Math.random() * 100}%`;
+          particle.style.animationDuration = `${10 + (i % 5)}s`;
+          particle.style.animationDelay = `${i * 0.2}s`;
+          container.appendChild(particle);
+        }
       }
 
       /* ---------------------- Data access ---------------------- */
@@ -2285,7 +2252,7 @@
         });
       }
 
-      /* ---------------------- Panel tabs (SIDEBAR LIKE PROTOTYP #1) ---------------------- */
+      /* ---------------------- Panel tabs ---------------------- */
       function bindPanelTabs(){
         const panel=$("#user-panel");
         if(!panel) return;
@@ -2576,6 +2543,9 @@
 
         $("#footer-year").textContent = "© " + new Date().getFullYear();
         updatePlanUI();
+
+        // Wallet-like particles
+        createParticles();
 
         // JWT -> VPLN + username (jak prototyp #1, opcjonalnie)
         const authToken = localStorage.getItem("authToken");
