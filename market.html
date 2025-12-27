@@ -303,7 +303,7 @@
       transition: transform .16s var(--ease), background .16s var(--ease), border-color .16s var(--ease), box-shadow .16s var(--ease);
       position:relative;
       overflow:hidden;
-      contain: layout paint; /* mały boost na listach */
+      contain: layout paint;
     }
     .profile-card::before{
       content:"";
@@ -418,10 +418,11 @@
       border-top:1px solid rgba(255,255,255,.10);
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
+      overflow:auto;
     }
     .drawer[data-open="true"]{ transform: translateY(0%); }
 
-    /* sticky filters (PROSTY FIX: filtry jadą z Tobą w viewport) */
+    /* sticky filters */
     #filters-bar{
       position: sticky;
       top: calc(var(--header-h) + var(--filters-gap));
@@ -588,7 +589,7 @@
         </div>
       </section>
 
-      <!-- FILTERS BAR (sticky, bez JS-owego fixed + bez spacerów = mniej lagów i pewne działanie) -->
+      <!-- FILTERS BAR -->
       <div id="filters-bar" class="mt-6">
         <div class="glass rounded-[26px] p-4 md:p-5 reveal">
           <div class="flex flex-col gap-4">
@@ -848,375 +849,431 @@
     </div>
   </section>
 
-  <!-- ACCOUNT DRAWER (fullscreen) -->
+  <!-- ACCOUNT DRAWER (fullscreen) — LOOK LIKE PROTOTYP #1 -->
   <aside id="user-panel" class="drawer glass-soft" data-open="false" aria-label="Panel konta">
-    <div class="p-4 flex items-center justify-between gap-3 border-b border-white/10">
-      <div class="flex items-center gap-3 min-w-0">
-        <div class="avatar">
-          <img id="panel-avatar" src="" alt="Ty" />
-        </div>
-        <div class="leading-tight min-w-0">
-          <div class="font-black tracking-tight">Konto</div>
-          <div class="text-xs text-white/60 truncate">
-            <span id="panel-username"></span> • <span id="panel-status">Aktywne konto</span>
+
+    <!-- TOP BAR jak w prototypie #1 -->
+    <div class="sticky top-0 z-[2] backdrop-blur-xl bg-black/25 border-b border-white/10">
+      <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
+        <a href="#katalog" class="flex items-center gap-3 flex-shrink-0">
+          <div class="h-10 w-10 rounded-xl ring-1 ring-white/10 bg-white/5 flex items-center justify-center font-black">V</div>
+          <div class="leading-tight hidden sm:block">
+            <div class="text-lg font-semibold tracking-tight">Velorie Market</div>
+            <div class="text-xs text-white/60">Panel konta</div>
           </div>
+        </a>
+
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <div class="hidden sm:flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium">
+            <i data-lucide="wallet" class="h-4 w-4 text-[var(--accent)]"></i>
+            <span id="header-vpln-balance">0 VPLN</span>
+          </div>
+
+          <button id="btn-close-panel" class="inline-flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium hover:bg-white/10 transition" type="button">
+            <i data-lucide="x" class="h-4 w-4"></i>
+            <span class="hidden sm:inline">Zamknij</span>
+          </button>
+
+          <a id="logout-btn" href="#" class="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)]/80 text-white px-4 py-2 text-sm font-medium hover:bg-[var(--accent)] transition">
+            <i data-lucide="log-out" class="h-4 w-4"></i>
+            <span class="hidden sm:inline">Wyloguj</span>
+          </a>
         </div>
-      </div>
-      <button id="btn-close-panel" class="btn btn-outline px-3 py-2" type="button">
-        <i data-lucide="x" class="h-4 w-4"></i>
-        <span class="hidden sm:inline">Zamknij</span>
-      </button>
-    </div>
-
-    <div class="px-4 py-3 text-xs text-white/65 border-b border-white/10 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <i data-lucide="circle-check" class="h-4 w-4 text-[var(--accent)]"></i>
-        <span id="save-status">Wszystko zapisane</span>
-      </div>
-      <div class="text-white/55">
-        Plan: <span id="plan-status" class="text-white/80 font-semibold">Standard</span>
-      </div>
-    </div>
-
-    <div class="p-4">
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        <button class="btn btn-ghost px-4 py-3" data-tab="edit" type="button">
-          <i data-lucide="pencil" class="h-4 w-4"></i><span>Profil</span>
-        </button>
-
-        <button class="btn btn-ghost px-4 py-3" data-tab="preview" type="button">
-          <i data-lucide="eye" class="h-4 w-4"></i><span>Podgląd</span>
-        </button>
-
-        <button class="btn btn-ghost px-4 py-3" data-tab="listing" type="button">
-          <i data-lucide="file-plus" class="h-4 w-4"></i><span>Ogłoszenie</span>
-        </button>
-
-        <button class="btn btn-primary px-4 py-3" data-tab="shop" type="button">
-          <i data-lucide="shopping-bag" class="h-4 w-4"></i><span>Plany</span>
-        </button>
-
-        <button class="btn btn-ghost px-4 py-3" data-tab="settings" type="button">
-          <i data-lucide="settings" class="h-4 w-4"></i><span>Ustawienia</span>
-        </button>
-
-        <button class="btn btn-ghost px-4 py-3" data-tab="security" type="button">
-          <i data-lucide="shield" class="h-4 w-4"></i><span>Bezpieczeństwo</span>
-        </button>
       </div>
     </div>
 
-    <div class="divider"></div>
+    <!-- BODY: sidebar + content (jak w prototypie #1) -->
+    <div class="mx-auto max-w-7xl p-4 md:p-8 w-full">
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
 
-    <div class="p-4 space-y-4 overflow-auto" style="height: calc(100vh - 230px);">
-      <!-- EDIT -->
-      <section id="tab-edit" class="space-y-4">
-        <div class="glass rounded-[22px] p-5">
-          <div class="font-black flex items-center gap-2">
-            <i data-lucide="pencil" class="h-5 w-5 text-[var(--accent)]"></i>
-            Dane profilu
-          </div>
-
-          <div class="mt-4 grid sm:grid-cols-2 gap-3">
-            <div>
-              <label class="label">Nick / Imię</label>
-              <input id="edit-name" class="input" />
-              <div class="mt-1 text-xs text-white/45">Min. 2 znaki.</div>
-            </div>
-            <div>
-              <label class="label">Branża</label>
-              <select id="edit-industry" class="input">
-                <option value="dev">Programista</option>
-                <option value="gfx">Grafik</option>
-                <option value="video">Montażysta / Content</option>
-                <option value="tech">Technik / DevOps</option>
-                <option value="mc">Budowniczy Minecraft</option>
-              </select>
-            </div>
-
-            <div class="sm:col-span-2">
-              <label class="label">Opis</label>
-              <textarea id="edit-about" class="input" rows="5" placeholder="Napisz kilka zdań o sobie..."></textarea>
-            </div>
-
-            <div>
-              <label class="label">Dostępność</label>
-              <select id="edit-availability" class="input">
-                <option value="24h">24h</option>
-                <option value="48h">48h</option>
-                <option value="72h">72h</option>
-                <option value="Tydzień">Tydzień</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="label">Budżet minimalny (PLN)</label>
-              <input id="edit-budget" class="input" type="number" min="0" step="1" />
-            </div>
-
-            <div class="sm:col-span-2">
-              <label class="label">Tagi (oddziel przecinkami)</label>
-              <input id="edit-tags" class="input" placeholder="React, Node, API..." />
-              <div class="mt-1 text-xs text-white/45">Max 12 tagów.</div>
-            </div>
-
-            <div class="sm:col-span-2">
-              <label class="label">Avatar (URL)</label>
-              <input id="edit-avatar-url" class="input" placeholder="https://..." />
-              <div class="mt-1 text-xs text-white/45">Jeśli puste — zostaje obecny.</div>
-            </div>
-          </div>
-
-          <div class="mt-4 flex flex-wrap items-center gap-2">
-            <button id="btn-save-profile" class="btn btn-primary px-4 py-3" type="button">
-              <i data-lucide="save" class="h-4 w-4"></i>
-              <span>Zapisz</span>
-            </button>
-            <button id="btn-reset-profile" class="btn btn-ghost px-4 py-3" type="button">
-              <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
-              <span>Przywróć</span>
-            </button>
-            <button id="btn-open-me-modal" class="btn btn-outline px-4 py-3" type="button">
-              <i data-lucide="external-link" class="h-4 w-4"></i>
-              <span>Otwórz profil</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="glass rounded-[22px] p-5">
-          <div class="font-black flex items-center gap-2">
-            <i data-lucide="images" class="h-5 w-5 text-[var(--accent)]"></i>
-            Portfolio (3 zdjęcia)
-          </div>
-          <p class="mt-2 text-sm text-white/70">
-            Widoczne w katalogu i w profilu.
-          </p>
-
-          <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label class="label">Zdjęcie 1 URL</label>
-              <input id="edit-portfolio-1" class="input" placeholder="https://..." />
-            </div>
-            <div>
-              <label class="label">Zdjęcie 2 URL</label>
-              <input id="edit-portfolio-2" class="input" placeholder="https://..." />
-            </div>
-            <div>
-              <label class="label">Zdjęcie 3 URL</label>
-              <input id="edit-portfolio-3" class="input" placeholder="https://..." />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- PREVIEW -->
-      <section id="tab-preview" class="space-y-4 hidden">
-        <div class="glass rounded-[22px] p-5">
-          <div class="font-black flex items-center gap-2">
-            <i data-lucide="eye" class="h-5 w-5 text-[var(--accent)]"></i>
-            Podgląd profilu
-          </div>
-          <p class="mt-2 text-sm text-white/70">
-            Ten podgląd pokazuje jak Twoja karta wygląda w katalogu.
-          </p>
-          <div class="mt-4" id="preview-card"></div>
-        </div>
-      </section>
-
-      <!-- LISTING -->
-      <section id="tab-listing" class="space-y-4 hidden">
-        <div class="glass rounded-[22px] p-5">
-          <div class="font-black flex items-center gap-2">
-            <i data-lucide="file-plus" class="h-5 w-5 text-[var(--accent)]"></i>
-            Ogłoszenie
-          </div>
-          <p class="mt-2 text-sm text-white/70">
-            Uzupełnij opis i opublikuj wizytówkę w katalogu.
-          </p>
-
-          <div class="mt-4 grid sm:grid-cols-2 gap-3">
-            <div>
-              <label class="label">Tytuł ogłoszenia</label>
-              <input id="listing-title" class="input" placeholder="np. Programista React/Node — szybkie MVP" />
-            </div>
-            <div>
-              <label class="label">Kanał kontaktu (główny)</label>
-              <select id="listing-contact-main" class="input">
-                <option value="Discord">Discord</option>
-                <option value="E-mail">E-mail</option>
-                <option value="Instagram">Instagram</option>
-                <option value="Facebook">Facebook</option>
-              </select>
-            </div>
-
-            <div class="sm:col-span-2">
-              <label class="label">Krótki opis</label>
-              <input id="listing-short" class="input" placeholder="2–3 zdania: co robisz i dla kogo." />
-            </div>
-
-            <div class="sm:col-span-2">
-              <label class="label">Dłuższy opis</label>
-              <textarea id="listing-long" class="input" rows="6" placeholder="Szczegóły usług, proces, terminy, zasady..."></textarea>
-            </div>
-          </div>
-
-          <div class="mt-4 flex flex-wrap items-center gap-2">
-            <button id="btn-publish" class="btn btn-primary px-4 py-3" type="button">
-              <i data-lucide="rocket" class="h-4 w-4"></i>
-              <span>Opublikuj / Zaktualizuj</span>
-            </button>
-            <button id="btn-unpublish" class="btn btn-outline px-4 py-3" type="button">
-              <i data-lucide="eye-off" class="h-4 w-4"></i>
-              <span>Ukryj</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- SHOP -->
-      <section id="tab-shop" class="space-y-4">
-        <div class="glass rounded-[22px] p-5">
-          <div class="font-black flex items-center gap-2">
-            <i data-lucide="shopping-bag" class="h-5 w-5 text-[var(--accent)]"></i>
-            Plany i wyróżnienia
-          </div>
-          <p class="mt-2 text-sm text-white/70">
-            Aktywny plan wpływa na widoczność oraz oznaczenia profilu w wynikach.
-          </p>
-
-          <div class="mt-4 grid md:grid-cols-2 gap-3">
-            <div class="rounded-[22px] bg-white/5 border border-white/10 p-4">
-              <div class="flex items-center justify-between gap-3">
-                <div>
-                  <div class="text-sm font-black">Premium</div>
-                  <div class="text-xs text-white/60">Wyróżnienie w wynikach</div>
+        <!-- SIDEBAR -->
+        <aside class="lg:col-span-1">
+          <div class="p-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl sticky top-24">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="avatar">
+                <img id="panel-avatar" src="" alt="Ty" />
+              </div>
+              <div class="min-w-0">
+                <div class="font-black tracking-tight truncate" id="panel-username">Użytkownik</div>
+                <div class="text-xs text-white/60 truncate">
+                  <span id="panel-status">Aktywne konto</span>
                 </div>
-                <div class="text-sm font-black">23.99 PLN/mies.</div>
+              </div>
+            </div>
+
+            <nav class="flex flex-col gap-2">
+              <button class="flex items-center gap-4 px-5 py-4 rounded-lg bg-white/10 font-semibold text-white transition text-base"
+                      data-tab="edit" type="button">
+                <i data-lucide="pencil" class="h-6 w-6 text-[var(--accent)]"></i>
+                <span>Profil</span>
+              </button>
+
+              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base"
+                      data-tab="preview" type="button">
+                <i data-lucide="eye" class="h-6 w-6"></i>
+                <span>Podgląd</span>
+              </button>
+
+              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base"
+                      data-tab="listing" type="button">
+                <i data-lucide="file-plus" class="h-6 w-6"></i>
+                <span>Ogłoszenie</span>
+              </button>
+
+              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base"
+                      data-tab="shop" type="button">
+                <i data-lucide="shopping-bag" class="h-6 w-6"></i>
+                <span>Plany</span>
+              </button>
+
+              <!-- Link do prototypu #1 (docelowo wallet.html) -->
+              <a href="./wallet.html"
+                 class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base">
+                <i data-lucide="wallet" class="h-6 w-6"></i>
+                <span>Portfel</span>
+              </a>
+
+              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base"
+                      data-tab="settings" type="button">
+                <i data-lucide="settings" class="h-6 w-6"></i>
+                <span>Ustawienia</span>
+              </button>
+
+              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base"
+                      data-tab="security" type="button">
+                <i data-lucide="shield" class="h-6 w-6"></i>
+                <span>Bezpieczeństwo</span>
+              </button>
+            </nav>
+          </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <section class="lg:col-span-4 space-y-4">
+
+          <!-- Pasek statusu -->
+          <div class="glass rounded-[22px] p-4 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2 text-sm text-white/80">
+              <i data-lucide="circle-check" class="h-4 w-4 text-[var(--accent)]"></i>
+              <span id="save-status">Wszystko zapisane</span>
+            </div>
+            <div class="text-sm text-white/70">
+              Plan: <span id="plan-status" class="text-white/90 font-semibold">Standard</span>
+            </div>
+          </div>
+
+          <!-- EDIT -->
+          <section id="tab-edit" class="space-y-4">
+            <div class="glass rounded-[22px] p-5">
+              <div class="font-black flex items-center gap-2">
+                <i data-lucide="pencil" class="h-5 w-5 text-[var(--accent)]"></i>
+                Dane profilu
+              </div>
+
+              <div class="mt-4 grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="label">Nick / Imię</label>
+                  <input id="edit-name" class="input" />
+                  <div class="mt-1 text-xs text-white/45">Min. 2 znaki.</div>
+                </div>
+                <div>
+                  <label class="label">Branża</label>
+                  <select id="edit-industry" class="input">
+                    <option value="dev">Programista</option>
+                    <option value="gfx">Grafik</option>
+                    <option value="video">Montażysta / Content</option>
+                    <option value="tech">Technik / DevOps</option>
+                    <option value="mc">Budowniczy Minecraft</option>
+                  </select>
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label class="label">Opis</label>
+                  <textarea id="edit-about" class="input" rows="5" placeholder="Napisz kilka zdań o sobie..."></textarea>
+                </div>
+
+                <div>
+                  <label class="label">Dostępność</label>
+                  <select id="edit-availability" class="input">
+                    <option value="24h">24h</option>
+                    <option value="48h">48h</option>
+                    <option value="72h">72h</option>
+                    <option value="Tydzień">Tydzień</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="label">Budżet minimalny (PLN)</label>
+                  <input id="edit-budget" class="input" type="number" min="0" step="1" />
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label class="label">Tagi (oddziel przecinkami)</label>
+                  <input id="edit-tags" class="input" placeholder="React, Node, API..." />
+                  <div class="mt-1 text-xs text-white/45">Max 12 tagów.</div>
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label class="label">Avatar (URL)</label>
+                  <input id="edit-avatar-url" class="input" placeholder="https://..." />
+                  <div class="mt-1 text-xs text-white/45">Jeśli puste — zostaje obecny.</div>
+                </div>
+              </div>
+
+              <div class="mt-4 flex flex-wrap items-center gap-2">
+                <button id="btn-save-profile" class="btn btn-primary px-4 py-3" type="button">
+                  <i data-lucide="save" class="h-4 w-4"></i>
+                  <span>Zapisz</span>
+                </button>
+                <button id="btn-reset-profile" class="btn btn-ghost px-4 py-3" type="button">
+                  <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+                  <span>Przywróć</span>
+                </button>
+                <button id="btn-open-me-modal" class="btn btn-outline px-4 py-3" type="button">
+                  <i data-lucide="external-link" class="h-4 w-4"></i>
+                  <span>Otwórz profil</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="glass rounded-[22px] p-5">
+              <div class="font-black flex items-center gap-2">
+                <i data-lucide="images" class="h-5 w-5 text-[var(--accent)]"></i>
+                Portfolio (3 zdjęcia)
+              </div>
+              <p class="mt-2 text-sm text-white/70">
+                Widoczne w katalogu i w profilu.
+              </p>
+
+              <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="label">Zdjęcie 1 URL</label>
+                  <input id="edit-portfolio-1" class="input" placeholder="https://..." />
+                </div>
+                <div>
+                  <label class="label">Zdjęcie 2 URL</label>
+                  <input id="edit-portfolio-2" class="input" placeholder="https://..." />
+                </div>
+                <div>
+                  <label class="label">Zdjęcie 3 URL</label>
+                  <input id="edit-portfolio-3" class="input" placeholder="https://..." />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- PREVIEW -->
+          <section id="tab-preview" class="space-y-4 hidden">
+            <div class="glass rounded-[22px] p-5">
+              <div class="font-black flex items-center gap-2">
+                <i data-lucide="eye" class="h-5 w-5 text-[var(--accent)]"></i>
+                Podgląd profilu
+              </div>
+              <p class="mt-2 text-sm text-white/70">
+                Ten podgląd pokazuje jak Twoja karta wygląda w katalogu.
+              </p>
+              <div class="mt-4" id="preview-card"></div>
+            </div>
+          </section>
+
+          <!-- LISTING -->
+          <section id="tab-listing" class="space-y-4 hidden">
+            <div class="glass rounded-[22px] p-5">
+              <div class="font-black flex items-center gap-2">
+                <i data-lucide="file-plus" class="h-5 w-5 text-[var(--accent)]"></i>
+                Ogłoszenie
+              </div>
+              <p class="mt-2 text-sm text-white/70">
+                Uzupełnij opis i opublikuj wizytówkę w katalogu.
+              </p>
+
+              <div class="mt-4 grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="label">Tytuł ogłoszenia</label>
+                  <input id="listing-title" class="input" placeholder="np. Programista React/Node — szybkie MVP" />
+                </div>
+                <div>
+                  <label class="label">Kanał kontaktu (główny)</label>
+                  <select id="listing-contact-main" class="input">
+                    <option value="Discord">Discord</option>
+                    <option value="E-mail">E-mail</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Facebook">Facebook</option>
+                  </select>
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label class="label">Krótki opis</label>
+                  <input id="listing-short" class="input" placeholder="2–3 zdania: co robisz i dla kogo." />
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label class="label">Dłuższy opis</label>
+                  <textarea id="listing-long" class="input" rows="6" placeholder="Szczegóły usług, proces, terminy, zasady..."></textarea>
+                </div>
+              </div>
+
+              <div class="mt-4 flex flex-wrap items-center gap-2">
+                <button id="btn-publish" class="btn btn-primary px-4 py-3" type="button">
+                  <i data-lucide="rocket" class="h-4 w-4"></i>
+                  <span>Opublikuj / Zaktualizuj</span>
+                </button>
+                <button id="btn-unpublish" class="btn btn-outline px-4 py-3" type="button">
+                  <i data-lucide="eye-off" class="h-4 w-4"></i>
+                  <span>Ukryj</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- SHOP -->
+          <section id="tab-shop" class="space-y-4 hidden">
+            <div class="glass rounded-[22px] p-5">
+              <div class="font-black flex items-center gap-2">
+                <i data-lucide="shopping-bag" class="h-5 w-5 text-[var(--accent)]"></i>
+                Plany i wyróżnienia
+              </div>
+              <p class="mt-2 text-sm text-white/70">
+                Aktywny plan wpływa na widoczność oraz oznaczenia profilu w wynikach.
+              </p>
+
+              <div class="mt-4 grid md:grid-cols-2 gap-3">
+                <div class="rounded-[22px] bg-white/5 border border-white/10 p-4">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <div class="text-sm font-black">Premium</div>
+                      <div class="text-xs text-white/60">Wyróżnienie w wynikach</div>
+                    </div>
+                    <div class="text-sm font-black">23.99 PLN/mies.</div>
+                  </div>
+                  <ul class="mt-3 text-sm text-white/70 list-disc pl-5 space-y-1">
+                    <li>Badge “Premium”</li>
+                    <li>Wyżej w “Polecane”</li>
+                    <li>Więcej klików</li>
+                  </ul>
+                  <button id="btn-buy-premium" class="mt-3 btn btn-primary w-full px-4 py-3" type="button">
+                    <i data-lucide="zap" class="h-4 w-4"></i>
+                    <span>Aktywuj Premium</span>
+                  </button>
+                  <button id="btn-cancel-premium" class="mt-2 btn btn-outline w-full px-4 py-3" type="button">
+                    <i data-lucide="x-circle" class="h-4 w-4"></i>
+                    <span>Wyłącz Premium</span>
+                  </button>
+                </div>
+
+                <div class="rounded-[22px] bg-white/5 border border-white/10 p-4">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <div class="text-sm font-black">Verified</div>
+                      <div class="text-xs text-white/60">Zaufanie + filtr Verified</div>
+                    </div>
+                    <div class="text-sm font-black">19.55 PLN/mies.</div>
+                  </div>
+                  <ul class="mt-3 text-sm text-white/70 list-disc pl-5 space-y-1">
+                    <li>Badge “Verified”</li>
+                    <li>Wyżej w sort “Zweryfikowani”</li>
+                    <li>Lepsza konwersja</li>
+                  </ul>
+                  <button id="btn-buy-verified" class="mt-3 btn btn-primary w-full px-4 py-3" type="button">
+                    <i data-lucide="badge-check" class="h-4 w-4"></i>
+                    <span>Aktywuj Verified</span>
+                  </button>
+                  <button id="btn-cancel-verified" class="mt-2 btn btn-outline w-full px-4 py-3" type="button">
+                    <i data-lucide="x-circle" class="h-4 w-4"></i>
+                    <span>Wyłącz Verified</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- SETTINGS -->
+          <section id="tab-settings" class="space-y-4 hidden">
+            <div class="glass rounded-[22px] p-5">
+              <div class="font-black flex items-center gap-2">
+                <i data-lucide="settings" class="h-5 w-5 text-[var(--accent)]"></i>
+                Ustawienia
+              </div>
+              <div class="mt-4 grid sm:grid-cols-2 gap-3">
+                <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none">
+                  <input id="set-toast" type="checkbox" class="mt-1" />
+                  <div>
+                    <div class="font-black text-sm">Toasty</div>
+                    <div class="text-xs text-white/60">Powiadomienia “Kopiowano”, “Zapisano” itd.</div>
+                  </div>
+                </label>
+
+                <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none">
+                  <input id="set-slash" type="checkbox" class="mt-1" />
+                  <div>
+                    <div class="font-black text-sm">Skrót “/”</div>
+                    <div class="text-xs text-white/60">Fokus w pole wyszukiwarki</div>
+                  </div>
+                </label>
+
+                <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none">
+                  <input id="set-hide-budget" type="checkbox" class="mt-1" />
+                  <div>
+                    <div class="font-black text-sm">Ukryj budżet</div>
+                    <div class="text-xs text-white/60">Nie pokazuj “od X PLN” na kartach</div>
+                  </div>
+                </label>
+
+                <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none">
+                  <input id="set-hide-rating" type="checkbox" class="mt-1" />
+                  <div>
+                    <div class="font-black text-sm">Ukryj ocenę</div>
+                    <div class="text-xs text-white/60">Nie pokazuj “Ocena” na kartach</div>
+                  </div>
+                </label>
+
+                <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none sm:col-span-2">
+                  <input id="set-focus-trap" type="checkbox" class="mt-1" />
+                  <div>
+                    <div class="font-black text-sm">Focus trap w modalu</div>
+                    <div class="text-xs text-white/60">Tab nie ucieka poza modal</div>
+                  </div>
+                </label>
+              </div>
+
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button id="btn-reset-settings" class="btn btn-outline px-4 py-3" type="button">
+                  <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+                  Przywróć domyślne
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- SECURITY -->
+          <section id="tab-security" class="space-y-4 hidden">
+            <div class="glass rounded-[22px] p-5">
+              <div class="font-black flex items-center gap-2">
+                <i data-lucide="shield" class="h-5 w-5 text-[var(--accent)]"></i>
+                Bezpieczeństwo
               </div>
               <ul class="mt-3 text-sm text-white/70 list-disc pl-5 space-y-1">
-                <li>Badge “Premium”</li>
-                <li>Wyżej w “Polecane”</li>
-                <li>Więcej klików</li>
+                <li>Ustal zakres i terminy przed startem.</li>
+                <li>Nie wysyłaj prywatnych danych bez potrzeby.</li>
+                <li>Rozważ zaliczkę / etapy.</li>
               </ul>
-              <button id="btn-buy-premium" class="mt-3 btn btn-primary w-full px-4 py-3" type="button">
-                <i data-lucide="zap" class="h-4 w-4"></i>
-                <span>Aktywuj Premium</span>
-              </button>
-              <button id="btn-cancel-premium" class="mt-2 btn btn-outline w-full px-4 py-3" type="button">
-                <i data-lucide="x-circle" class="h-4 w-4"></i>
-                <span>Wyłącz Premium</span>
-              </button>
+              <div class="mt-4 rounded-[18px] bg-white/5 border border-white/10 p-4 text-sm text-white/70">
+                Ten projekt to demo front-only (localStorage). Nie ma prawdziwych płatności ani weryfikacji.
+              </div>
             </div>
+          </section>
 
-            <div class="rounded-[22px] bg-white/5 border border-white/10 p-4">
-              <div class="flex items-center justify-between gap-3">
-                <div>
-                  <div class="text-sm font-black">Verified</div>
-                  <div class="text-xs text-white/60">Zaufanie + filtr Verified</div>
-                </div>
-                <div class="text-sm font-black">19.55 PLN/mies.</div>
-              </div>
-              <ul class="mt-3 text-sm text-white/70 list-disc pl-5 space-y-1">
-                <li>Badge “Verified”</li>
-                <li>Wyżej w sort “Zweryfikowani”</li>
-                <li>Lepsza konwersja</li>
-              </ul>
-              <button id="btn-buy-verified" class="mt-3 btn btn-primary w-full px-4 py-3" type="button">
-                <i data-lucide="badge-check" class="h-4 w-4"></i>
-                <span>Aktywuj Verified</span>
-              </button>
-              <button id="btn-cancel-verified" class="mt-2 btn btn-outline w-full px-4 py-3" type="button">
-                <i data-lucide="x-circle" class="h-4 w-4"></i>
-                <span>Wyłącz Verified</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SETTINGS -->
-      <section id="tab-settings" class="space-y-4 hidden">
-        <div class="glass rounded-[22px] p-5">
-          <div class="font-black flex items-center gap-2">
-            <i data-lucide="settings" class="h-5 w-5 text-[var(--accent)]"></i>
-            Ustawienia
-          </div>
-          <div class="mt-4 grid sm:grid-cols-2 gap-3">
-            <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none">
-              <input id="set-toast" type="checkbox" class="mt-1" />
-              <div>
-                <div class="font-black text-sm">Toasty</div>
-                <div class="text-xs text-white/60">Powiadomienia “Kopiowano”, “Zapisano” itd.</div>
-              </div>
-            </label>
-
-            <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none">
-              <input id="set-slash" type="checkbox" class="mt-1" />
-              <div>
-                <div class="font-black text-sm">Skrót “/”</div>
-                <div class="text-xs text-white/60">Fokus w pole wyszukiwarki</div>
-              </div>
-            </label>
-
-            <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none">
-              <input id="set-hide-budget" type="checkbox" class="mt-1" />
-              <div>
-                <div class="font-black text-sm">Ukryj budżet</div>
-                <div class="text-xs text-white/60">Nie pokazuj “od X PLN” na kartach</div>
-              </div>
-            </label>
-
-            <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none">
-              <input id="set-hide-rating" type="checkbox" class="mt-1" />
-              <div>
-                <div class="font-black text-sm">Ukryj ocenę</div>
-                <div class="text-xs text-white/60">Nie pokazuj “Ocena” na kartach</div>
-              </div>
-            </label>
-
-            <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none sm:col-span-2">
-              <input id="set-focus-trap" type="checkbox" class="mt-1" />
-              <div>
-                <div class="font-black text-sm">Focus trap w modalu</div>
-                <div class="text-xs text-white/60">Tab nie ucieka poza modal</div>
-              </div>
-            </label>
-          </div>
-
-          <div class="mt-4 flex flex-wrap gap-2">
-            <button id="btn-reset-settings" class="btn btn-outline px-4 py-3" type="button">
-              <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
-              Przywróć domyślne
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECURITY -->
-      <section id="tab-security" class="space-y-4 hidden">
-        <div class="glass rounded-[22px] p-5">
-          <div class="font-black flex items-center gap-2">
-            <i data-lucide="shield" class="h-5 w-5 text-[var(--accent)]"></i>
-            Bezpieczeństwo
-          </div>
-          <ul class="mt-3 text-sm text-white/70 list-disc pl-5 space-y-1">
-            <li>Ustal zakres i terminy przed startem.</li>
-            <li>Nie wysyłaj prywatnych danych bez potrzeby.</li>
-            <li>Rozważ zaliczkę / etapy.</li>
-          </ul>
-          <div class="mt-4 rounded-[18px] bg-white/5 border border-white/10 p-4 text-sm text-white/70">
-            Ten projekt to demo front-only (localStorage). Nie ma prawdziwych płatności ani weryfikacji.
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   </aside>
 
   <script>
     /***********************************************************************
-     * Velorie Market — market.html (UX upgrade) — FIXED
-     * ✅ Naprawa filtrów: teraz są CSS sticky i jadą z Tobą (bez ciężkiego JS fixed)
-     * ✅ Mniej lagów: render listy bez skeleton timeoutów (od razu), mniej “kombinowania” na scrollu
+     * Velorie Market — market.html (UX upgrade) — ACCOUNT LIKE PROTOTYP #1
+     * ✅ Konto: layout header + sidebar + content jak w prototypie #1
+     * ✅ VPLN w panelu konta (header-vpln-balance) z JWT authToken (opcjonalnie)
+     * ✅ Logout jak w prototypie #1
      ***********************************************************************/
 
     (function(){
@@ -1253,7 +1310,13 @@
         };
       }
 
-      /* ---------------------- Header height -> CSS var (żeby sticky był pod headerem) ---------------------- */
+      // --- JWT decode (jak prototyp #1) ---
+      function decodeJwt(token){
+        try { return JSON.parse(atob(token.split('.')[1])); }
+        catch { return null; }
+      }
+
+      /* ---------------------- Header height -> CSS var ---------------------- */
       function bindHeaderHeightVar(){
         const header = $("#app-header");
         if(!header) return;
@@ -1582,7 +1645,7 @@
         focusTrapState.delete(modal);
       }
 
-      /* ---------------------- Scroll progress (lekko) ---------------------- */
+      /* ---------------------- Scroll progress ---------------------- */
       function initProgress(){
         const bar=$("#scroll-progress");
         if(!bar) return;
@@ -1640,7 +1703,7 @@
             industryLabel: industryLabel(me.industry || "dev"),
             tagline: me.listing?.title || "Ogłoszenie",
             about: me.listing?.long || me.about || "",
-            rating: 4.9, // demo
+            rating: 4.9,
             availableIn: me.availability || "48h",
             minBudget: Number(me.minBudget || 0) || 0,
             location: "Online",
@@ -1672,9 +1735,7 @@
       function matchesSearch(p){
         const q = normalizeText(state.q).trim();
         if(!q) return true;
-        const hay = normalizeText([
-          p.name, p.tagline, p.industryLabel, p.about
-        ].filter(Boolean).join(" "));
+        const hay = normalizeText([p.name, p.tagline, p.industryLabel, p.about].filter(Boolean).join(" "));
         return hay.includes(q);
       }
 
@@ -1895,7 +1956,6 @@
         $("#btn-load-more").classList.toggle("opacity-50", !canMore);
         $("#btn-load-more").classList.toggle("pointer-events-none", !canMore);
 
-        // bind actions
         $$("#profiles-list [data-action='open']").forEach(btn=>{
           btn.addEventListener("click", ()=>{
             const id=btn.getAttribute("data-id");
@@ -2225,35 +2285,47 @@
         });
       }
 
-      /* ---------------------- Panel stuff (zostawione jak było) ---------------------- */
-      function setSaveStatus(txt){
-        const el=$("#save-status");
-        if(el) el.textContent = txt;
-      }
-
+      /* ---------------------- Panel tabs (SIDEBAR LIKE PROTOTYP #1) ---------------------- */
       function bindPanelTabs(){
         const panel=$("#user-panel");
         if(!panel) return;
 
+        const navBtns = $$("#user-panel [data-tab]");
+
         const setTab=(tab)=>{
-          $$("#user-panel [data-tab]").forEach(b=>{
-            b.classList.toggle("btn-primary", b.getAttribute("data-tab")===tab);
-            b.classList.toggle("btn-ghost", b.getAttribute("data-tab")!==tab);
+          navBtns.forEach(b=>{
+            const active = b.getAttribute("data-tab")===tab;
+            b.classList.toggle("bg-white/10", active);
+            b.classList.toggle("font-semibold", active);
+            b.classList.toggle("text-white", active);
+            b.classList.toggle("text-white/70", !active);
+
+            const icon = b.querySelector("i[data-lucide]");
+            if(icon){
+              icon.classList.toggle("text-[var(--accent)]", active);
+            }
           });
+
           ["edit","preview","listing","shop","settings","security"].forEach(t=>{
             const sec=$("#tab-"+t);
             if(sec) sec.classList.toggle("hidden", t!==tab);
           });
+
           if(tab==="preview") renderPreviewCard();
           if(tab==="settings") syncSettingsUI();
           try{ lucide.createIcons(); }catch{}
         };
 
-        $$("#user-panel [data-tab]").forEach(btn=>{
+        navBtns.forEach(btn=>{
           btn.addEventListener("click", ()=>setTab(btn.getAttribute("data-tab")));
         });
 
-        setTab("shop");
+        setTab("edit");
+      }
+
+      function setSaveStatus(txt){
+        const el=$("#save-status");
+        if(el) el.textContent = txt;
       }
 
       function updatePlanUI(){
@@ -2500,11 +2572,31 @@
       /* ---------------------- Boot ---------------------- */
       function boot(){
         ensureInit();
-
         bindHeaderHeightVar();
 
         $("#footer-year").textContent = "© " + new Date().getFullYear();
         updatePlanUI();
+
+        // JWT -> VPLN + username (jak prototyp #1, opcjonalnie)
+        const authToken = localStorage.getItem("authToken");
+        if(authToken){
+          const userData = decodeJwt(authToken);
+          if(userData){
+            const balEl = $("#header-vpln-balance");
+            if(balEl){
+              balEl.textContent = `${(userData.vplnBalance || 0).toFixed(2)} VPLN`;
+            }
+            const u = $("#panel-username");
+            if(u && userData.username) u.textContent = userData.username;
+          }
+        }
+
+        // Logout (jak prototyp #1)
+        $("#logout-btn")?.addEventListener("click", (e)=>{
+          e.preventDefault();
+          localStorage.removeItem("authToken");
+          window.location.href = "./index.html";
+        });
 
         initProgress();
         initReveal();
