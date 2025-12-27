@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Velorie — Portfel (VPLN)</title>
+  <meta name="description" content="Portfel Velorie — doładowania VPLN, historia transakcji, saldo." />
+  <meta name="theme-color" content="#0a1030" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root{
+      --accent:#ff0354;
+      --accent2:#7c3aed;
+      --bg0:#00010f;
+      --bg1:#0a1030;
+
+      --glass: rgba(255,255,255,.06);
+      --glass2: rgba(255,255,255,.085);
+      --border: rgba(255,255,255,.12);
+
+      --muted: rgba(255,255,255,.75);
+      --muted2: rgba(255,255,255,.58);
+
+      --shadow: 0 18px 75px rgba(0,0,0,.62);
+      --shadow2: 0 18px 70px rgba(255,3,84,.18);
+
+      --radius-xl: 26px;
+      --radius-lg: 22px;
+      --radius-md: 18px;
+
+      --ease: cubic-bezier(.2,.9,.2,1);
+    }
+
+    html{ scroll-behavior:smooth; }
+    body{
+      background-color: var(--bg0);
+      background-image:
+        radial-gradient(1200px 700px at 70% -10%, rgba(10,16,48,1) 0%, rgba(6,6,18,.9) 35%, rgba(0,1,15,1) 70%),
+        radial-gradient(900px 550px at 12% 110%, rgba(255,3,84,.18) 0%, rgba(255,3,84,0) 62%),
+        radial-gradient(850px 550px at 95% 85%, rgba(124,58,237,.16) 0%, rgba(124,58,237,0) 62%),
+        radial-gradient(700px 420px at 40% 35%, rgba(0,163,255,.08) 0%, rgba(0,163,255,0) 70%);
+      color:#fff;
+      overflow-x:hidden;
+    }
+
+    /* scrollbars */
+    ::-webkit-scrollbar{ width:10px; height:10px; }
+    ::-webkit-scrollbar-thumb{ background: var(--accent); border-radius:999px; }
+    ::-webkit-scrollbar-track{ background: rgba(255,255,255,.08); }
+
+    /* progress bar */
+    #scroll-progress{
+      position:fixed;
+      inset:0 0 auto 0;
+      height:2px;
+      width:0%;
+      background: linear-gradient(90deg, var(--accent), rgba(124,58,237,1), rgba(0,163,255,1));
+      z-index: 100;
+      box-shadow: 0 16px 60px rgba(255,3,84,.25);
+    }
+
+    /* noise overlay */
+    .noise::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      opacity:.06;
+      mix-blend-mode: overlay;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='190' height='190'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='190' height='190' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+      background-size:190px 190px;
+    }
+
+    /* animated grid */
+    .grid-bg{
+      position:absolute;
+      inset:-1px;
+      pointer-events:none;
+      opacity:.18;
+      background-image:
+        linear-gradient(to right, rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size:44px 44px;
+      mask-image: radial-gradient(60% 60% at 50% 35%, black 0%, transparent 70%);
+      animation:gridFloat 14s var(--ease) infinite;
+    }
+    @keyframes gridFloat{
+      0%,100%{ transform: translateY(0); }
+      50%{ transform: translateY(10px); }
+    }
+
+    /* aurora blobs */
+    .aurora{
+      position:absolute;
+      inset:-200px -200px auto -200px;
+      height:520px;
+      pointer-events:none;
+      filter: blur(40px);
+      opacity:.7;
+    }
+    .aurora::before, .aurora::after{
+      content:"";
+      position:absolute;
+      width:520px;
+      height:520px;
+      border-radius:999px;
+      background: radial-gradient(circle at 30% 30%, rgba(255,3,84,.38), rgba(255,3,84,0) 60%);
+      animation: blob 16s var(--ease) infinite;
+    }
+    .aurora::after{
+      right:8%;
+      top:40px;
+      width:560px;
+      height:560px;
+      background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.30), rgba(124,58,237,0) 62%);
+      animation-duration:18s;
+    }
+    @keyframes blob{
+      0%,100%{ transform: translate(0,0) scale(1); }
+      50%{ transform: translate(40px, 14px) scale(1.06); }
+    }
+
+    /* glass */
+    .glass{
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.045));
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .glass-soft{
+      background: rgba(0,0,0,.40);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 12px 55px rgba(0,0,0,.55);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    /* buttons */
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.55rem;
+      border-radius: 16px;
+      padding: .85rem 1.05rem;
+      font-weight: 850;
+      letter-spacing: -.01em;
+      transition: transform .14s var(--ease), filter .14s var(--ease), background .14s var(--ease), border-color .14s var(--ease), box-shadow .14s var(--ease);
+      user-select:none;
+      transform: translateZ(0);
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn-primary{
+      background: linear-gradient(180deg, rgba(255,3,84,1) 0%, rgba(255,3,84,.86) 100%);
+      color:#0b0010;
+      box-shadow: 0 18px 70px rgba(255,3,84,.22);
+    }
+    .btn-primary:hover{ filter: brightness(1.07); box-shadow: 0 18px 80px rgba(255,3,84,.28); }
+    .btn-ghost{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.92);
+    }
+    .btn-ghost:hover{ background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.18); }
+    .btn-outline{
+      background: transparent;
+      border:1px solid rgba(255,255,255,.18);
+      color: rgba(255,255,255,.92);
+    }
+    .btn-outline:hover{ background: rgba(255,255,255,.06); }
+
+    /* inputs */
+    .input{
+      width:100%;
+      border-radius:16px;
+      padding:.82rem .95rem;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.92);
+      outline:none;
+      transition: border-color .15s var(--ease), background .15s var(--ease), box-shadow .15s var(--ease);
+      appearance:none;
+      -webkit-appearance:none;
+    }
+    .input:focus{
+      border-color: rgba(255,3,84,.60);
+      background: rgba(255,255,255,.08);
+      box-shadow: 0 0 0 4px rgba(255,3,84,.12);
+    }
+    .label{
+      font-size:12px;
+      color: rgba(255,255,255,.70);
+      margin-bottom:.35rem;
+      display:block;
+    }
+
+    /* chip */
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.50rem .72rem;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.13);
+      background: rgba(255,255,255,.05);
+      color: rgba(255,255,255,.86);
+      font-size: 12px;
+      line-height: 1;
+      white-space: nowrap;
+      user-select:none;
+      transition: background .15s var(--ease), border-color .15s var(--ease), transform .15s var(--ease), filter .15s var(--ease);
+    }
+    .chip:hover{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.20); filter: brightness(1.02); }
+    .chip:active{ transform: translateY(1px); }
+    .chip[data-active="true"]{
+      background: rgba(255,3,84,.16);
+      border-color: rgba(255,3,84,.45);
+    }
+
+    /* table */
+    .trow{
+      display:grid;
+      grid-template-columns: 1.3fr .9fr .9fr .9fr;
+      gap:10px;
+      align-items:center;
+      padding:12px 12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    @media (max-width: 780px){
+      .trow{ grid-template-columns: 1.2fr .9fr 1fr; }
+      .hide-sm{ display:none; }
+    }
+
+    /* toast */
+    #toast-wrap{
+      position:fixed;
+      bottom:20px;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:220;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-width: 92vw;
+    }
+
+    /* focus */
+    :focus-visible{
+      outline:none;
+      box-shadow: 0 0 0 4px rgba(255,3,84,.16);
+      border-radius:16px;
+    }
+    @media (prefers-reduced-motion: reduce){
+      html{ scroll-behavior:auto; }
+      .grid-bg, .aurora::before, .aurora::after{ animation:none !important; }
+      .btn{ transition:none !important; }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen text-white selection:bg-[#ff0354]/40 selection:text-white">
+  <div id="scroll-progress" aria-hidden="true"></div>
+
+  <!-- BACKGROUND -->
+  <div class="pointer-events-none fixed inset-0 -z-10 noise">
+    <div class="aurora"></div>
+    <div class="grid-bg"></div>
+  </div>
+
+  <!-- HEADER (jak w stylu panelu) -->
+  <header class="sticky top-0 z-[95] backdrop-blur-xl bg-black/25 border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <a href="./index.html" class="h-10 w-10 rounded-xl ring-1 ring-white/10 bg-white/5 flex items-center justify-center font-black hover:ring-white/20 transition" aria-label="Powrót">
+          V
+        </a>
+        <div class="leading-tight">
+          <div class="text-lg font-black tracking-tight flex items-center gap-2">
+            Portfel
+            <span class="text-[10px] font-black text-white/70 bg-white/5 border border-white/10 px-2 py-1 rounded-full inline-flex items-center gap-1">
+              <i data-lucide="wallet" class="h-3 w-3 text-[var(--accent)]"></i>
+              VPLN
+            </span>
+          </div>
+          <div class="text-xs text-white/60">Doładowania • saldo • historia</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="hidden sm:flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium border border-white/10">
+          <i data-lucide="coins" class="h-4 w-4 text-[var(--accent)]"></i>
+          <span id="header-vpln">0.00 VPLN</span>
+        </div>
+
+        <button id="btn-copy-wallet" class="btn btn-ghost px-4 py-2 text-sm" type="button" aria-label="Kopiuj ID portfela">
+          <i data-lucide="copy" class="h-4 w-4"></i>
+          <span class="hidden sm:inline">Kopiuj ID</span>
+        </button>
+
+        <a id="logout-btn" href="#" class="btn btn-primary px-4 py-2 text-sm" aria-label="Wyloguj">
+          <i data-lucide="log-out" class="h-4 w-4"></i>
+          <span class="hidden sm:inline">Wyloguj</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-8 pb-24">
+    <!-- TOP STATS -->
+    <section class="grid lg:grid-cols-12 gap-4">
+      <div class="lg:col-span-7 glass rounded-[26px] p-5">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-2 text-xs font-black text-white/70 bg-white/5 border border-white/10 px-3 py-2 rounded-full">
+              <i data-lucide="sparkles" class="h-4 w-4 text-[var(--accent)]"></i>
+              demo top-up (front-only)
+            </div>
+            <h1 class="mt-3 text-3xl md:text-4xl font-black tracking-tight leading-[1.05]">
+              Twoje saldo: <span id="balance-big" class="text-white">0.00</span> <span class="text-white/70">VPLN</span>
+            </h1>
+            <p class="mt-3 text-white/65 leading-relaxed">
+              Doładuj VPLN, aby kupować plany, wyróżnienia lub itemy (docelowo). W tej wersji to bezpieczny mock — zapis w localStorage / JWT.
+            </p>
+          </div>
+
+          <div class="hidden md:flex flex-col items-end gap-2">
+            <div class="chip">
+              <i data-lucide="user" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+              <span id="user-label">Gość</span>
+            </div>
+            <div class="chip">
+              <i data-lucide="hash" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+              <span id="wallet-id">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-2">
+          <button class="chip" type="button" data-preset="50">+50</button>
+          <button class="chip" type="button" data-preset="100">+100</button>
+          <button class="chip" type="button" data-preset="250">+250</button>
+          <button class="chip" type="button" data-preset="500">+500</button>
+          <button class="chip" type="button" data-preset="1000">+1000</button>
+        </div>
+      </div>
+
+      <div class="lg:col-span-5 glass rounded-[26px] p-5">
+        <div class="flex items-center justify-between gap-3">
+          <div class="font-black text-lg flex items-center gap-2">
+            <i data-lucide="plus-circle" class="h-5 w-5 text-[var(--accent)]"></i>
+            Doładuj VPLN
+          </div>
+          <div class="text-xs text-white/55 inline-flex items-center gap-2">
+            <i data-lucide="shield" class="h-4 w-4"></i>
+            brak prawdziwych płatności
+          </div>
+        </div>
+
+        <div class="mt-4 space-y-3">
+          <div>
+            <label class="label">Kwota (VPLN)</label>
+            <input id="topup-amount" class="input" type="number" min="1" step="1" placeholder="np. 100" />
+            <div class="mt-2 text-[11px] text-white/50 flex items-center gap-2">
+              <i data-lucide="info" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+              Kurs demo: <span class="text-white/70 font-semibold">1 VPLN = 1 PLN</span>
+            </div>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div>
+              <label class="label">Metoda</label>
+              <select id="topup-method" class="input">
+                <option value="BLIK">BLIK</option>
+                <option value="Przelewy24">Przelewy24</option>
+                <option value="PayPal">PayPal</option>
+                <option value="Stripe">Stripe</option>
+                <option value="Apple Pay">Apple Pay</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">Referencja</label>
+              <input id="topup-ref" class="input" placeholder="opcjonalnie (np. TX123)" />
+            </div>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-2">
+            <button id="btn-topup" class="btn btn-primary w-full" type="button">
+              <i data-lucide="zap" class="h-4 w-4"></i>
+              Doładuj teraz
+            </button>
+            <button id="btn-reset-wallet" class="btn btn-outline w-full" type="button">
+              <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+              Reset demo
+            </button>
+          </div>
+
+          <div class="rounded-[18px] bg-white/5 border border-white/10 p-4 text-sm text-white/70">
+            <div class="font-black text-white mb-1 flex items-center gap-2">
+              <i data-lucide="sparkles" class="h-4 w-4 text-[var(--accent)]"></i>
+              Jak to działa (demo)
+            </div>
+            <ul class="list-disc pl-5 space-y-1 text-sm">
+              <li>Saldo trzymamy w <span class="text-white/85 font-semibold">authToken JWT</span> (jeśli istnieje) + w <span class="text-white/85 font-semibold">localStorage</span> jako fallback.</li>
+              <li>Doładowanie tworzy wpis w historii (localStorage).</li>
+              <li>Wylogowanie usuwa authToken i wraca do index.html.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY + SECURITY -->
+    <section class="grid lg:grid-cols-12 gap-4 mt-4">
+      <div class="lg:col-span-8 glass rounded-[26px] p-5">
+        <div class="flex items-center justify-between gap-3">
+          <div class="font-black text-lg flex items-center gap-2">
+            <i data-lucide="receipt" class="h-5 w-5 text-[var(--accent)]"></i>
+            Historia transakcji
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btn-export" class="btn btn-ghost px-4 py-2 text-sm" type="button">
+              <i data-lucide="download" class="h-4 w-4"></i>
+              Eksport JSON
+            </button>
+            <button id="btn-clear-history" class="btn btn-outline px-4 py-2 text-sm" type="button">
+              <i data-lucide="trash-2" class="h-4 w-4"></i>
+              Wyczyść
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 text-xs text-white/55 grid grid-cols-4 gap-2 px-2">
+          <div>Opis</div>
+          <div class="text-right">Kwota</div>
+          <div class="text-right hide-sm">Metoda</div>
+          <div class="text-right">Data</div>
+        </div>
+
+        <div id="history-list" class="mt-2 space-y-2"></div>
+
+        <div id="history-empty" class="hidden mt-3 rounded-[22px] bg-white/5 border border-white/10 p-5 text-white/70">
+          <div class="flex items-start gap-3">
+            <i data-lucide="inbox" class="h-5 w-5 text-[var(--accent)] mt-0.5"></i>
+            <div>
+              <div class="font-black text-white">Brak transakcji</div>
+              <div class="text-sm text-white/65 mt-1">Zrób pierwsze doładowanie, a wpis pojawi się tutaj.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-4 glass rounded-[26px] p-5">
+        <div class="font-black text-lg flex items-center gap-2">
+          <i data-lucide="shield-alert" class="h-5 w-5 text-[var(--accent)]"></i>
+          Bezpieczeństwo
+        </div>
+
+        <ul class="mt-3 text-sm text-white/70 list-disc pl-5 space-y-2">
+          <li>Nie podawaj kodów BLIK ani danych kart w tej wersji demo.</li>
+          <li>W produkcji top-up będzie przez bramkę płatności + webhook.</li>
+          <li>Saldo i historia będą przechowywane w bazie (nie w localStorage).</li>
+        </ul>
+
+        <div class="mt-4 rounded-[18px] bg-white/5 border border-white/10 p-4 text-sm">
+          <div class="text-white/80 font-black flex items-center gap-2">
+            <i data-lucide="settings" class="h-4 w-4 text-[var(--accent)]"></i>
+            Dev panel
+          </div>
+          <div class="mt-2 space-y-2">
+            <button id="btn-add-sample" class="btn btn-ghost w-full" type="button">
+              <i data-lucide="plus" class="h-4 w-4"></i>
+              Dodaj przykładowe TX
+            </button>
+            <button id="btn-spend-demo" class="btn btn-outline w-full" type="button">
+              <i data-lucide="minus-circle" class="h-4 w-4"></i>
+              Odejmij 25 VPLN (demo)
+            </button>
+          </div>
+          <div class="mt-3 text-xs text-white/55">
+            Te przyciski są tylko dla testów UI.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mt-6 text-xs text-white/50">
+      <div class="glass rounded-[26px] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="sparkles" class="h-4 w-4 text-[var(--accent)]"></i>
+          <span>Velorie • Portfel VPLN</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="footer-year"></span>
+          <span>•</span>
+          <a href="./market.html" class="text-white/70 hover:text-white transition">Wróć do Market</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <div id="toast-wrap" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+    (function(){
+      const $ = (sel, root=document) => root.querySelector(sel);
+      const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+      const now = () => Date.now();
+
+      function safeParse(v, fallback){
+        try { return JSON.parse(v); } catch { return fallback; }
+      }
+      function safeStringify(v, fallback="{}"){
+        try { return JSON.stringify(v); } catch { return fallback; }
+      }
+      function escapeHTML(str){
+        return String(str ?? "")
+          .replaceAll("&","&amp;")
+          .replaceAll("<","&lt;")
+          .replaceAll(">","&gt;")
+          .replaceAll('"',"&quot;")
+          .replaceAll("'","&#039;");
+      }
+
+      // === JWT decode + encode (front-only demo) ===
+      function b64urlEncode(obj){
+        const json = typeof obj === "string" ? obj : JSON.stringify(obj);
+        const b64 = btoa(unescape(encodeURIComponent(json)))
+          .replaceAll("+","-").replaceAll("/","_").replaceAll("=","");
+        return b64;
+      }
+      function b64urlDecode(str){
+        try{
+          const pad = str.length % 4 === 0 ? "" : "=".repeat(4 - (str.length % 4));
+          const b64 = (str + pad).replaceAll("-","+").replaceAll("_","/");
+          const json = decodeURIComponent(escape(atob(b64)));
+          return JSON.parse(json);
+        }catch{ return null; }
+      }
+      function decodeJwt(token){
+        try { return b64urlDecode(token.split(".")[1]); }
+        catch { return null; }
+      }
+      function encodeFakeJwt(payload){
+        // UWAGA: to NIE jest podpisane JWT. Front-only demo.
+        const header = { alg:"none", typ:"JWT" };
+        return `${b64urlEncode(header)}.${b64urlEncode(payload)}.`;
+      }
+
+      // === Toasts ===
+      const Toast = (() => {
+        const wrap = $("#toast-wrap");
+        function push(message, icon="sparkles", ms=1700){
+          const el = document.createElement("div");
+          el.className="glass rounded-2xl px-4 py-3 text-sm text-white/90 border border-white/10 shadow-[0_18px_80px_rgba(255,3,84,0.28)] flex items-center gap-2";
+          el.style.maxWidth="92vw";
+          el.innerHTML=`
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white/5 border border-white/10">
+              <i data-lucide="${icon}" class="h-4 w-4 text-[var(--accent)]"></i>
+            </span>
+            <span>${escapeHTML(message)}</span>
+          `;
+          wrap.appendChild(el);
+          try{ lucide.createIcons(); }catch{}
+          setTimeout(()=>{
+            el.style.opacity="0";
+            el.style.transform="translateY(6px)";
+            el.style.transition="opacity .25s ease, transform .25s ease";
+            setTimeout(()=>el.remove(), 260);
+          }, ms);
+        }
+        return { push };
+      })();
+
+      // === Scroll progress ===
+      function initProgress(){
+        const bar=$("#scroll-progress");
+        let ticking=false;
+        const onScroll=()=>{
+          if(ticking) return;
+          ticking=true;
+          requestAnimationFrame(()=>{
+            const doc=document.documentElement;
+            const max=doc.scrollHeight - doc.clientHeight;
+            const p=max<=0 ? 0 : (doc.scrollTop/max)*100;
+            bar.style.width = p+"%";
+            ticking=false;
+          });
+        };
+        window.addEventListener("scroll", onScroll, {passive:true});
+        onScroll();
+      }
+
+      // === Storage keys ===
+      const LS = {
+        keyAuth: "authToken",
+        keyWallet: "vm_wallet_v1",          // fallback wallet store
+        keyWalletId: "vm_wallet_id_v1",
+        keyHistory: "vm_wallet_history_v1"
+      };
+
+      function genId(prefix="WAL"){
+        const rnd = Math.random().toString(16).slice(2,10).toUpperCase();
+        const t = Date.now().toString(16).slice(-6).toUpperCase();
+        return `${prefix}-${t}-${rnd}`;
+      }
+
+      function formatDate(ts){
+        const d = new Date(ts);
+        const pad = (n)=>String(n).padStart(2,"0");
+        return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }
+
+      function ensureWalletId(){
+        let id = localStorage.getItem(LS.keyWalletId);
+        if(!id){
+          id = genId("VPLN");
+          localStorage.setItem(LS.keyWalletId, id);
+        }
+        return id;
+      }
+
+      function getAuthPayload(){
+        const token = localStorage.getItem(LS.keyAuth);
+        if(!token) return null;
+        return decodeJwt(token);
+      }
+
+      function setAuthPayload(nextPayload){
+        const token = encodeFakeJwt(nextPayload);
+        localStorage.setItem(LS.keyAuth, token);
+        return token;
+      }
+
+      function getWallet(){
+        // Prefer authToken payload.vplnBalance if exists, else fallback local storage wallet
+        const payload = getAuthPayload();
+        if(payload && typeof payload.vplnBalance === "number"){
+          return {
+            source: "jwt",
+            balance: payload.vplnBalance,
+            username: payload.username || "Użytkownik",
+            payload
+          };
+        }
+        const w = safeParse(localStorage.getItem(LS.keyWallet), { balance: 0, username: "Gość" });
+        return { source: "ls", balance: Number(w.balance||0), username: w.username||"Gość", payload: null };
+      }
+
+      function setWalletBalance(newBalance){
+        newBalance = Math.max(0, Number(newBalance||0));
+        const payload = getAuthPayload();
+        if(payload){
+          payload.vplnBalance = newBalance;
+          if(!payload.username) payload.username = payload.user || payload.name || "Użytkownik";
+          setAuthPayload(payload);
+          return { source:"jwt", balance:newBalance };
+        }
+        const cur = safeParse(localStorage.getItem(LS.keyWallet), { balance: 0, username: "Gość" });
+        cur.balance = newBalance;
+        localStorage.setItem(LS.keyWallet, safeStringify(cur,"{}"));
+        return { source:"ls", balance:newBalance };
+      }
+
+      function getHistory(){
+        return safeParse(localStorage.getItem(LS.keyHistory), []);
+      }
+      function setHistory(list){
+        localStorage.setItem(LS.keyHistory, safeStringify(list,"[]"));
+      }
+
+      function addTx(tx){
+        const list = getHistory();
+        list.unshift(tx);
+        setHistory(list.slice(0, 200)); // cap
+      }
+
+      function fmtVpln(n){
+        const v = Number(n||0);
+        return v.toFixed(2);
+      }
+
+      function renderHeader(){
+        const id = ensureWalletId();
+        $("#wallet-id").textContent = id;
+
+        const w = getWallet();
+        $("#user-label").textContent = w.username || "Gość";
+        $("#header-vpln").textContent = `${fmtVpln(w.balance)} VPLN`;
+        $("#balance-big").textContent = fmtVpln(w.balance);
+      }
+
+      function renderHistory(){
+        const list = getHistory();
+        const wrap = $("#history-list");
+        const empty = $("#history-empty");
+
+        if(!list.length){
+          wrap.innerHTML = "";
+          empty.classList.remove("hidden");
+          return;
+        }
+        empty.classList.add("hidden");
+
+        wrap.innerHTML = list.map(tx=>{
+          const sign = tx.amount >= 0 ? "+" : "−";
+          const amountAbs = Math.abs(Number(tx.amount||0)).toFixed(2);
+          const amountClass = tx.amount >= 0 ? "text-white" : "text-white/80";
+          const icon = tx.amount >= 0 ? "plus-circle" : "minus-circle";
+
+          return `
+            <div class="trow">
+              <div class="min-w-0">
+                <div class="font-black flex items-center gap-2">
+                  <i data-lucide="${icon}" class="h-4 w-4 text-[var(--accent)]"></i>
+                  <span class="truncate">${escapeHTML(tx.title || "Transakcja")}</span>
+                </div>
+                <div class="text-xs text-white/55 mt-1 truncate">
+                  ${escapeHTML(tx.ref ? ("Ref: " + tx.ref + " • ") : "")}${escapeHTML(tx.id)}
+                </div>
+              </div>
+
+              <div class="text-right font-black ${amountClass}">
+                ${sign}${amountAbs} <span class="text-white/60 font-semibold">VPLN</span>
+              </div>
+
+              <div class="text-right hide-sm text-xs text-white/60">
+                ${escapeHTML(tx.method || "—")}
+              </div>
+
+              <div class="text-right text-xs text-white/60">
+                ${escapeHTML(formatDate(tx.ts))}
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        try{ lucide.createIcons(); }catch{}
+      }
+
+      function doTopUp(amount, method, ref){
+        amount = Math.floor(Number(amount||0));
+        if(!Number.isFinite(amount) || amount <= 0){
+          Toast.push("Podaj poprawną kwotę", "alert-triangle");
+          return;
+        }
+        if(amount > 100000){
+          Toast.push("Za duża kwota (limit demo)", "alert-triangle");
+          return;
+        }
+
+        const before = getWallet().balance;
+        const after = before + amount;
+
+        setWalletBalance(after);
+
+        const tx = {
+          id: genId("TX"),
+          ts: now(),
+          title: "Doładowanie VPLN",
+          amount: amount,
+          method: method || "—",
+          ref: (ref||"").trim() || null
+        };
+        addTx(tx);
+
+        renderHeader();
+        renderHistory();
+
+        Toast.push(`Doładowano +${amount} VPLN`, "zap");
+      }
+
+      function doSpend(amount, title="Zakup (demo)"){
+        amount = Math.floor(Number(amount||0));
+        if(!Number.isFinite(amount) || amount <= 0){
+          Toast.push("Niepoprawna kwota", "alert-triangle");
+          return;
+        }
+        const before = getWallet().balance;
+        if(before < amount){
+          Toast.push("Brak środków", "x-circle");
+          return;
+        }
+        const after = before - amount;
+        setWalletBalance(after);
+
+        addTx({
+          id: genId("TX"),
+          ts: now(),
+          title,
+          amount: -amount,
+          method: "VPLN",
+          ref: null
+        });
+
+        renderHeader();
+        renderHistory();
+        Toast.push(`Odjęto ${amount} VPLN`, "minus-circle");
+      }
+
+      function exportJSON(){
+        const payload = {
+          walletId: ensureWalletId(),
+          wallet: getWallet(),
+          history: getHistory()
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "velorie-wallet-export.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url), 2000);
+        Toast.push("Wyeksportowano JSON", "download");
+      }
+
+      function resetDemo(){
+        // nie ruszamy historii marketu itd — tylko portfel i jego historię
+        localStorage.removeItem(LS.keyWallet);
+        localStorage.removeItem(LS.keyHistory);
+        // authToken zostawiamy (jeśli jest) — tylko zerujemy balans
+        const payload = getAuthPayload();
+        if(payload){
+          payload.vplnBalance = 0;
+          setAuthPayload(payload);
+        }
+        renderHeader();
+        renderHistory();
+        Toast.push("Zresetowano portfel (demo)", "rotate-ccw");
+      }
+
+      function ensureMinimalAuth(){
+        // jeśli nie ma authToken, tworzymy minimalny payload dla spójności UI
+        // (możesz to usunąć, jeśli wolisz strict: bez tokenu = gość)
+        const token = localStorage.getItem(LS.keyAuth);
+        if(token) return;
+        const payload = {
+          username: "Gość",
+          vplnBalance: 0,
+          iat: Math.floor(Date.now()/1000)
+        };
+        localStorage.setItem(LS.keyAuth, encodeFakeJwt(payload));
+      }
+
+      function bindUI(){
+        // presets
+        $$("[data-preset]").forEach(btn=>{
+          btn.addEventListener("click", ()=>{
+            const v = Number(btn.getAttribute("data-preset")||"0");
+            $("#topup-amount").value = String(v);
+            Toast.push(`Ustawiono ${v} VPLN`, "sparkles", 900);
+          });
+        });
+
+        $("#btn-topup").addEventListener("click", ()=>{
+          const amount = $("#topup-amount").value;
+          const method = $("#topup-method").value;
+          const ref = $("#topup-ref").value;
+          doTopUp(amount, method, ref);
+        });
+
+        $("#topup-amount").addEventListener("keydown", (e)=>{
+          if(e.key==="Enter") $("#btn-topup").click();
+        });
+
+        $("#btn-clear-history").addEventListener("click", ()=>{
+          setHistory([]);
+          renderHistory();
+          Toast.push("Wyczyszczono historię", "trash-2");
+        });
+
+        $("#btn-export").addEventListener("click", exportJSON);
+
+        $("#btn-reset-wallet").addEventListener("click", resetDemo);
+
+        $("#btn-add-sample").addEventListener("click", ()=>{
+          doTopUp(100, "BLIK", "SAMPLE");
+        });
+
+        $("#btn-spend-demo").addEventListener("click", ()=>{
+          doSpend(25, "Testowy zakup (demo)");
+        });
+
+        $("#btn-copy-wallet").addEventListener("click", async ()=>{
+          const id = ensureWalletId();
+          try{
+            await navigator.clipboard.writeText(id);
+            Toast.push("Skopiowano ID portfela", "copy");
+          }catch{
+            Toast.push("Nie udało się skopiować", "alert-triangle");
+          }
+        });
+
+        // logout
+        $("#logout-btn").addEventListener("click", (e)=>{
+          e.preventDefault();
+          localStorage.removeItem(LS.keyAuth);
+          window.location.href = "./index.html";
+        });
+      }
+
+      function boot(){
+        // jeśli chcesz STRICT: zakomentuj poniższe ensureMinimalAuth()
+        ensureMinimalAuth();
+
+        $("#footer-year").textContent = "© " + new Date().getFullYear();
+
+        initProgress();
+        ensureWalletId();
+
+        renderHeader();
+        renderHistory();
+        bindUI();
+
+        try{ lucide.createIcons(); }catch{}
+      }
+
+      document.addEventListener("DOMContentLoaded", boot);
+    })();
+  </script>
+</body>
+</html>
