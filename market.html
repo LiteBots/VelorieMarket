@@ -36,6 +36,11 @@
       --radius-md: 18px;
 
       --ease: cubic-bezier(.2,.9,.2,1);
+
+      /* sticky helper vars */
+      --header-h: 66px;      /* wysokość headera */
+      --filters-gap: 12px;   /* odstęp filtrów od headera */
+      --filters-h: 0px;      /* dynamicznie ustawiane w JS */
     }
 
     html { scroll-behavior: smooth; }
@@ -337,18 +342,26 @@
       opacity: 1;
     }
 
+    /* FULLSCREEN ACCOUNT SHEET */
     .drawer{
       position: fixed;
-      inset: 0 0 0 auto;
-      width: min(680px, 94vw);
+      inset: 0;
+      width: 100%;
       z-index: 140;
-      transform: translateX(110%);
+
+      transform: translateY(110%);
       transition: transform .28s var(--ease);
+
       display: flex;
       flex-direction: column;
-      border-left: 1px solid rgba(255,255,255,.10);
+
+      border-left: none;
+      border-top: 1px solid rgba(255,255,255,.10);
+
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
-    .drawer[data-open="true"]{ transform: translateX(0%); }
+    .drawer[data-open="true"]{ transform: translateY(0%); }
 
     .modal{
       position: fixed;
@@ -403,11 +416,14 @@
       display:block;
     }
 
-    /* sticky filters bar */
+    /* sticky filters bar (fix: stays on top but does not cover results) */
     #filters-bar{
       position: sticky;
-      top: 66px;
-      z-index: 70;
+      top: calc(var(--header-h) + var(--filters-gap));
+      z-index: 80;
+    }
+    body.filters-stuck #profiles-list{
+      padding-top: calc(var(--filters-h) + 12px);
     }
 
     /* skeleton */
@@ -877,7 +893,7 @@
     </div>
   </section>
 
-  <!-- USER PANEL (drawer) -->
+  <!-- USER PANEL (fullscreen) -->
   <aside id="user-panel" class="drawer glass-soft" data-open="false" aria-label="Panel konta">
     <div class="p-4 flex items-center justify-between gap-3 border-b border-white/10">
       <div class="flex items-center gap-3 min-w-0">
@@ -911,20 +927,27 @@
     <div class="p-4">
       <div class="grid grid-cols-2 gap-2">
         <button class="btn btn-ghost px-4 py-3" data-tab="edit" type="button">
-          <i data-lucide="pencil" class="h-4 w-4"></i>
-          <span>Profil</span>
+          <i data-lucide="pencil" class="h-4 w-4"></i><span>Profil</span>
         </button>
+
         <button class="btn btn-ghost px-4 py-3" data-tab="preview" type="button">
-          <i data-lucide="eye" class="h-4 w-4"></i>
-          <span>Podgląd</span>
+          <i data-lucide="eye" class="h-4 w-4"></i><span>Podgląd</span>
         </button>
+
         <button class="btn btn-ghost px-4 py-3" data-tab="listing" type="button">
-          <i data-lucide="file-plus" class="h-4 w-4"></i>
-          <span>Ogłoszenie</span>
+          <i data-lucide="file-plus" class="h-4 w-4"></i><span>Ogłoszenie</span>
         </button>
+
         <button class="btn btn-primary px-4 py-3" data-tab="shop" type="button">
-          <i data-lucide="shopping-bag" class="h-4 w-4"></i>
-          <span>Plany</span>
+          <i data-lucide="shopping-bag" class="h-4 w-4"></i><span>Plany</span>
+        </button>
+
+        <button class="btn btn-ghost px-4 py-3" data-tab="settings" type="button">
+          <i data-lucide="settings" class="h-4 w-4"></i><span>Ustawienia</span>
+        </button>
+
+        <button class="btn btn-ghost px-4 py-3" data-tab="security" type="button">
+          <i data-lucide="shield" class="h-4 w-4"></i><span>Bezpieczeństwo</span>
         </button>
       </div>
     </div>
@@ -1169,17 +1192,89 @@
           </div>
         </div>
       </section>
+
+      <!-- SETTINGS -->
+      <section id="tab-settings" class="space-y-4 hidden">
+        <div class="glass rounded-[22px] p-5">
+          <div class="font-black flex items-center gap-2">
+            <i data-lucide="settings" class="h-5 w-5 text-[var(--accent)]"></i>
+            Ustawienia
+          </div>
+          <p class="mt-2 text-sm text-white/70">Preferencje aplikacji (demo — zapis do localStorage).</p>
+
+          <div class="mt-4 grid sm:grid-cols-2 gap-3">
+            <div class="glass rounded-[22px] p-4">
+              <div class="text-sm font-black">Powiadomienia</div>
+              <label class="mt-3 flex items-center justify-between gap-3 text-sm text-white/75">
+                <span>Toasty / komunikaty</span>
+                <input id="set-toast" type="checkbox" class="accent-[var(--accent)]" />
+              </label>
+              <label class="mt-3 flex items-center justify-between gap-3 text-sm text-white/75">
+                <span>Skrót “/” do wyszukiwarki</span>
+                <input id="set-slash" type="checkbox" class="accent-[var(--accent)]" />
+              </label>
+            </div>
+
+            <div class="glass rounded-[22px] p-4">
+              <div class="text-sm font-black">Dane</div>
+              <p class="mt-2 text-sm text-white/70">Szybkie akcje dla demo.</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button id="btn-export" class="btn btn-outline px-4 py-3" type="button">
+                  <i data-lucide="download" class="h-4 w-4"></i><span>Eksport JSON</span>
+                </button>
+                <button id="btn-clear" class="btn btn-ghost px-4 py-3" type="button">
+                  <i data-lucide="trash-2" class="h-4 w-4"></i><span>Wyczyść dane</span>
+                </button>
+              </div>
+              <p class="mt-2 text-xs text-white/55">Eksport kopiuje JSON do schowka.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECURITY -->
+      <section id="tab-security" class="space-y-4 hidden">
+        <div class="glass rounded-[22px] p-5">
+          <div class="font-black flex items-center gap-2">
+            <i data-lucide="shield" class="h-5 w-5 text-[var(--accent)]"></i>
+            Bezpieczeństwo
+          </div>
+          <p class="mt-2 text-sm text-white/70">Ustawienia bezpieczeństwa i prywatności (demo).</p>
+
+          <div class="mt-4 grid sm:grid-cols-2 gap-3">
+            <div class="glass rounded-[22px] p-4">
+              <div class="text-sm font-black">Widoczność profilu</div>
+              <label class="mt-3 flex items-center justify-between gap-3 text-sm text-white/75">
+                <span>Ukryj budżet w katalogu</span>
+                <input id="set-hide-budget" type="checkbox" class="accent-[var(--accent)]" />
+              </label>
+              <label class="mt-3 flex items-center justify-between gap-3 text-sm text-white/75">
+                <span>Ukryj ocenę</span>
+                <input id="set-hide-rating" type="checkbox" class="accent-[var(--accent)]" />
+              </label>
+              <p class="mt-2 text-xs text-white/55">Dotyczy tylko wyświetlania (UI).</p>
+            </div>
+
+            <div class="glass rounded-[22px] p-4">
+              <div class="text-sm font-black">UX bezpieczeństwa</div>
+              <label class="mt-3 flex items-center justify-between gap-3 text-sm text-white/75">
+                <span>Focus-trap w modalu</span>
+                <input id="set-focus-trap" type="checkbox" class="accent-[var(--accent)]" />
+              </label>
+              <p class="mt-2 text-xs text-white/55">Blokuje TAB poza modalem.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   </aside>
 
 <script>
 /**
- * Velorie Market — “UX upgrade”
- * - lepszy UI (hero card, aurora, micro-interactions)
- * - skróty klawiaturowe: / focus search, Esc zamyka, ←/→ w modalu
- * - poprawione A11y: focus trap, scroll lock, lepsze aria
- * - mobilny bottom bar
- * - łagodniejsze animacje i prefers-reduced-motion
+ * Velorie Market — “UX upgrade” + poprawki:
+ * - Filtry + wyszukiwarka sticky i NIE zasłaniają ogłoszeń (dynamiczny padding)
+ * - Konto fullscreen + więcej zakładek (Ustawienia, Bezpieczeństwo)
  */
 
 (() => {
@@ -1271,6 +1366,8 @@
     keySaved: "vm_saved_v2",
     keySubs: "vm_subs_v2",
     keyMe: "vm_me_v2",
+    keySettings: "vm_settings_v2",
+
     getProfiles() {
       const v = localStorage.getItem(this.keyProfiles);
       return safeJSON.parse(v, null);
@@ -1299,7 +1396,19 @@
     },
     setMe(obj) {
       localStorage.setItem(this.keyMe, safeJSON.stringify(obj, "{}"));
+    },
+    getSettings(){
+      const v = localStorage.getItem(this.keySettings);
+      return safeJSON.parse(v, { toast:true, slash:true, hideBudget:false, hideRating:false, focusTrap:true });
+    },
+    setSettings(obj){
+      localStorage.setItem(this.keySettings, safeJSON.stringify(obj, "{}"));
     }
+  };
+
+  const notify = (message, icon = "sparkles", ms = 1700) => {
+    const s = LS.getSettings();
+    if (s.toast) Toast.push(message, icon, ms);
   };
 
   /* ----------------------------- seed data ---------------------------- */
@@ -1395,6 +1504,7 @@
 
     if (!localStorage.getItem(LS.keySaved)) LS.setSaved([]);
     if (!localStorage.getItem(LS.keySubs)) LS.setSubs({ premium: false, verified: false });
+    if (!localStorage.getItem(LS.keySettings)) LS.setSettings({ toast:true, slash:true, hideBudget:false, hideRating:false, focusTrap:true });
   }
 
   /* ----------------------------- state ------------------------------ */
@@ -1451,6 +1561,41 @@
       { threshold: 0.12 }
     );
     els.forEach((el) => io.observe(el));
+  }
+
+  /* ------------------- sticky filters: no cover fix ------------------- */
+  function initStickyFiltersFix(){
+    const bar = $("#filters-bar");
+    if (!bar) return;
+
+    const updateH = () => {
+      const rect = bar.getBoundingClientRect();
+      const h = Math.round(rect.height);
+      document.documentElement.style.setProperty("--filters-h", `${h}px`);
+    };
+
+    const sentinel = document.createElement("div");
+    sentinel.style.position = "relative";
+    sentinel.style.height = "1px";
+    sentinel.style.marginTop = "0px";
+    bar.parentElement.insertBefore(sentinel, bar);
+
+    updateH();
+
+    const headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--header-h")) || 66;
+    const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--filters-gap")) || 12;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        const stuck = !entry.isIntersecting;
+        document.body.classList.toggle("filters-stuck", stuck);
+        updateH();
+      },
+      { root: null, threshold: 0, rootMargin: `-${headerH + gap}px 0px 0px 0px` }
+    );
+
+    io.observe(sentinel);
+    window.addEventListener("resize", updateH, { passive: true });
   }
 
   /* ------------------------------ overlay ----------------------------- */
@@ -1513,7 +1658,7 @@
     const profiles = list || getFilteredProfiles(true);
     const idx = profiles.findIndex(p => p.id === id);
     if (idx === -1) {
-      Toast.push("Nie znaleziono profilu.", "alert-triangle");
+      notify("Nie znaleziono profilu.", "alert-triangle");
       return;
     }
     state.modalList = profiles;
@@ -1538,6 +1683,8 @@
   }
 
   function modalTrapFocus(e) {
+    const settings = LS.getSettings();
+    if (!settings.focusTrap) return;
     if (!state.modalOpen) return;
     if (e.key !== "Tab") return;
 
@@ -1565,7 +1712,7 @@
 
   /* --------------------------- drawer/panel --------------------------- */
   function switchTab(tab) {
-    const ids = ["edit", "preview", "listing", "shop"];
+    const ids = ["edit", "preview", "listing", "shop", "settings", "security"];
     ids.forEach((id) => {
       const sec = $(`#tab-${id}`);
       if (sec) sec.classList.toggle("hidden", id !== tab);
@@ -1599,8 +1746,10 @@
     });
 
     window.addEventListener("keydown", (e) => {
-      // "/" = search (jak w nowoczesnych appkach)
-      if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const settings = LS.getSettings();
+
+      // "/" = search
+      if (settings.slash && e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
         const tag = (document.activeElement?.tagName || "").toLowerCase();
         const typing = tag === "input" || tag === "textarea" || tag === "select";
         if (!typing) {
@@ -1670,7 +1819,6 @@
     toggleChip("#filter-verified", "verifiedOnly");
     toggleChip("#filter-available", "availableOnly");
 
-    // header shortcut: toggles saved filter + sync chip
     const toggleSaved = () => {
       state.savedOnly = !state.savedOnly;
       const el = $("#filter-saved");
@@ -1680,7 +1828,7 @@
       }
       resetPagination();
       render();
-      Toast.push(state.savedOnly ? "Filtr: zapisane" : "Wyłączono filtr: zapisane", "bookmark");
+      notify(state.savedOnly ? "Filtr: zapisane" : "Wyłączono filtr: zapisane", "bookmark");
     };
     $("#btn-open-saved")?.addEventListener("click", toggleSaved);
 
@@ -1695,7 +1843,6 @@
       state.budgetMin = (minRaw !== "" && Number.isFinite(minV)) ? Math.max(0, minV) : null;
       state.budgetMax = (maxRaw !== "" && Number.isFinite(maxV)) ? Math.max(0, maxV) : null;
 
-      // if both set and invalid order, swap
       if (state.budgetMin != null && state.budgetMax != null && state.budgetMin > state.budgetMax) {
         const t = state.budgetMin;
         state.budgetMin = state.budgetMax;
@@ -1757,7 +1904,7 @@
 
       resetPagination();
       render();
-      Toast.push("Wyczyszczono filtry.", "rotate-ccw");
+      notify("Wyczyszczono filtry.", "rotate-ccw");
     });
 
     $("#btn-load-more")?.addEventListener("click", () => {
@@ -1804,11 +1951,9 @@
     if (state.verifiedOnly) out = out.filter((p) => !!p.verified);
     if (state.availableOnly) out = out.filter((p) => parseAvailableHours(p.availableIn) <= 72);
 
-    // budget
     if (state.budgetMin != null) out = out.filter(p => Number(p.minBudget || 0) >= state.budgetMin);
     if (state.budgetMax != null) out = out.filter(p => Number(p.minBudget || 0) <= state.budgetMax);
 
-    // search
     if (state.q) {
       const nq = normalizeText(state.q);
       out = out.filter(p => {
@@ -1820,7 +1965,6 @@
       });
     }
 
-    // sorting
     if (state.sort === "newest") out.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     else if (state.sort === "rating") out.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     else if (state.sort === "verified") out.sort((a, b) => Number(!!b.verified) - Number(!!a.verified));
@@ -1843,16 +1987,17 @@
   }
 
   function profileCardHTML(p, savedSet) {
+    const settings = LS.getSettings();
     const isSaved = savedSet.has(p.id);
     const saveLabel = isSaved ? "Zapisano" : "Zapisz";
     const saveIcon = isSaved ? "bookmark-check" : "bookmark";
 
-    const chips = [
-      `<span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena ${(p.rating ?? 0).toFixed(1)}</span>`,
-      `<span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: ${escapeHTML(p.availableIn || "-")}</span>`,
-      `<span class="chip"><i data-lucide="map-pin" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(p.location || "Online")}</span>`,
-      `<span class="chip"><i data-lucide="wallet" class="h-3.5 w-3.5 text-[var(--accent)]"></i> od ${escapeHTML(p.minBudget ?? "-")} PLN</span>`
-    ].join("");
+    const chipsArr = [];
+    if (!settings.hideRating) chipsArr.push(`<span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena ${(p.rating ?? 0).toFixed(1)}</span>`);
+    chipsArr.push(`<span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: ${escapeHTML(p.availableIn || "-")}</span>`);
+    chipsArr.push(`<span class="chip"><i data-lucide="map-pin" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(p.location || "Online")}</span>`);
+    if (!settings.hideBudget) chipsArr.push(`<span class="chip"><i data-lucide="wallet" class="h-3.5 w-3.5 text-[var(--accent)]"></i> od ${escapeHTML(p.minBudget ?? "-")} PLN</span>`);
+    const chips = chipsArr.join("");
 
     const port = (p.portfolio || []).slice(0, 3);
     const thumbs = [0,1,2].map(i => {
@@ -2051,10 +2196,10 @@
           const set = LS.getSaved();
           if (set.has(id)) {
             set.delete(id);
-            Toast.push("Usunięto z zapisanych.", "bookmark-minus");
+            notify("Usunięto z zapisanych.", "bookmark-minus");
           } else {
             set.add(id);
-            Toast.push("Dodano do zapisanych.", "bookmark-plus");
+            notify("Dodano do zapisanych.", "bookmark-plus");
           }
           LS.setSaved(set);
           renderList();
@@ -2082,6 +2227,8 @@
     const p = state.modalList[state.modalIndex];
     if (!p) return;
 
+    const settings = LS.getSettings();
+
     $("#modal-avatar") && ($("#modal-avatar").src = p.avatar || "");
     $("#modal-name") && ($("#modal-name").textContent = p.name || "Profil");
     $("#modal-sub") && ($("#modal-sub").textContent = `${p.industryLabel || ""} • ${p.tagline || ""}`);
@@ -2091,13 +2238,12 @@
     if (p.premium) badges.push(`<span class="badge badge-premium"><i data-lucide="zap" class="h-4 w-4"></i> Premium</span>`);
     $("#modal-badges") && ($("#modal-badges").innerHTML = badges.join(""));
 
-    const chips = [
-      `<span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena ${(p.rating ?? 0).toFixed(1)}</span>`,
-      `<span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: ${escapeHTML(p.availableIn || "-")}</span>`,
-      `<span class="chip"><i data-lucide="wallet" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Budżet: od ${escapeHTML(p.minBudget ?? "-")} PLN</span>`,
-      `<span class="chip"><i data-lucide="map-pin" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(p.location || "Online")}</span>`
-    ];
-    $("#modal-chips") && ($("#modal-chips").innerHTML = chips.join(""));
+    const chipsArr = [];
+    if (!settings.hideRating) chipsArr.push(`<span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena ${(p.rating ?? 0).toFixed(1)}</span>`);
+    chipsArr.push(`<span class="chip"><i data-lucide="clock" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny: ${escapeHTML(p.availableIn || "-")}</span>`);
+    if (!settings.hideBudget) chipsArr.push(`<span class="chip"><i data-lucide="wallet" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Budżet: od ${escapeHTML(p.minBudget ?? "-")} PLN</span>`);
+    chipsArr.push(`<span class="chip"><i data-lucide="map-pin" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(p.location || "Online")}</span>`);
+    $("#modal-chips") && ($("#modal-chips").innerHTML = chipsArr.join(""));
 
     const port = (p.portfolio || []).slice(0, 3);
     const thumbs = [0,1,2].map(i => {
@@ -2112,12 +2258,16 @@
     const about = (p.about || p.listing?.long || p.listing?.short || p.tagline || "Brak opisu.").trim();
     $("#modal-about") && ($("#modal-about").textContent = about);
 
-    $("#btn-copy-name")?.addEventListener("click", () => {
-      navigator.clipboard?.writeText(p.name || "").then(
-        () => Toast.push("Skopiowano nick.", "copy"),
-        () => Toast.push("Nie udało się skopiować.", "alert-triangle")
-      );
-    });
+    // avoid stacking listeners: use onclick
+    const copyBtn = $("#btn-copy-name");
+    if (copyBtn) {
+      copyBtn.onclick = () => {
+        navigator.clipboard?.writeText(p.name || "").then(
+          () => notify("Skopiowano nick.", "copy"),
+          () => notify("Nie udało się skopiować.", "alert-triangle")
+        );
+      };
+    }
 
     const saveBtn = $("#btn-save-from-modal");
     if (saveBtn) {
@@ -2126,8 +2276,8 @@
       saveBtn.innerHTML = `<i data-lucide="${isSaved ? "bookmark-check" : "bookmark"}" class="h-4 w-4"></i><span>${isSaved ? "Zapisano" : "Zapisz"}</span>`;
       saveBtn.onclick = () => {
         const s = LS.getSaved();
-        if (s.has(p.id)) { s.delete(p.id); Toast.push("Usunięto z zapisanych.", "bookmark-minus"); }
-        else { s.add(p.id); Toast.push("Dodano do zapisanych.", "bookmark-plus"); }
+        if (s.has(p.id)) { s.delete(p.id); notify("Usunięto z zapisanych.", "bookmark-minus"); }
+        else { s.add(p.id); notify("Dodano do zapisanych.", "bookmark-plus"); }
         LS.setSaved(s);
         renderList();
         renderModal();
@@ -2281,7 +2431,7 @@
         if (set.has("me")) set.delete("me");
         else set.add("me");
         LS.setSaved(set);
-        Toast.push("Zaktualizowano zapisane.", "bookmark");
+        notify("Zaktualizowano zapisane.", "bookmark");
         renderPreviewCard();
         renderList();
       }));
@@ -2296,7 +2446,7 @@
 
       const name = ($("#edit-name")?.value || "").trim();
       if (name.length < 2) {
-        Toast.push("Nick jest za krótki (min. 2 znaki).", "alert-triangle");
+        notify("Nick jest za krótki (min. 2 znaki).", "alert-triangle");
         $("#edit-name")?.focus();
         return;
       }
@@ -2335,7 +2485,7 @@
       resetPagination();
       renderList();
       setSaveStatus("Wszystko zapisane");
-      Toast.push("Zapisano profil.", "save");
+      notify("Zapisano profil.", "save");
     });
 
     $("#btn-reset-profile")?.addEventListener("click", () => {
@@ -2346,7 +2496,7 @@
       resetPagination();
       renderList();
       setSaveStatus("Wszystko zapisane");
-      Toast.push("Przywrócono domyślne dane.", "rotate-ccw");
+      notify("Przywrócono domyślne dane.", "rotate-ccw");
     });
   }
 
@@ -2360,8 +2510,8 @@
       const long = ($("#listing-long")?.value || "").trim();
       const contactMain = $("#listing-contact-main")?.value || "Discord";
 
-      if (title.length < 6) { Toast.push("Uzupełnij tytuł (min. 6 znaków).", "alert-triangle"); $("#listing-title")?.focus(); return; }
-      if (short.length < 12) { Toast.push("Uzupełnij krótki opis (min. 12 znaków).", "alert-triangle"); $("#listing-short")?.focus(); return; }
+      if (title.length < 6) { notify("Uzupełnij tytuł (min. 6 znaków).", "alert-triangle"); $("#listing-title")?.focus(); return; }
+      if (short.length < 12) { notify("Uzupełnij krótki opis (min. 12 znaków).", "alert-triangle"); $("#listing-short")?.focus(); return; }
 
       me.listing = { ...(me.listing || {}), title, contactMain, short, long, published: true };
       LS.setMe(me);
@@ -2369,7 +2519,7 @@
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      Toast.push("Ogłoszenie opublikowane / zaktualizowane.", "rocket");
+      notify("Ogłoszenie opublikowane / zaktualizowane.", "rocket");
     });
 
     $("#btn-unpublish")?.addEventListener("click", () => {
@@ -2382,7 +2532,7 @@
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      Toast.push("Ogłoszenie ukryte w katalogu.", "eye-off");
+      notify("Ogłoszenie ukryte w katalogu.", "eye-off");
     });
   }
 
@@ -2395,7 +2545,7 @@
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      Toast.push("Premium aktywne.", "zap");
+      notify("Premium aktywne.", "zap");
     });
 
     $("#cancel-premium")?.addEventListener("click", () => {
@@ -2406,7 +2556,7 @@
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      Toast.push("Premium wyłączone.", "x-circle");
+      notify("Premium wyłączone.", "x-circle");
     });
 
     $("#buy-verify")?.addEventListener("click", () => {
@@ -2417,7 +2567,7 @@
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      Toast.push("Verified aktywne.", "badge-check");
+      notify("Verified aktywne.", "badge-check");
     });
 
     $("#cancel-verify")?.addEventListener("click", () => {
@@ -2428,7 +2578,59 @@
       upsertMeIntoProfiles();
       resetPagination();
       renderList();
-      Toast.push("Verified wyłączone.", "x-circle");
+      notify("Verified wyłączone.", "x-circle");
+    });
+  }
+
+  /* ------------------------------ settings ---------------------------- */
+  function bindSettings(){
+    const s = LS.getSettings();
+
+    const setCheckbox = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+    setCheckbox("set-toast", s.toast);
+    setCheckbox("set-slash", s.slash);
+    setCheckbox("set-hide-budget", s.hideBudget);
+    setCheckbox("set-hide-rating", s.hideRating);
+    setCheckbox("set-focus-trap", s.focusTrap);
+
+    const onToggle = (id, key) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener("change", () => {
+        const next = LS.getSettings();
+        next[key] = !!el.checked;
+        LS.setSettings(next);
+        notify("Zapisano ustawienia.", "settings");
+        renderPanelFromMe();
+        renderList();
+      });
+    };
+
+    onToggle("set-toast", "toast");
+    onToggle("set-slash", "slash");
+    onToggle("set-hide-budget", "hideBudget");
+    onToggle("set-hide-rating", "hideRating");
+    onToggle("set-focus-trap", "focusTrap");
+
+    document.getElementById("btn-export")?.addEventListener("click", () => {
+      const payload = {
+        profiles: LS.getProfiles(),
+        saved: Array.from(LS.getSaved()),
+        subs: LS.getSubs(),
+        me: LS.getMe(),
+        settings: LS.getSettings()
+      };
+      navigator.clipboard?.writeText(JSON.stringify(payload, null, 2)).then(
+        () => notify("Skopiowano eksport JSON do schowka.", "copy"),
+        () => notify("Nie udało się skopiować eksportu.", "alert-triangle")
+      );
+    });
+
+    document.getElementById("btn-clear")?.addEventListener("click", () => {
+      [LS.keyProfiles, LS.keySaved, LS.keySubs, LS.keyMe, LS.keySettings].forEach(k => localStorage.removeItem(k));
+      notify("Wyczyszczono dane demo.", "trash-2", 1800);
+      ensureInit();
+      render();
     });
   }
 
@@ -2446,12 +2648,15 @@
     ensureInit();
 
     initProgress();
+    initStickyFiltersFix();
+
     bindPanel();
     bindFilters();
     bindProfileSave();
     bindListing();
     bindShop();
     bindModal();
+    bindSettings();
 
     // default tab: shop
     switchTab("shop");
