@@ -33,6 +33,11 @@
       min-height:100vh;
       overflow-x:hidden;
     }
+    body.is-locked{
+      height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+    }
 
     /* grid like auth */
     .grid-bg{
@@ -143,7 +148,7 @@
     }
     .btn-ghost:hover{ background: rgba(255,255,255,.08); }
 
-    /* particles (keep your logic, but match palette) */
+    /* particles */
     @keyframes particle-animation{
       0%,100%{ transform: translateY(0%) translateX(0%) rotate(0deg); }
       50%{ transform: translateY(-10%) translateX(5%) rotate(20deg); }
@@ -189,6 +194,116 @@
       width: auto;
       filter: drop-shadow(0 10px 22px rgba(255,3,84,.12));
     }
+
+    /* ===== UNDER CONSTRUCTION OVERLAY ===== */
+    #uc-overlay{
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    #uc-overlay.hidden{ display: none; }
+
+    /* tint + blur (full screen) */
+    .uc-backdrop{
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.50);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    /* center panel */
+    .uc-panel{
+      position: relative;
+      width: min(720px, 100%);
+      border-radius: 26px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 30px 90px rgba(0,0,0,.60);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .uc-panel-inner{
+      padding: 26px;
+    }
+    .uc-title{
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      font-size: clamp(28px, 4vw, 44px);
+    }
+    .uc-sub{
+      margin-top: 10px;
+      color: rgba(255,255,255,.72);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 56ch;
+    }
+    .uc-pill{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.80);
+      font-size: 12px;
+    }
+    .uc-form{
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 560px){
+      .uc-form{ grid-template-columns: 1fr auto; align-items: center; }
+    }
+    .uc-input{
+      width: 100%;
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.14);
+      color: rgba(255,255,255,.90);
+      outline: none;
+    }
+    .uc-input:focus{
+      border-color: rgba(255,3,84,.55);
+      box-shadow: 0 0 0 3px rgba(255,3,84,.18);
+    }
+    .uc-status{
+      margin-top: 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,.70);
+      min-height: 18px;
+    }
+
+    /* developer button */
+    #dev-btn{
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 10000;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: rgba(255,255,255,.85);
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 14px 40px rgba(0,0,0,.45);
+      transition: transform .15s ease, background .15s ease;
+      user-select: none;
+    }
+    #dev-btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.09); }
+    #dev-btn:active{ transform: translateY(0px); }
   </style>
 
   <script>
@@ -205,6 +320,64 @@
 </head>
 
 <body class="min-h-screen text-white/90 selection:bg-[#ff0354]/40 selection:text-white">
+  <!-- UNDER CONSTRUCTION OVERLAY -->
+  <div id="uc-overlay" aria-modal="true" role="dialog">
+    <div class="uc-backdrop" aria-hidden="true"></div>
+
+    <div class="uc-panel">
+      <div class="uc-panel-inner">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <span class="uc-pill">
+            <i data-lucide="construction" class="h-4 w-4"></i>
+            <span>Tryb: W budowie</span>
+          </span>
+
+          <span class="text-xs text-white/50">
+            Podgląd strony dostępny dla dev po kodzie
+          </span>
+        </div>
+
+        <h2 class="uc-title mt-4">Strona jest w budowie</h2>
+        <p class="uc-sub">
+          Zostaw e-mail — damy znać, gdy startujemy. (Kontakt i rozliczenia na Velorie Market odbywają się poza platformą).
+        </p>
+
+        <form id="uc-form" class="uc-form" autocomplete="off">
+          <input
+            id="uc-email"
+            type="email"
+            class="uc-input"
+            placeholder="Twój adres e-mail"
+            inputmode="email"
+            required
+          />
+          <button
+            id="uc-submit"
+            type="submit"
+            class="inline-flex items-center justify-center gap-2 rounded-2xl btn-primary lift px-5 py-3 text-sm font-semibold"
+          >
+            <i data-lucide="send" class="h-4 w-4"></i>
+            <span>Zapisz się</span>
+          </button>
+        </form>
+
+        <div id="uc-status" class="uc-status"></div>
+
+        <div class="mt-4 text-xs text-white/50">
+          Klikając „Zapisz się”, wysyłasz e-mail na webhook (Discord) jako zgłoszenie do listy startowej.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Developer button -->
+  <button id="dev-btn" type="button" class="lift">
+    <span class="inline-flex items-center gap-2">
+      <i data-lucide="terminal" class="h-4 w-4"></i>
+      <span>Developer</span>
+    </span>
+  </button>
+
   <div class="aurora" aria-hidden="true">
     <div class="blob b1"></div>
     <div class="blob b2"></div>
@@ -296,7 +469,7 @@
           </div>
         </div>
 
-        <!-- Mockup (unchanged structure, more auth-like surfaces) -->
+        <!-- Mockup -->
         <div class="animate-on-scroll perspective-container">
           <div id="market-mockup" class="relative mx-auto w-full max-w-2xl">
             <div class="absolute -inset-4 -z-10 rounded-[2rem] bg-[conic-gradient(from_180deg_at_50%_50%,rgba(255,3,84,0.35),transparent,rgba(124,58,237,0.35),transparent)] blur-2xl"></div>
@@ -493,7 +666,6 @@
         </p>
 
         <div class="grid md:grid-cols-3 gap-6">
-          <!-- Cards -->
           <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
@@ -794,6 +966,117 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      // ====== UNDER CONSTRUCTION LOGIC ======
+      const WEBHOOK_URL = "https://discord.com/api/webhooks/1454905261549551761/7vz4wTLZwqVmhQr0ppGEG_6yFe4L3uOxU3iIRqluLGEp1vlTSb-9a-HrKZ5-TLce9GWK";
+      const OVERLAY = document.getElementById("uc-overlay");
+      const FORM = document.getElementById("uc-form");
+      const EMAIL = document.getElementById("uc-email");
+      const STATUS = document.getElementById("uc-status");
+      const SUBMIT = document.getElementById("uc-submit");
+      const DEV_BTN = document.getElementById("dev-btn");
+
+      let unlocked = false;
+
+      const lockPage = () => document.body.classList.add("is-locked");
+      const unlockPage = () => document.body.classList.remove("is-locked");
+
+      const setStatus = (msg, tone = "normal") => {
+        const tones = {
+          normal: "rgba(255,255,255,.70)",
+          ok: "rgba(120,255,180,.85)",
+          warn: "rgba(255,210,120,.90)",
+          err: "rgba(255,120,120,.90)",
+        };
+        STATUS.style.color = tones[tone] || tones.normal;
+        STATUS.textContent = msg || "";
+      };
+
+      const validateEmail = (v) => {
+        const s = String(v || "").trim();
+        return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(s);
+      };
+
+      const hideOverlay = () => {
+        OVERLAY.classList.add("hidden");
+        unlockPage();
+      };
+
+      const showOverlay = () => {
+        OVERLAY.classList.remove("hidden");
+        lockPage();
+      };
+
+      // overlay default ON (until refresh)
+      showOverlay();
+
+      DEV_BTN.addEventListener("click", () => {
+        const code = window.prompt("Podaj kod developer:");
+        if (code === null) return;
+        if (String(code).trim() === "0051") {
+          unlocked = true;
+          hideOverlay();
+          setStatus("");
+        } else {
+          setStatus("Niepoprawny kod.", "err");
+        }
+      });
+
+      // prevent click-through
+      OVERLAY.addEventListener("click", (e) => {
+        // allow clicking inside panel
+        const panel = e.target.closest(".uc-panel");
+        if (!panel) e.stopPropagation();
+      }, true);
+
+      FORM.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (unlocked) return;
+
+        const email = (EMAIL.value || "").trim();
+        if (!validateEmail(email)) {
+          setStatus("Wpisz poprawny adres e-mail.", "warn");
+          EMAIL.focus();
+          return;
+        }
+
+        SUBMIT.disabled = true;
+        SUBMIT.style.opacity = "0.85";
+        setStatus("Wysyłam…", "normal");
+
+        try {
+          const payload = {
+            content: `📩 **Nowy zapis na start:** \`${email}\`\n🕒 ${new Date().toLocaleString("pl-PL")}`
+          };
+
+          const res = await fetch(WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          if (!res.ok) {
+            throw new Error("Webhook error: " + res.status);
+          }
+
+          setStatus("Gotowe! Jesteś na liście ✅", "ok");
+          EMAIL.value = "";
+        } catch (err) {
+          console.error(err);
+          setStatus("Nie udało się wysłać. Spróbuj ponownie za chwilę.", "err");
+        } finally {
+          SUBMIT.disabled = false;
+          SUBMIT.style.opacity = "1";
+        }
+      });
+
+      // allow Enter focus
+      EMAIL.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          EMAIL.blur();
+        }
+      });
+
+      // ====== EXISTING PAGE LOGIC ======
       const ACCENT = "#ff0354";
 
       // Schema.org
@@ -826,7 +1109,7 @@
         footerList.appendChild(li);
       });
 
-      // Stats (podmień wartości na swoje / API)
+      // Stats
       const statsData = [
         { id: "offers", icon: "briefcase", label: "Aktywne ogłoszenia", value: 1280 },
         { id: "profiles", icon: "users", label: "Profile freelancerów", value: 6420 },
@@ -910,7 +1193,7 @@
         document.querySelectorAll(".animate-on-scroll").forEach(el => observer.observe(el));
       };
 
-      // Particles (palette aligned)
+      // Particles
       const createParticles = () => {
         const container = document.getElementById("particles-container");
         if (!container) return;
