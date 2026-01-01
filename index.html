@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
   <title>Velorie Market – Platforma ogłoszeniowa dla freelancerów</title>
   <meta name="description" content="Velorie Market to platforma ogłoszeniowa dla freelancerów: programistów, grafików, techników, budowniczych Minecraft, content creatorów i montażystów. Bez escrow – kontakt i płatność poza platformą." />
@@ -24,17 +24,20 @@
     }
 
     html{scroll-behavior:smooth}
-
     body{
       background:
         radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.18), transparent 60%),
         radial-gradient(900px 600px at 85% 15%, rgba(255,3,84,.16), transparent 55%),
         linear-gradient(160deg, var(--bg1), var(--bg2));
-      min-height:100vh;
+      min-height:100svh; /* iOS */
+      min-height:100dvh; /* modern */
       overflow-x:hidden;
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
     body.is-locked{
-      height: 100vh;
+      height: 100svh;
+      height: 100dvh;
       overflow: hidden;
       touch-action: none;
     }
@@ -43,7 +46,7 @@
     .grid-bg{
       position: fixed; inset: 0;
       pointer-events: none;
-      opacity: .24;
+      opacity: .22;
       background-image:
         linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
@@ -67,7 +70,8 @@
     }
     .blob{
       position:absolute;
-      width: 520px; height: 520px;
+      width: clamp(320px, 40vw, 560px);
+      height: clamp(320px, 40vw, 560px);
       border-radius:999px;
       background:
         radial-gradient(circle at 30% 30%, rgba(255,3,84,.35), transparent 60%),
@@ -77,7 +81,8 @@
     }
     .blob.b1{ left: 8%; top: 8%; }
     .blob.b2{
-      width: 620px; height: 620px;
+      width: clamp(360px, 48vw, 680px);
+      height: clamp(360px, 48vw, 680px);
       left: 62%; top: 18%;
       background:
         radial-gradient(circle at 30% 30%, rgba(124,58,237,.38), transparent 60%),
@@ -130,6 +135,10 @@
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
     }
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .glass, .glass-soft{ backdrop-filter: none; -webkit-backdrop-filter:none; }
+    }
+
     .lift{ transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease, filter .2s ease; }
     .lift:hover{ transform: translateY(-2px); }
 
@@ -184,7 +193,9 @@
 
     /* reduced motion */
     @media (prefers-reduced-motion: reduce){
+      html{ scroll-behavior: auto; }
       .grid-bg, .blob, #market-mockup{ animation: none !important; }
+      .particle{ animation: none !important; }
       .lift{ transition: none !important; }
     }
 
@@ -192,6 +203,8 @@
     .brand-logo{
       height: 40px;
       width: auto;
+      max-width: 140px;
+      object-fit: contain;
       filter: drop-shadow(0 10px 22px rgba(255,3,84,.12));
     }
 
@@ -202,7 +215,7 @@
       z-index: 9999;
       display: grid;
       place-items: center;
-      padding: 24px;
+      padding: 16px;
     }
     #uc-overlay.hidden{ display: none; }
 
@@ -210,13 +223,13 @@
     .uc-backdrop{
       position: absolute;
       inset: 0;
-      background: rgba(0,0,0,.50);
+      background: rgba(0,0,0,.55);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       border-top: 1px solid rgba(255,255,255,.08);
     }
 
-    /* center panel */
+    /* center panel (responsive: scroll on small heights) */
     .uc-panel{
       position: relative;
       width: min(720px, 100%);
@@ -227,15 +240,19 @@
       background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
+      max-height: min(720px, calc(100svh - 32px));
+      max-height: min(720px, calc(100dvh - 32px));
+      overflow: auto;
     }
-    .uc-panel-inner{
-      padding: 26px;
+    .uc-panel-inner{ padding: 22px; }
+    @media (min-width: 640px){
+      .uc-panel-inner{ padding: 26px; }
     }
     .uc-title{
       font-weight: 900;
       letter-spacing: -0.02em;
       line-height: 1.05;
-      font-size: clamp(28px, 4vw, 44px);
+      font-size: clamp(26px, 4vw, 44px);
     }
     .uc-sub{
       margin-top: 10px;
@@ -284,11 +301,11 @@
       min-height: 18px;
     }
 
-    /* developer button */
+    /* developer button (safe-area aware) */
     #dev-btn{
       position: fixed;
-      right: 14px;
-      bottom: 14px;
+      right: calc(14px + env(safe-area-inset-right));
+      bottom: calc(14px + env(safe-area-inset-bottom));
       z-index: 10000;
       border-radius: 999px;
       padding: 8px 12px;
@@ -304,6 +321,9 @@
     }
     #dev-btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.09); }
     #dev-btn:active{ transform: translateY(0px); }
+
+    /* mobile nav panel */
+    #mobile-nav[hidden]{ display:none; }
   </style>
 
   <script>
@@ -389,16 +409,17 @@
 
   <!-- HEADER -->
   <header class="sticky top-0 z-40 glass-soft">
-    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-      <a href="#hero" class="flex items-center gap-3">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-3">
+      <a href="#hero" class="flex items-center gap-3 min-w-0">
         <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo" />
-        <div class="leading-tight">
-          <div class="text-lg font-semibold tracking-tight">Velorie Market</div>
-          <div class="text-xs text-white/60">Platforma ogłoszeniowa • Freelancerzy</div>
+        <div class="leading-tight min-w-0">
+          <div class="text-base sm:text-lg font-semibold tracking-tight truncate">Velorie Market</div>
+          <div class="text-[11px] sm:text-xs text-white/60 truncate">Platforma ogłoszeniowa • Freelancerzy</div>
         </div>
       </a>
 
-      <nav class="hidden md:flex items-center gap-1 text-sm text-white/70">
+      <!-- desktop nav -->
+      <nav class="hidden lg:flex items-center gap-1 text-sm text-white/70">
         <a href="#o-platformie" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">O platformie</a>
         <a href="#dla-kogo" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">Dla kogo</a>
         <a href="#jak-to-dziala" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">Jak to działa</a>
@@ -406,16 +427,42 @@
         <a href="#faq" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">FAQ</a>
       </nav>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 shrink-0">
         <a href="#kontakt" class="hidden sm:inline-flex items-center gap-2 rounded-xl btn-ghost lift px-4 py-2 text-sm font-medium text-white">
           <i data-lucide="mail" class="h-4 w-4"></i>
           <span>Kontakt</span>
         </a>
 
-        <a href="market.html" class="inline-flex items-center gap-2 rounded-xl btn-primary lift px-4 py-2 text-sm font-semibold">
+        <a href="market.html" class="hidden sm:inline-flex items-center gap-2 rounded-xl btn-primary lift px-4 py-2 text-sm font-semibold">
           <i data-lucide="user" class="h-4 w-4"></i>
           <span>Zaloguj / Zarejestruj się</span>
         </a>
+
+        <!-- mobile menu button -->
+        <button id="menu-btn" type="button"
+          class="inline-flex lg:hidden items-center justify-center rounded-xl btn-ghost lift px-3 py-2"
+          aria-label="Otwórz menu" aria-expanded="false" aria-controls="mobile-nav">
+          <i data-lucide="menu" class="h-5 w-5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- mobile nav -->
+    <div id="mobile-nav" hidden class="lg:hidden border-t border-white/10">
+      <div class="mx-auto max-w-7xl px-4 py-3 grid gap-2 text-sm text-white/80">
+        <a href="#o-platformie" class="rounded-xl px-3 py-2 hover:bg-white/5">O platformie</a>
+        <a href="#dla-kogo" class="rounded-xl px-3 py-2 hover:bg-white/5">Dla kogo</a>
+        <a href="#jak-to-dziala" class="rounded-xl px-3 py-2 hover:bg-white/5">Jak to działa</a>
+        <a href="#statystyki" class="rounded-xl px-3 py-2 hover:bg-white/5">Statystyki</a>
+        <a href="#faq" class="rounded-xl px-3 py-2 hover:bg-white/5">FAQ</a>
+        <div class="pt-2 flex flex-col gap-2">
+          <a href="#kontakt" class="inline-flex items-center justify-center gap-2 rounded-2xl btn-ghost lift px-4 py-3 font-semibold">
+            <i data-lucide="mail" class="h-4 w-4"></i><span>Kontakt</span>
+          </a>
+          <a href="market.html" class="inline-flex items-center justify-center gap-2 rounded-2xl btn-primary lift px-4 py-3 font-semibold">
+            <i data-lucide="user" class="h-4 w-4"></i><span>Zaloguj / Zarejestruj się</span>
+          </a>
+        </div>
       </div>
     </div>
   </header>
@@ -425,9 +472,9 @@
     <section id="hero" class="relative overflow-hidden">
       <div id="particles-container" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden"></div>
 
-      <div class="mx-auto max-w-7xl px-4 py-20 md:py-28 grid md:grid-cols-2 gap-10 items-center">
+      <div class="mx-auto max-w-7xl px-4 py-16 sm:py-20 md:py-28 grid lg:grid-cols-2 gap-10 items-center">
         <div id="hero-text" class="space-y-6">
-          <span class="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1 text-xs text-white/80">
+          <span class="inline-flex flex-wrap items-center gap-2 rounded-full glass-soft px-3 py-1 text-[11px] sm:text-xs text-white/80">
             <i data-lucide="sparkles" class="h-3 w-3"></i>
             <span>Bez escrow • Bez prowizji od płatności • Tylko łączenie ludzi</span>
           </span>
@@ -471,13 +518,13 @@
 
         <!-- Mockup -->
         <div class="animate-on-scroll perspective-container">
-          <div id="market-mockup" class="relative mx-auto w-full max-w-2xl">
+          <div id="market-mockup" class="relative mx-auto w-full max-w-xl lg:max-w-2xl">
             <div class="absolute -inset-4 -z-10 rounded-[2rem] bg-[conic-gradient(from_180deg_at_50%_50%,rgba(255,3,84,0.35),transparent,rgba(124,58,237,0.35),transparent)] blur-2xl"></div>
 
             <div class="relative rounded-[2rem] glass p-3">
               <div class="rounded-[1.5rem] border border-white/10 bg-black/55 p-3">
                 <div class="rounded-2xl bg-gradient-to-br from-white/10 to-white/5 overflow-hidden ring-1 ring-white/10">
-                  <div class="aspect-video p-5">
+                  <div class="aspect-[16/10] sm:aspect-video p-4 sm:p-5">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                         <span class="h-2.5 w-2.5 rounded-full bg-white/20"></span>
@@ -488,7 +535,7 @@
                     </div>
 
                     <div class="mt-5 grid grid-cols-12 gap-3">
-                      <div class="col-span-7 space-y-3">
+                      <div class="col-span-12 sm:col-span-7 space-y-3">
                         <div class="h-4 w-3/4 rounded bg-white/10"></div>
                         <div class="h-3 w-full rounded bg-white/10"></div>
                         <div class="h-3 w-11/12 rounded bg-white/10"></div>
@@ -517,7 +564,7 @@
                         </div>
                       </div>
 
-                      <div class="col-span-5 space-y-3">
+                      <div class="col-span-12 sm:col-span-5 space-y-3">
                         <div class="rounded-xl border border-white/10 bg-white/5 p-3">
                           <div class="flex items-center justify-between">
                             <div class="text-xs text-white/70">Szybki kontakt</div>
@@ -556,7 +603,7 @@
               </div>
             </div>
 
-            <div class="mt-4 flex items-center justify-center gap-2 text-xs text-white/60">
+            <div class="mt-4 flex items-center justify-center gap-2 text-xs text-white/60 px-2 text-center">
               <i data-lucide="award" class="h-3.5 w-3.5"></i>
               <span>Informacyjna strona główna — funkcje ogłoszeń i wyszukiwania są w osobnej podstronie</span>
             </div>
@@ -567,7 +614,7 @@
     </section>
 
     <!-- O PLATFORMIE -->
-    <section id="o-platformie" class="relative py-20">
+    <section id="o-platformie" class="relative py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-4">
         <div class="grid lg:grid-cols-12 gap-8 items-start">
           <div class="lg:col-span-7 space-y-4">
@@ -614,12 +661,12 @@
 
           <div class="lg:col-span-5">
             <div class="animate-on-scroll glass rounded-2xl p-6">
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between gap-3">
                 <div>
                   <div class="text-sm text-white/60">Kluczowa zasada</div>
                   <div class="text-xl font-bold mt-1">Platforma = znalezienie kontaktu</div>
                 </div>
-                <span class="inline-flex items-center gap-2 rounded-full bg-[var(--accent)]/15 text-[var(--accent)] px-3 py-1 text-xs font-semibold">
+                <span class="inline-flex items-center gap-2 rounded-full bg-[var(--accent)]/15 text-[var(--accent)] px-3 py-1 text-xs font-semibold shrink-0">
                   <i data-lucide="sparkles" class="h-4 w-4"></i>
                   Transparentnie
                 </span>
@@ -658,14 +705,14 @@
     </section>
 
     <!-- DLA KOGO -->
-    <section id="dla-kogo" class="relative py-20">
+    <section id="dla-kogo" class="relative py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-4">
         <h2 class="text-3xl md:text-4xl font-black mb-2">Dla kogo jest Velorie Market?</h2>
         <p class="text-white/60 mb-10 max-w-2xl">
           Dla osób, które chcą szybko znaleźć współpracę wokół projektów cyfrowych, serwerów i społeczności — od mikro-zleceń po większe realizacje.
         </p>
 
-        <div class="grid md:grid-cols-3 gap-6">
+        <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
           <div class="animate-on-scroll glass rounded-2xl p-6">
             <div class="flex items-center gap-3">
               <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
@@ -784,7 +831,7 @@
     </section>
 
     <!-- JAK TO DZIAŁA -->
-    <section id="jak-to-dziala" class="relative py-20">
+    <section id="jak-to-dziala" class="relative py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-4">
         <h2 class="text-3xl md:text-4xl font-black mb-2">Jak to działa?</h2>
         <p class="text-white/60 mb-10 max-w-2xl">
@@ -846,7 +893,7 @@
     </section>
 
     <!-- STATYSTYKI -->
-    <section id="statystyki" class="relative py-16">
+    <section id="statystyki" class="relative py-14 sm:py-16">
       <div class="mx-auto max-w-7xl px-4">
         <h2 class="text-2xl md:text-3xl font-bold mb-8 flex items-center gap-3">
           <i data-lucide="trending-up" class="h-6 w-6 text-[var(--accent)]"></i>
@@ -862,7 +909,7 @@
     </section>
 
     <!-- FAQ -->
-    <section id="faq" class="relative py-20">
+    <section id="faq" class="relative py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-4">
         <h2 class="text-3xl md:text-4xl font-black mb-2">FAQ</h2>
         <p class="text-white/60 mb-10 max-w-2xl">Najczęściej zadawane pytania o zasady działania platformy.</p>
@@ -918,7 +965,7 @@
         <p class="text-sm text-white/70">
           Platforma ogłoszeniowa dla freelancerów i zleceniodawców. Bez escrow — łączymy ludzi, a rozliczenia zostają po Waszej stronie.
         </p>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
           <a aria-label="Discord" href="#discord" class="rounded-full btn-ghost lift px-3 py-1 text-xs">Discord</a>
           <a aria-label="Facebook" href="#facebook" class="rounded-full btn-ghost lift px-3 py-1 text-xs">Fanpage</a>
           <a aria-label="E-mail" href="mailto:kontakt@velorie.market" class="rounded-full btn-ghost lift px-3 py-1 text-xs">E-mail</a>
@@ -967,6 +1014,7 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       // ====== UNDER CONSTRUCTION LOGIC ======
+      // Uwaga: webhook w kodzie klienta jest publiczny. Docelowo lepiej wysyłać przez backend / edge function.
       const WEBHOOK_URL = "https://discord.com/api/webhooks/1454905261549551761/7vz4wTLZwqVmhQr0ppGEG_6yFe4L3uOxU3iIRqluLGEp1vlTSb-9a-HrKZ5-TLce9GWK";
       const OVERLAY = document.getElementById("uc-overlay");
       const FORM = document.getElementById("uc-form");
@@ -1023,7 +1071,6 @@
 
       // prevent click-through
       OVERLAY.addEventListener("click", (e) => {
-        // allow clicking inside panel
         const panel = e.target.closest(".uc-panel");
         if (!panel) e.stopPropagation();
       }, true);
@@ -1054,9 +1101,7 @@
             body: JSON.stringify(payload),
           });
 
-          if (!res.ok) {
-            throw new Error("Webhook error: " + res.status);
-          }
+          if (!res.ok) throw new Error("Webhook error: " + res.status);
 
           setStatus("Gotowe! Jesteś na liście ✅", "ok");
           EMAIL.value = "";
@@ -1069,16 +1114,36 @@
         }
       });
 
-      // allow Enter focus
       EMAIL.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          EMAIL.blur();
-        }
+        if (e.key === "Escape") EMAIL.blur();
+      });
+
+      // ====== MOBILE MENU (responsive) ======
+      const menuBtn = document.getElementById("menu-btn");
+      const mobileNav = document.getElementById("mobile-nav");
+      const closeMobileNav = () => {
+        if (!mobileNav) return;
+        mobileNav.hidden = true;
+        menuBtn?.setAttribute("aria-expanded", "false");
+      };
+      const openMobileNav = () => {
+        if (!mobileNav) return;
+        mobileNav.hidden = false;
+        menuBtn?.setAttribute("aria-expanded", "true");
+      };
+      menuBtn?.addEventListener("click", () => {
+        const isOpen = !mobileNav.hidden;
+        isOpen ? closeMobileNav() : openMobileNav();
+      });
+      mobileNav?.addEventListener("click", (e) => {
+        const a = e.target.closest("a");
+        if (a) closeMobileNav();
+      });
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeMobileNav();
       });
 
       // ====== EXISTING PAGE LOGIC ======
-      const ACCENT = "#ff0354";
-
       // Schema.org
       const schema = {
         "@context": "https://schema.org",
@@ -1127,7 +1192,7 @@
           card.innerHTML = `
             <div class="flex items-center justify-center gap-2">
               <i data-lucide="${s.icon}" class="h-5 w-5 text-[var(--accent)]"></i>
-              <span class="text-xs uppercase tracking-wider text-white/60">${s.label}</span>
+              <span class="text-[10px] sm:text-xs uppercase tracking-wider text-white/60">${s.label}</span>
             </div>
             <div id="stat-${s.id}" class="mt-2 text-2xl md:text-3xl font-extrabold tabular-nums">0</div>
           `;
@@ -1149,13 +1214,16 @@
         window.requestAnimationFrame(step);
       };
 
-      // Parallax hero text
+      // Parallax hero text (disable on reduced motion)
+      const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const heroText = document.getElementById("hero-text");
-      window.addEventListener("scroll", () => {
-        if (window.scrollY < window.innerHeight) {
-          heroText.style.transform = `translateY(${window.scrollY * 0.2}px)`;
-        }
-      });
+      if (!prefersReduced && heroText){
+        window.addEventListener("scroll", () => {
+          if (window.scrollY < window.innerHeight) {
+            heroText.style.transform = `translateY(${window.scrollY * 0.2}px)`;
+          }
+        }, { passive: true });
+      }
 
       // Scroll progress bar
       const progressBar = document.getElementById("scroll-progress");
@@ -1177,7 +1245,6 @@
             if (entry.isIntersecting) {
               entry.target.classList.add("is-visible");
 
-              // animate stats if present
               const statEl = entry.target.querySelector('[id^="stat-"]');
               if (statEl) {
                 const key = statEl.id.replace("stat-", "");
@@ -1198,9 +1265,10 @@
         const container = document.getElementById("particles-container");
         if (!container) return;
         container.innerHTML = "";
-        for (let i = 0; i < 28; i++) {
+        const count = window.innerWidth < 480 ? 18 : 28;
+        for (let i = 0; i < count; i++) {
           const particle = document.createElement("span");
-          const size = 24 + (i % 5) * 12;
+          const size = 18 + (i % 6) * 10;
           const col = (i % 3 === 0) ? "rgba(124,58,237,.75)" : "rgba(255,3,84,.80)";
           particle.className = "absolute rounded-full opacity-20 blur-2xl particle";
           particle.style.cssText = `
@@ -1225,6 +1293,13 @@
       };
 
       init();
+
+      // Recreate particles on resize (debounced)
+      let t;
+      window.addEventListener("resize", () => {
+        clearTimeout(t);
+        t = setTimeout(createParticles, 200);
+      }, { passive: true });
     });
   </script>
 </body>
