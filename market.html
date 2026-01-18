@@ -393,15 +393,16 @@
       transform: translateY(-80px); 
     }
 
+    /* ZMIANA: Filtr jest teraz relatywny (nie pływa) */
     #filters-bar {
-      position: sticky;
-      top: var(--header-h); /* Zmienna z JS */
-      z-index: 90;
+      position: relative;
+      top: auto;
+      z-index: 10;
       transition: all 0.3s var(--ease);
-      margin-top: 1.5rem; /* Odstęp od Hero */
+      margin-top: 1.5rem; /* Stały odstęp */
     }
 
-    /* Kiedy filtry są "przypięte" */
+    /* Klasy .is-pinned zostają w kodzie (nie usuwam), ale nie będą używane */
     #filters-bar.is-pinned {
       margin-top: 0;
       padding-top: 0;
@@ -1231,7 +1232,7 @@
   <script>
     /***********************************************************************
      * Velorie Market — market.html (UX upgrade v2.1)
-     * ✅ Ulepszone sticky filters (Sentinel + Observer)
+     * ✅ Ulepszone sticky filters (Sentinel + Observer) - TERAZ WYŁĄCZONE
      * ✅ Nowe efekty hover kart i Premium Glow
      * ✅ Zachowana struktura (local storage, wallet integration)
      ***********************************************************************/
@@ -2607,7 +2608,9 @@
 
         initProgress();
         initReveal();
-        initStickyFiltersObserver(); // Start observera
+        
+        // ZMIANA: Wyłączono observer (Sticky Filters disabled)
+        // initStickyFiltersObserver(); 
 
         bindFilters();
         bindHeader();
