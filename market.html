@@ -1,461 +1,236 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="pl" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Velorie Market — Katalog ogłoszeń</title>
-  <meta name="description" content="Velorie Market — katalog ogłoszeń freelancerów. Filtry, zapisane, profil, konto." />
-  <meta name="theme-color" content="#0a1030" />
+  <title>Velorie Market — Premium Freelance Catalog</title>
+  <meta name="description" content="Velorie Market — ekskluzywny katalog freelancerów. Znajdź ekspertów, buduj zespół." />
+  <meta name="theme-color" content="#030712" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    :root{
-      --accent:#ff0354;
-      --accent2:#7c3aed;
-      --bg0:#00010f;
-      --bg1:#0a1030;
-
-      --glass: rgba(255,255,255,.06);
-      --glass-pinned: rgba(10, 16, 48, 0.95); /* Ciemniejsze tło gdy przyklejone */
-      --border: rgba(255,255,255,.12);
-
-      --shadow: 0 18px 75px rgba(0,0,0,.62);
+    :root {
+      /* Palette refinement - Deep Space Theme */
+      --primary: #f43f5e;   /* Rose 500 */
+      --primary-glow: rgba(244, 63, 94, 0.4);
+      --secondary: #8b5cf6; /* Violet 500 */
+      --secondary-glow: rgba(139, 92, 246, 0.4);
       
-      --radius-xl: 26px;
+      --bg-dark: #030712;   /* Gray 950 */
       
-      --ease: cubic-bezier(.2,.9,.2,1);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-highlight: rgba(255, 255, 255, 0.12);
+      --glass-surface: rgba(255, 255, 255, 0.03);
 
-      /* header/filtrowy offset */
-      --header-h: 66px;     /* ustawiane runtime */
-      --filters-gap: 0px;   
-    }
-
-    html{ scroll-behavior:smooth; }
-    body{
-      background-color: var(--bg0);
-      background-image:
-        radial-gradient(1200px 700px at 70% -10%, rgba(10,16,48,1) 0%, rgba(6,6,18,.9) 35%, rgba(0,1,15,1) 70%),
-        radial-gradient(900px 550px at 12% 110%, rgba(255,3,84,.18) 0%, rgba(255,3,84,0) 62%),
-        radial-gradient(850px 550px at 95% 85%, rgba(124,58,237,.16) 0%, rgba(124,58,237,0) 62%),
-        radial-gradient(700px 420px at 40% 35%, rgba(0,163,255,.08) 0%, rgba(0,163,255,0) 70%);
-      color:#fff;
-      overflow-x:hidden;
+      --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* scrollbars */
-    ::-webkit-scrollbar{ width:10px; height:10px; }
-    ::-webkit-scrollbar-thumb{ background: var(--accent); border-radius:999px; }
-    ::-webkit-scrollbar-track{ background: rgba(255,255,255,.08); }
-
-    /* progress bar */
-    #scroll-progress{
-      position:fixed;
-      inset:0 0 auto 0;
-      height:2px;
-      width:0%;
-      background: linear-gradient(90deg, var(--accent), rgba(124,58,237,1), rgba(0,163,255,1));
-      z-index: 100;
-      box-shadow: 0 16px 60px rgba(255,3,84,.25);
-    }
-
-    /* PARTICLES */
-    @keyframes particle-animation {
-      0%, 100% { transform: translateY(0%) translateX(0%) rotate(0deg); }
-      50% { transform: translateY(-10%) translateX(5%) rotate(20deg); }
-    }
-    .particle{
-      animation-name: particle-animation;
-      animation-timing-function: ease-in-out;
-      animation-iteration-count: infinite;
-    }
-
-    /* reveal */
-    .reveal{
-      opacity:0;
-      transform: translateY(14px);
-      transition: opacity .55s var(--ease), transform .55s var(--ease);
-      will-change: opacity, transform;
-    }
-    .reveal.is-visible{ opacity:1; transform: translateY(0); }
-
-    /* glass standard */
-    .glass{
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      transition: background 0.3s var(--ease), border-radius 0.3s var(--ease), border-color 0.3s var(--ease);
-    }
-
-    /* glass soft (drawer) */
-    .glass-soft{
-      background: rgba(0,0,0,.35);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: 0 12px 55px rgba(0,0,0,.55);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-    }
-
-    /* gradient border wrapper */
-    .g-border{
-      position:relative;
-      border-radius: var(--radius-xl);
-    }
-    .g-border::before{
-      content:"";
-      position:absolute;
-      inset:-1px;
-      border-radius:inherit;
-      background: linear-gradient(120deg, rgba(255,3,84,.55), rgba(124,58,237,.35), rgba(0,163,255,.25));
-      opacity:.55;
-      z-index:0;
-      pointer-events:none;
-    }
-    .g-border > *{ position:relative; z-index:1; }
-
-    /* chips / pills */
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:.5rem;
-      padding:.50rem .72rem;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.13);
-      background: rgba(255,255,255,.05);
-      color: rgba(255,255,255,.86);
-      font-size: 12px;
-      line-height: 1;
-      white-space: nowrap;
-      user-select:none;
-      transition: background .15s var(--ease), border-color .15s var(--ease), transform .15s var(--ease), filter .15s var(--ease);
-    }
-    .chip:hover{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.20); filter: brightness(1.02); }
-    .chip:active{ transform: translateY(1px); }
-    .chip[data-active="true"]{
-      background: rgba(255,3,84,.16);
-      border-color: rgba(255,3,84,.45);
-    }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:.48rem;
-      padding:.48rem .74rem;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.07);
-      color: rgba(255,255,255,.88);
-      font-size:12px;
-      line-height:1;
-      white-space:nowrap;
-    }
-    .pill button{
-      width:18px;height:18px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:999px;
-      background: rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.14);
-    }
-    .pill button:hover{ background: rgba(255,255,255,.14); }
-
-    /* buttons */
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:.55rem;
-      border-radius: 16px;
-      padding: .85rem 1.05rem;
-      font-weight: 850;
-      letter-spacing: -.01em;
-      transition: transform .14s var(--ease), filter .14s var(--ease), background .14s var(--ease), border-color .14s var(--ease), box-shadow .14s var(--ease);
-      user-select:none;
-      transform: translateZ(0);
-    }
-    .btn:active{ transform: translateY(1px); }
-    .btn-primary{
-      background: linear-gradient(180deg, rgba(255,3,84,1) 0%, rgba(255,3,84,.86) 100%);
-      color:#0b0010;
-      box-shadow: 0 18px 70px rgba(255,3,84,.22);
-    }
-    .btn-primary:hover{ filter: brightness(1.07); box-shadow: 0 18px 80px rgba(255,3,84,.28); }
-    .btn-ghost{
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      color: rgba(255,255,255,.92);
-    }
-    .btn-ghost:hover{ background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.18); }
-    .btn-outline{
-      background: transparent;
-      border:1px solid rgba(255,255,255,.18);
-      color: rgba(255,255,255,.92);
-    }
-    .btn-outline:hover{ background: rgba(255,255,255,.06); }
-
-    /* badges */
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:.35rem;
-      font-size: 12px;
-      font-weight: 900;
-      padding:.28rem .62rem;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      color: rgba(255,255,255,.94);
-    }
-    .badge-verified{ background: rgba(124,58,237,.18); }
-    .badge-premium{ background: rgba(255,3,84,.18); }
-
-    /* inputs */
-    .input{
-      width:100%;
-      border-radius:16px;
-      padding:.82rem .95rem;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.92);
-      outline:none;
-      transition: border-color .15s var(--ease), background .15s var(--ease), box-shadow .15s var(--ease);
-      appearance:none;
-      -webkit-appearance:none;
-    }
-    .input:focus{
-      border-color: rgba(255,3,84,.60);
-      background: rgba(255,255,255,.08);
-      box-shadow: 0 0 0 4px rgba(255,3,84,.12);
-    }
-    .label{
-      font-size:12px;
-      color: rgba(255,255,255,.70);
-      margin-bottom:.35rem;
-      display:block;
-    }
-
-    /* profile card */
-    .profile-card{
-      border-radius: var(--radius-xl);
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.05);
-      box-shadow: 0 14px 70px rgba(0,0,0,.50);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      transition: transform .25s var(--ease), background .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease);
-      position:relative;
-      overflow:hidden;
-      contain: layout paint;
-    }
-    .profile-card::before{
-      content:"";
-      position:absolute;
-      inset:-120px -120px auto -120px;
-      height:180px;
-      background:
-        radial-gradient(closest-side at 20% 30%, rgba(255,3,84,.18), rgba(255,3,84,0)),
-        radial-gradient(closest-side at 80% 35%, rgba(124,58,237,.14), rgba(124,58,237,0));
-      opacity:.9;
-      pointer-events:none;
-      filter: blur(8px);
-    }
-    .profile-card:hover{
-      transform: translateY(-4px) scale(1.005);
-      background: rgba(255,255,255,.07);
-      border-color: rgba(255,255,255,.25);
-      box-shadow: 0 22px 90px rgba(0,0,0,.65);
+    /* --- Base Typography --- */
+    body {
+      background-color: var(--bg-dark);
+      font-family: 'Inter', sans-serif;
+      color: #f3f4f6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
     
-    /* Premium Card Pulsing Glow */
-    @keyframes pulse-border {
-      0% { box-shadow: 0 0 0 0 rgba(255,3,84, 0.4); border-color: rgba(255,3,84,0.3); }
-      70% { box-shadow: 0 0 0 6px rgba(255,3,84, 0); border-color: rgba(255,3,84,0.1); }
-      100% { box-shadow: 0 0 0 0 rgba(255,3,84, 0); border-color: rgba(255,3,84,0.3); }
-    }
-    .profile-card-premium {
-      border-color: rgba(255,3,84,0.3);
-    }
-    .profile-card-premium:hover {
-      animation: pulse-border 2s infinite;
+    h1, h2, h3, h4, h5, .font-display {
+      font-family: 'Outfit', sans-serif;
     }
 
-    .avatar{
-      width:58px;
-      height:58px;
-      border-radius:18px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow: 0 12px 28px rgba(0,0,0,.35);
-      flex:0 0 auto;
-      background: rgba(255,255,255,.06);
-    }
-    .avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
-
-    /* portfolio thumbs */
-    .thumb{
-      border-radius: 18px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      box-shadow: 0 12px 38px rgba(0,0,0,.28);
-      position:relative;
-    }
-    .thumb::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.25) 100%);
-      opacity:0;
-      transition: opacity .25s var(--ease);
-    }
-    .thumb img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-      transform: scale(1.03);
-      transition: transform .35s var(--ease);
-    }
-    .thumb:hover img{ transform: scale(1.09); }
-    .thumb:hover::after{ opacity:.6; }
-
-    /* overlay */
-    .overlay{
-      position:fixed;
-      inset:0;
-      z-index:110;
-      background: rgba(0,0,0,.62);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      display:none;
-      opacity:0;
-      transition: opacity .2s var(--ease);
-    }
-    .overlay[data-open="true"]{ display:block; opacity:1; }
-
-    /* modal */
-    .modal{
-      position:fixed;
-      inset:0;
-      z-index:150;
-      display:none;
-      place-items:center;
-      padding:16px;
-    }
-    .modal[data-open="true"]{ display:grid; }
-    .modal-card{
-      width: min(1020px, 96vw);
-      max-height: min(86vh, 820px);
-      overflow:hidden;
-      border-radius:28px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.45);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      box-shadow: 0 22px 100px rgba(0,0,0,.70);
-      transform: translateY(6px) scale(.99);
-      animation: pop .22s var(--ease) forwards;
-    }
-    @keyframes pop{ to{ transform: translateY(0) scale(1); } }
-
-    .divider{ height:1px; background: rgba(255,255,255,.10); }
-
-    /* drawer */
-    .drawer{
-      position:fixed;
-      inset:0;
-      width:100%;
-      z-index:140;
-      transform: translateY(110%);
-      transition: transform .28s var(--ease);
-      display:flex;
-      flex-direction:column;
-      border-top:1px solid rgba(255,255,255,.10);
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-      overflow:auto;
-    }
-    .drawer[data-open="true"]{ transform: translateY(0%); }
-
-    /* STICKY FILTERS & SENTINEL */
-    #filters-sentinel {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 1px;
+    /* --- Aurora Background & Noise --- */
+    .bg-noise {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
       pointer-events: none;
-      visibility: hidden;
-      /* Ustawiamy sentinel względem sekcji katalogu */
-      transform: translateY(-80px); 
     }
 
-    /* ZMIANA: Filtr jest teraz relatywny (nie pływa) */
-    #filters-bar {
+    .aurora-blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: -2;
+      opacity: 0.5;
+      animation: float-aurora 10s infinite alternate ease-in-out;
+    }
+    .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: var(--primary-glow); animation-delay: 0s; }
+    .blob-2 { bottom: -10%; right: -10%; width: 40vw; height: 40vw; background: var(--secondary-glow); animation-delay: -5s; }
+    .blob-3 { top: 40%; left: 40%; width: 30vw; height: 30vw; background: rgba(56, 189, 248, 0.2); animation-duration: 15s; }
+
+    @keyframes float-aurora {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(30px, -30px) scale(1.1); }
+    }
+
+    /* --- Advanced Glass Components --- */
+    .glass-panel {
+      background: var(--glass-surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-top-color: var(--glass-highlight);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      transition: all 0.4s var(--ease-smooth);
+    }
+
+    .glass-card {
       position: relative;
-      top: auto;
-      z-index: 10;
-      transition: all 0.3s var(--ease);
-      margin-top: 1.5rem; /* Stały odstęp */
-    }
-
-    /* Klasy .is-pinned zostają w kodzie (nie usuwam), ale nie będą używane */
-    #filters-bar.is-pinned {
-      margin-top: 0;
-      padding-top: 0;
-    }
-
-    #filters-bar.is-pinned .glass {
-      background: var(--glass-pinned);
-      border-radius: 0 0 26px 26px; /* Tylko dół zaokrąglony */
-      border-top: none;
-      border-left: none;
-      border-right: none;
-      border-bottom: 1px solid rgba(255,255,255,0.15);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-      backdrop-filter: blur(25px);
+      background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      transition: transform 0.4s var(--ease-smooth), box-shadow 0.4s var(--ease-smooth), border-color 0.4s;
+      overflow: hidden;
     }
     
-    #filters-bar.is-pinned .filters-inner-container {
-      /* Opcjonalnie można tu zmienić padding */
+    .glass-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(244, 63, 94, 0.1);
+      border-color: rgba(255,255,255,0.2);
     }
 
-    /* bottom bar */
-    #mobile-bar{
-      position:fixed;
-      inset:auto 0 0 0;
-      z-index:120;
-      padding:10px 10px calc(10px + env(safe-area-inset-bottom));
-      display:none;
-    }
-    @media (max-width: 768px){
-      #mobile-bar{ display:block; }
+    /* Special Styling for Premium */
+    .glass-card.premium-border {
+      border: 1px solid transparent;
+      background-clip: padding-box, border-box;
+      background-origin: padding-box, border-box;
+      background-image: 
+        linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2)),
+        linear-gradient(135deg, rgba(244,63,94,0.5), rgba(139,92,246,0.5));
     }
 
-    /* focus */
-    :focus-visible{
-      outline:none;
-      box-shadow: 0 0 0 4px rgba(255,3,84,.16);
-      border-radius:16px;
+    /* --- UI Elements --- */
+    .btn-new {
+      position: relative;
+      overflow: hidden;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: all 0.3s var(--ease-elastic);
+    }
+    .btn-new:active { transform: scale(0.96); }
+
+    .btn-accent {
+      background: linear-gradient(90deg, #f43f5e, #e11d48);
+      color: white;
+      box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.4);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .btn-accent:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 15px 35px -5px rgba(244, 63, 94, 0.5);
     }
 
-    @media (prefers-reduced-motion: reduce){
-      html{ scroll-behavior:auto; }
-      .reveal{ transition:none !important; }
-      .modal-card{ animation:none !important; transform:none !important; }
-      .btn, .profile-card, .thumb img{ transition:none !important; }
+    .btn-glass {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--glass-border);
+      color: rgba(255,255,255,0.9);
     }
+    .btn-glass:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.25);
+    }
+
+    /* Inputs */
+    .input-modern {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: white;
+      transition: all 0.3s;
+      font-size: 0.95rem;
+    }
+    .input-modern:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.15);
+      background: rgba(0,0,0,0.3);
+      outline: none;
+    }
+
+    /* Chips/Tags */
+    .tag-modern {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 99px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .tag-modern[data-active="true"] {
+      background: rgba(244, 63, 94, 0.15);
+      border-color: rgba(244, 63, 94, 0.4);
+      color: #fda4af;
+      box-shadow: 0 0 15px rgba(244, 63, 94, 0.15);
+    }
+    .tag-modern:not([data-active="true"]) {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.6);
+    }
+    .tag-modern:hover:not([data-active="true"]) {
+      background: rgba(255,255,255,0.08);
+      color: white;
+    }
+
+    /* --- Particles (Zachowane) --- */
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: white;
+      pointer-events: none;
+      filter: blur(1px);
+      animation: particle-animation linear infinite;
+    }
+    @keyframes particle-animation {
+      0%, 100% { transform: translateY(0%) translateX(0%) rotate(0deg); opacity: 0.2; }
+      50% { transform: translateY(-10%) translateX(5%) rotate(20deg); opacity: 0.5; }
+    }
+
+    /* --- Scroll Progress --- */
+    #scroll-progress {
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      height: 3px;
+      box-shadow: 0 2px 10px var(--primary-glow);
+      position: fixed; top: 0; left: 0; z-index: 100;
+    }
+
+    /* Modal Animation */
+    @keyframes modal-pop {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-card-new {
+      animation: modal-pop 0.4s var(--ease-elastic) forwards;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #555; }
   </style>
 
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          boxShadow: {
-            glow: "0 18px 80px rgba(255,3,84,0.28)"
+          colors: {
+            border: "rgba(255,255,255,0.1)",
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
           }
         }
       }
@@ -463,138 +238,116 @@
   </script>
 </head>
 
-<body class="min-h-screen text-white selection:bg-[#ff0354]/40 selection:text-white">
-  <div id="scroll-progress" aria-hidden="true"></div>
+<body class="min-h-screen text-slate-200 selection:bg-rose-500/30 selection:text-white relative">
 
-  <div id="particles-container" aria-hidden="true" class="pointer-events-none fixed inset-0 overflow-hidden -z-10"></div>
+  <div class="bg-noise"></div>
+  <div class="aurora-blob blob-1"></div>
+  <div class="aurora-blob blob-2"></div>
+  <div class="aurora-blob blob-3"></div>
+  <div id="particles-container" aria-hidden="true" class="pointer-events-none fixed inset-0 overflow-hidden -z-10 opacity-30"></div>
 
-  <header id="app-header" class="sticky top-0 z-[95] backdrop-blur-xl bg-black/25 border-b border-white/10 transition-colors duration-300">
-    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-3">
-      <a href="#katalog" class="flex items-center gap-3 group">
-        <div class="h-10 w-10 rounded-xl ring-1 ring-white/10 group-hover:ring-white/20 transition overflow-hidden bg-white/5 flex items-center justify-center">
-          <span class="font-black">V</span>
+  <div id="scroll-progress" class="w-0 transition-all duration-100 ease-out" aria-hidden="true"></div>
+
+  <header id="app-header" class="fixed top-0 inset-x-0 z-50 transition-all duration-300 border-b border-transparent">
+    <div class="absolute inset-0 bg-[#030712]/70 backdrop-blur-xl pointer-events-none"></div>
+    <div class="relative mx-auto max-w-7xl px-4 md:px-6 h-[72px] flex items-center justify-between">
+      
+      <a href="#katalog" class="flex items-center gap-3 group relative z-10">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-rose-500 to-violet-600 flex items-center justify-center shadow-lg shadow-rose-500/20 group-hover:scale-105 transition-transform duration-300">
+          <span class="font-display font-black text-white text-xl">V</span>
         </div>
-        <div class="leading-tight">
-          <div class="text-lg font-black tracking-tight">
-            Velorie Market
-            <span class="ml-2 inline-flex items-center gap-1 text-[10px] font-black text-white/70 bg-white/5 border border-white/10 px-2 py-1 rounded-full align-middle">
-              <i data-lucide="sparkles" class="h-3 w-3 text-[var(--accent)]"></i>
-              v2.1
-            </span>
-          </div>
-          <div class="text-xs text-white/60">Katalog ogłoszeń • Filtry • Zapisane • Profil</div>
+        <div class="flex flex-col">
+          <span class="font-display font-bold text-lg leading-none tracking-tight text-white group-hover:text-rose-400 transition-colors">Velorie</span>
+          <span class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Market v3.0</span>
         </div>
       </a>
 
-      <div class="hidden md:flex items-center gap-2">
-        <button id="btn-jump-search" class="btn btn-outline px-4 py-2 text-sm" type="button" aria-label="Przejdź do wyszukiwarki">
-          <i data-lucide="search" class="h-4 w-4"></i>
+      <nav class="hidden md:flex items-center gap-2 bg-white/5 border border-white/10 rounded-full p-1.5 backdrop-blur-md shadow-2xl">
+        <button id="btn-jump-search" class="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/10 text-xs font-semibold text-slate-300 transition-all group">
+          <i data-lucide="search" class="h-4 w-4 text-slate-400 group-hover:text-white transition-colors"></i>
           <span>Szukaj</span>
-          <span class="ml-1 text-[10px] px-2 py-1 rounded-full bg-white/5 border border-white/10 text-white/70 font-black">/</span>
+          <kbd class="hidden lg:inline-flex h-5 items-center gap-1 rounded border border-white/10 bg-white/5 px-1.5 font-mono text-[10px] font-medium text-slate-400">/</kbd>
         </button>
-
-        <button id="btn-open-saved" class="btn btn-ghost px-4 py-2 text-sm" type="button" aria-label="Włącz filtr: zapisane">
-          <i data-lucide="bookmark" class="h-4 w-4"></i>
+        <div class="w-px h-4 bg-white/10"></div>
+        <button id="btn-open-saved" class="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/10 text-xs font-semibold text-slate-300 transition-all relative">
           <span>Zapisane</span>
-          <span id="saved-pill" class="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs font-black">0</span>
+          <span id="saved-pill" class="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 rounded-md text-[10px]">0</span>
         </button>
+        <button id="btn-open-panel" class="btn-new btn-accent px-5 py-2 rounded-full text-xs shadow-glow">
+          Konto
+        </button>
+      </nav>
 
-        <button id="btn-open-panel" class="btn btn-ghost px-4 py-2 text-sm" type="button" aria-label="Otwórz konto">
-          <i data-lucide="user" class="h-4 w-4"></i>
-          <span>Konto</span>
-        </button>
-      </div>
-
-      <div class="flex md:hidden items-center gap-2">
-        <button id="btn-open-saved-m" class="btn btn-ghost px-3 py-2 text-sm" type="button" aria-label="Zapisane">
-          <i data-lucide="bookmark" class="h-4 w-4"></i>
-          <span id="saved-pill-m" class="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs font-black">0</span>
-        </button>
-        <button id="btn-open-panel-m" class="btn btn-ghost px-3 py-2 text-sm" type="button" aria-label="Konto">
-          <i data-lucide="user" class="h-4 w-4"></i>
-        </button>
+      <div class="flex md:hidden items-center gap-3 relative z-10">
+         <button id="btn-open-saved-m" class="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 active:scale-95 transition">
+            <i data-lucide="bookmark" class="h-5 w-5"></i>
+            <span id="saved-pill-m" class="absolute top-0 right-0 h-2 w-2 bg-rose-500 rounded-full hidden"></span>
+         </button>
+         <button id="btn-open-panel-m" class="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 active:scale-95 transition">
+            <i data-lucide="menu" class="h-5 w-5"></i>
+         </button>
       </div>
     </div>
   </header>
 
-  <div id="overlay" class="overlay" data-open="false" aria-hidden="true"></div>
+  <div id="overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] opacity-0 pointer-events-none transition-opacity duration-300" aria-hidden="true"></div>
 
-  <main id="katalog" class="relative py-10">
-    <div class="mx-auto max-w-7xl px-4 relative">
+  <main id="katalog" class="relative pt-28 pb-20 min-h-screen">
+    <div class="mx-auto max-w-7xl px-4 md:px-6">
 
-      <section class="reveal g-border mb-8">
-        <div class="glass rounded-[26px] p-6 md:p-7">
-          <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+      <section class="reveal mb-12">
+        <div class="relative overflow-hidden rounded-3xl glass-panel p-8 md:p-12 border border-white/10">
+          <div class="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-rose-500/20 blur-[100px] rounded-full pointer-events-none"></div>
+
+          <div class="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div class="max-w-2xl">
-              <div class="inline-flex items-center gap-2 text-xs font-black text-white/70 bg-white/5 border border-white/10 px-3 py-2 rounded-full">
-                <i data-lucide="shield" class="h-4 w-4 text-[var(--accent)]"></i>
-                kontakt bezpośredni • bez escrow • bez prowizji
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-bold uppercase tracking-wider mb-4">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                </span>
+                Bezpieczne zlecenia Direct
               </div>
-
-              <h1 class="mt-3 text-3xl md:text-4xl font-black tracking-tight leading-[1.05]">
-                Katalog ogłoszeń
+              <h1 class="text-4xl md:text-6xl font-display font-black tracking-tight text-white mb-6 leading-[1.1]">
+                Znajdź <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-violet-400">Twórców</span><br>do Twojego projektu.
               </h1>
-
-              <p class="text-white/65 mt-3 leading-relaxed">
-                Wyszukuj, filtruj, zapisuj i otwieraj profile. Konto służy do edycji profilu publicznego i ogłoszenia.
+              <p class="text-lg text-slate-400 leading-relaxed max-w-lg">
+                Elitarny katalog zweryfikowanych freelancerów. Programiści, graficy, montażyści. Bez pośredników, bez prowizji.
               </p>
-
-              <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/60">
-                <span class="chip"><i data-lucide="sparkles" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Premium = wyróżnienie</span>
-                <span class="chip"><i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Verified = zaufanie</span>
-                <span class="chip"><i data-lucide="keyboard" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Skróty: <b>/</b> szukaj, <b>Esc</b> zamyka</span>
-              </div>
             </div>
 
-            <div class="min-w-[260px] w-full lg:w-[340px]">
-              <div class="grid grid-cols-3 gap-2">
-                <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
-                  <div class="text-xs text-white/60">Wyniki</div>
-                  <div class="text-2xl font-black" id="stat-results">0</div>
-                </div>
-                <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
-                  <div class="text-xs text-white/60">Zapisane</div>
-                  <div class="text-2xl font-black" id="stat-saved">0</div>
-                </div>
-                <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
-                  <div class="text-xs text-white/60">Filtry</div>
-                  <div class="text-2xl font-black" id="stat-filters">0</div>
-                </div>
-              </div>
-
-              <div class="mt-3 flex items-center justify-between text-xs text-white/55">
-                <span class="inline-flex items-center gap-2">
-                  <i data-lucide="activity" class="h-4 w-4 text-[var(--accent)]"></i>
-                  “App feeling” UI
-                </span>
-                <span id="results-hint"></span>
-              </div>
+            <div class="grid grid-cols-3 gap-3 w-full lg:w-auto min-w-[300px]">
+               <div class="bg-white/5 border border-white/10 rounded-2xl p-4 text-center hover:bg-white/10 transition duration-300">
+                 <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Dostępnych</div>
+                 <div class="text-3xl font-display font-black text-white" id="stat-results">0</div>
+               </div>
+               <div class="bg-white/5 border border-white/10 rounded-2xl p-4 text-center hover:bg-white/10 transition duration-300">
+                 <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Zapisane</div>
+                 <div class="text-3xl font-display font-black text-rose-400" id="stat-saved">0</div>
+               </div>
+               <div class="bg-white/5 border border-white/10 rounded-2xl p-4 text-center hover:bg-white/10 transition duration-300">
+                 <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Filtry</div>
+                 <div class="text-3xl font-display font-black text-violet-400" id="stat-filters">0</div>
+               </div>
             </div>
           </div>
         </div>
       </section>
 
       <div id="filters-sentinel"></div>
-
-      <div id="filters-bar">
-        <div class="glass rounded-[26px] p-4 md:p-5 filters-inner-container">
-          <div class="flex flex-col gap-4">
-
-            <div class="grid lg:grid-cols-12 gap-3 items-end">
-              <div class="lg:col-span-6">
-                <label class="label">Szukaj</label>
-                <div class="relative">
-                  <input id="search-input" class="input pr-10" placeholder="Szukaj po nazwie, tagach, opisie..." />
-                  <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/55">
-                    <i data-lucide="search" class="h-4 w-4"></i>
-                  </div>
-                </div>
+      <div id="filters-bar" class="sticky top-[80px] z-40 transition-all duration-300 mb-8">
+        <div class="glass-panel rounded-2xl p-4 md:p-5 shadow-2xl shadow-black/50 filters-inner-container">
+          
+          <div class="flex flex-col gap-5">
+            <div class="grid lg:grid-cols-12 gap-4">
+              <div class="lg:col-span-5 relative group">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-rose-400 transition-colors h-5 w-5"></i>
+                <input id="search-input" class="input-modern w-full pl-12 pr-4 py-3" placeholder="Szukaj (np. React, Logo, Montaż)..." />
               </div>
 
               <div class="lg:col-span-3">
-                <label class="label">Branża</label>
-                <select id="industry-select" class="input">
-                  <option value="all">Wszystkie</option>
+                <select id="industry-select" class="input-modern w-full py-3 px-4 appearance-none cursor-pointer">
+                  <option value="all">Wszystkie branże</option>
                   <option value="dev">Programista</option>
                   <option value="gfx">Grafik</option>
                   <option value="video">Montażysta / Content</option>
@@ -603,2030 +356,945 @@
                 </select>
               </div>
 
-              <div class="lg:col-span-3">
-                <label class="label">Sortowanie</label>
-                <select id="sort-select" class="input">
+              <div class="lg:col-span-2">
+                 <select id="sort-select" class="input-modern w-full py-3 px-4 appearance-none cursor-pointer">
                   <option value="recommended">Polecane</option>
                   <option value="newest">Najnowsze</option>
                   <option value="rating">Najwyższa ocena</option>
                   <option value="verified">Zweryfikowani</option>
                 </select>
               </div>
+
+               <div class="lg:col-span-2 flex items-center justify-end">
+                  <button id="btn-open-panel-inline" class="btn-new btn-glass w-full h-full rounded-xl flex items-center justify-center gap-2 hover:bg-white/10 text-xs font-bold uppercase tracking-wide">
+                    <i data-lucide="sliders-horizontal" class="h-4 w-4"></i>
+                    Moje Konto
+                  </button>
+               </div>
             </div>
 
-            <div class="grid lg:grid-cols-12 gap-3 items-end">
-              <div class="lg:col-span-6">
-                <label class="label">Szybkie filtry</label>
-                <div class="flex flex-wrap gap-2">
-                  <button id="filter-saved" class="chip" type="button" aria-pressed="false">
-                    <i data-lucide="bookmark" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Zapisane
-                  </button>
-                  <button id="filter-premium" class="chip" type="button" aria-pressed="false">
-                    <i data-lucide="zap" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Premium
-                  </button>
-                  <button id="filter-verified" class="chip" type="button" aria-pressed="false">
-                    <i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Verified
-                  </button>
-                  <button id="filter-available" class="chip" type="button" aria-pressed="false">
-                    <i data-lucide="clock-3" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Dostępny ≤72h
-                  </button>
-                </div>
+            <div class="h-px bg-white/5 w-full"></div>
+
+            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+              <div class="flex flex-wrap gap-2">
+                 <button id="filter-saved" class="tag-modern flex items-center gap-2 cursor-pointer" type="button">
+                    <i data-lucide="bookmark" class="h-3 w-3"></i> Zapisane
+                 </button>
+                 <button id="filter-premium" class="tag-modern flex items-center gap-2 cursor-pointer" type="button">
+                    <i data-lucide="zap" class="h-3 w-3"></i> Premium Only
+                 </button>
+                 <button id="filter-verified" class="tag-modern flex items-center gap-2 cursor-pointer" type="button">
+                    <i data-lucide="badge-check" class="h-3 w-3"></i> Zweryfikowani
+                 </button>
+                 <button id="filter-available" class="tag-modern flex items-center gap-2 cursor-pointer" type="button">
+                    <i data-lucide="clock" class="h-3 w-3"></i> Dostępny ≤72h
+                 </button>
               </div>
 
-              <div class="lg:col-span-6">
-                <label class="label">Budżet (PLN)</label>
-                <div class="grid grid-cols-2 gap-2">
-                  <input id="budget-min" class="input" type="number" min="0" step="10" placeholder="Min. np. 100" />
-                  <input id="budget-max" class="input" type="number" min="0" step="10" placeholder="Max. np. 1000" />
-                </div>
-                <div class="mt-2 flex flex-wrap gap-2">
-                  <button class="chip" type="button" data-budget-preset="300">≤ 300</button>
-                  <button class="chip" type="button" data-budget-preset="500">≤ 500</button>
-                  <button class="chip" type="button" data-budget-preset="1000">≤ 1000</button>
-                  <button class="chip" type="button" data-budget-preset="0">Bez limitu</button>
-                </div>
+              <div class="flex items-center gap-3 w-full lg:w-auto">
+                <span class="text-xs text-slate-500 font-bold uppercase">Budżet (PLN)</span>
+                <input id="budget-min" type="number" placeholder="Min" class="input-modern w-20 py-1.5 px-3 text-sm text-center" />
+                <span class="text-slate-600">-</span>
+                <input id="budget-max" type="number" placeholder="Max" class="input-modern w-20 py-1.5 px-3 text-sm text-center" />
+                 <button id="btn-reset-filters" class="ml-2 text-xs text-slate-400 hover:text-white underline decoration-slate-600 hover:decoration-white transition-all">
+                    Reset
+                 </button>
               </div>
             </div>
-
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-white/5 mt-1">
-              <div class="text-xs text-white/60 flex items-center gap-2">
-                <i data-lucide="info" class="h-4 w-4"></i>
-                <span>Filtrowanie odbywa się lokalnie.</span>
-              </div>
-
-              <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-                <div id="active-filters" class="hidden sm:flex flex-wrap gap-2 justify-end"></div>
-
-                <button id="btn-reset-filters" class="btn btn-outline px-3 py-2 text-xs" type="button">
-                  <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
-                  Wyczyść
-                </button>
-
-                <button id="btn-open-panel-inline" class="btn btn-primary px-3 py-2 text-xs" type="button">
-                  <i data-lucide="sliders-horizontal" class="h-4 w-4"></i>
-                  Konto
-                </button>
-              </div>
-            </div>
-
+            
+             <div id="active-filters" class="hidden flex-wrap gap-2 pt-2"></div>
           </div>
         </div>
       </div>
 
-      <section class="mt-8">
-        <div class="flex items-center justify-between gap-3 mb-3">
-          <div class="text-sm text-white/70 flex items-center gap-2">
-            <i data-lucide="layers" class="h-4 w-4 text-[var(--accent)]"></i>
-            <span>Wyświetlane: <b id="shown-count">0</b> / <b id="total-count">0</b></span>
-          </div>
-          <div class="text-[11px] text-white/50 hidden md:block">
-            Kliknij kartę profilu, aby otworzyć modal. Strzałki ←/→ działają w modalu.
+      <section>
+        <div class="flex items-center justify-between mb-4 px-2">
+          <div class="text-sm font-medium text-slate-400">
+             <i data-lucide="layers" class="h-4 w-4 inline mr-1 text-rose-500"></i>
+             Wyświetlane: <span id="shown-count" class="text-white">0</span> z <span id="total-count" class="text-white">0</span>
+             <span id="results-hint" class="ml-2 text-xs text-slate-500"></span>
           </div>
         </div>
 
-        <div class="space-y-4" id="profiles-list"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="profiles-list">
+           </div>
+
+        <div class="mt-12 text-center">
+           <button id="btn-load-more" class="btn-new btn-glass px-8 py-3 rounded-full text-sm flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed">
+              <span>Wczytaj więcej</span>
+              <i data-lucide="chevron-down" class="h-4 w-4"></i>
+           </button>
+        </div>
       </section>
 
-      <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-white/70">
-        <div class="flex items-center gap-2">
-          <i data-lucide="sparkles" class="h-4 w-4 text-[var(--accent)]"></i>
-          <span class="text-white/60">Tip:</span>
-          <span>Użyj <b class="text-white/90">Zapisane</b> do shortlisty.</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="btn-load-more" class="btn btn-ghost px-4 py-2" type="button">
-            <i data-lucide="plus" class="h-4 w-4"></i>
-            <span>Wczytaj więcej</span>
-          </button>
-        </div>
-      </div>
-
-      <footer class="mt-10 pb-24 md:pb-8 text-xs text-white/50">
-        <div class="glass rounded-[26px] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 reveal">
-          <div class="flex items-center gap-2">
-            <i data-lucide="sparkles" class="h-4 w-4 text-[var(--accent)]"></i>
-            <span>Velorie Market • Platforma ogłoszeń freelancerów</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span id="footer-year"></span>
-            <span>•</span>
-            <span class="text-white/60">Made for fast MVP</span>
-          </div>
-        </div>
+      <footer class="mt-20 border-t border-white/5 pt-8 pb-24 text-center">
+         <span id="footer-year" class="text-slate-500 text-sm">© 2024</span>
+         <span class="text-slate-600 mx-2">•</span>
+         <span class="text-slate-500 text-sm">Velorie Market Premium</span>
       </footer>
 
     </div>
   </main>
 
-  <div id="mobile-bar" class="pointer-events-none">
-    <div class="pointer-events-auto glass rounded-[22px] px-3 py-2 flex items-center justify-between gap-2">
-      <button id="m-search" class="btn btn-outline px-3 py-2 text-sm" type="button" aria-label="Szukaj">
-        <i data-lucide="search" class="h-4 w-4"></i>
-        <span>Szukaj</span>
+  <div id="mobile-bar" class="fixed bottom-4 inset-x-4 z-50 md:hidden pointer-events-none">
+    <div class="pointer-events-auto bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-2 flex justify-between shadow-2xl">
+      <button id="m-search" class="flex-1 flex flex-col items-center justify-center py-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition">
+        <i data-lucide="search" class="h-5 w-5 mb-1"></i>
+        <span class="text-[10px] font-medium">Szukaj</span>
       </button>
-      <button id="m-saved" class="btn btn-ghost px-3 py-2 text-sm" type="button" aria-label="Zapisane">
-        <i data-lucide="bookmark" class="h-4 w-4"></i>
-        <span id="m-saved-count" class="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs font-black">0</span>
+      <button id="m-saved" class="flex-1 flex flex-col items-center justify-center py-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition relative">
+        <i data-lucide="bookmark" class="h-5 w-5 mb-1"></i>
+        <span class="text-[10px] font-medium">Zapisane</span>
+        <span id="m-saved-count" class="absolute top-1 right-8 h-2 w-2 bg-rose-500 rounded-full opacity-0"></span>
       </button>
-      <button id="m-account" class="btn btn-primary px-3 py-2 text-sm" type="button" aria-label="Konto">
-        <i data-lucide="user" class="h-4 w-4"></i>
-        <span>Konto</span>
+      <button id="m-account" class="flex-1 flex flex-col items-center justify-center py-2 rounded-xl text-rose-400 hover:bg-rose-500/10 transition">
+        <i data-lucide="user" class="h-5 w-5 mb-1"></i>
+        <span class="text-[10px] font-medium">Konto</span>
       </button>
     </div>
   </div>
 
-  <section id="profile-modal" class="modal" data-open="false" aria-label="Profil" role="dialog" aria-modal="true">
-    <div class="modal-card">
-      <div class="p-4 flex items-center justify-between gap-3 border-b border-white/10">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="avatar">
-            <img id="modal-avatar" src="" alt="Avatar profilu" />
-          </div>
-          <div class="leading-tight min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <div class="text-lg md:text-xl font-black tracking-tight truncate" id="modal-name">Profil</div>
-              <span id="modal-badges" class="flex items-center gap-2"></span>
-            </div>
-            <div class="text-xs text-white/60 truncate" id="modal-sub">—</div>
-          </div>
+  <section id="profile-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true" data-open="false">
+     <div class="modal-card-new w-full max-w-4xl max-h-[90vh] bg-[#0f111a] border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col relative z-[101]">
+        
+        <div class="shrink-0 h-40 relative bg-gradient-to-r from-slate-900 to-slate-800 overflow-hidden">
+           <div class="absolute inset-0 opacity-30 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+           <div class="absolute inset-0 bg-gradient-to-t from-[#0f111a] to-transparent"></div>
+           
+           <div class="absolute top-4 right-4 flex gap-2">
+              <button id="modal-prev" class="h-10 w-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-white/10 text-white transition border border-white/10"><i data-lucide="chevron-left" class="h-5 w-5"></i></button>
+              <button id="modal-next" class="h-10 w-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-white/10 text-white transition border border-white/10"><i data-lucide="chevron-right" class="h-5 w-5"></i></button>
+              <button id="modal-close" class="h-10 w-10 flex items-center justify-center rounded-full bg-rose-500/20 hover:bg-rose-500 text-white transition border border-white/10"><i data-lucide="x" class="h-5 w-5"></i></button>
+           </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <button id="modal-prev" class="btn btn-ghost px-3 py-2" type="button" aria-label="Poprzedni profil">
-            <i data-lucide="chevron-left" class="h-4 w-4"></i>
-          </button>
-          <button id="modal-next" class="btn btn-ghost px-3 py-2" type="button" aria-label="Następny profil">
-            <i data-lucide="chevron-right" class="h-4 w-4"></i>
-          </button>
-          <button id="modal-close" class="btn btn-outline px-3 py-2" type="button" aria-label="Zamknij modal">
-            <i data-lucide="x" class="h-4 w-4"></i>
-          </button>
+        <div class="overflow-y-auto flex-1 p-6 sm:p-8 -mt-16 relative">
+           <div class="flex flex-col md:flex-row gap-8">
+              <div class="md:w-1/3 flex flex-col gap-6">
+                 <div class="relative">
+                    <div class="h-32 w-32 rounded-3xl border-4 border-[#0f111a] shadow-xl overflow-hidden bg-slate-800">
+                       <img id="modal-avatar" src="" class="w-full h-full object-cover" />
+                    </div>
+                    <div id="modal-badges" class="flex gap-1 absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#0f111a] p-1 rounded-full"></div>
+                 </div>
+                 
+                 <div class="text-center md:text-left">
+                    <h2 id="modal-name" class="text-3xl font-display font-black text-white leading-tight mb-1"></h2>
+                    <p id="modal-sub" class="text-sm text-slate-400 font-medium"></p>
+                 </div>
+
+                 <div class="flex flex-wrap gap-2 justify-center md:justify-start" id="modal-chips"></div>
+
+                 <div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-center">
+                    <div class="text-xs text-slate-500 uppercase font-bold mb-3">Akcja</div>
+                    <div class="grid grid-cols-2 gap-2">
+                       <button id="btn-copy-name" class="btn-new btn-accent py-2 rounded-xl text-xs flex flex-col items-center justify-center gap-1">
+                          <i data-lucide="copy" class="h-4 w-4"></i> Kopiuj Nick
+                       </button>
+                       <button id="btn-save-from-modal" class="btn-new btn-glass py-2 rounded-xl text-xs flex flex-col items-center justify-center gap-1">
+                          <i data-lucide="bookmark" class="h-4 w-4"></i> Zapisz
+                       </button>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-3">Kontaktujesz się bezpośrednio.</p>
+                 </div>
+              </div>
+
+              <div class="md:w-2/3 space-y-8">
+                 <div>
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                       <i data-lucide="image" class="h-4 w-4 text-rose-500"></i> Portfolio
+                    </h3>
+                    <div class="grid grid-cols-3 gap-3" id="modal-portfolio"></div>
+                 </div>
+
+                 <div>
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                       <i data-lucide="file-text" class="h-4 w-4 text-rose-500"></i> O Mnie / Oferta
+                    </h3>
+                    <div class="text-slate-300 leading-relaxed whitespace-pre-line text-sm bg-white/5 p-6 rounded-2xl border border-white/5" id="modal-about"></div>
+                 </div>
+              </div>
+           </div>
         </div>
-      </div>
-
-      <div class="grid lg:grid-cols-12 gap-0">
-        <div class="lg:col-span-7 p-4 border-b lg:border-b-0 lg:border-r border-white/10">
-          <div class="flex flex-wrap items-center gap-2" id="modal-chips"></div>
-
-          <div class="mt-4 grid grid-cols-3 gap-2" id="modal-portfolio"></div>
-
-          <div class="mt-4 glass rounded-[22px] p-4">
-            <div class="text-sm font-black flex items-center gap-2">
-              <i data-lucide="file-text" class="h-4 w-4 text-[var(--accent)]"></i>
-              Opis
-            </div>
-            <p class="mt-2 text-sm text-white/75 leading-relaxed whitespace-pre-line" id="modal-about"></p>
-          </div>
-        </div>
-
-        <div class="lg:col-span-5 p-4">
-          <div class="glass rounded-[22px] p-4">
-            <div class="text-sm font-black flex items-center gap-2">
-              <i data-lucide="message-circle" class="h-4 w-4 text-[var(--accent)]"></i>
-              Kontakt
-            </div>
-            <p class="mt-2 text-sm text-white/70">
-              Skopiuj nick i odezwij się wybranym kanałem. (Demo nie wysyła wiadomości.)
-            </p>
-
-            <div class="mt-3 grid sm:grid-cols-2 gap-2">
-              <button id="btn-copy-name" class="btn btn-primary px-4 py-3" type="button">
-                <i data-lucide="copy" class="h-4 w-4"></i>
-                Kopiuj nick
-              </button>
-              <button id="btn-save-from-modal" class="btn btn-ghost px-4 py-3" type="button">
-                <i data-lucide="bookmark" class="h-4 w-4"></i>
-                Zapisz
-              </button>
-            </div>
-
-            <div class="mt-4 divider"></div>
-
-            <div class="mt-4 text-xs text-white/55">
-              Tip: Link do profilu zawiera <span class="text-white/70 font-semibold">#profile=ID</span>.
-            </div>
-          </div>
-
-          <div class="mt-3 glass rounded-[22px] p-4">
-            <div class="text-sm font-black flex items-center gap-2">
-              <i data-lucide="shield-alert" class="h-4 w-4 text-[var(--accent)]"></i>
-              Bezpieczeństwo
-            </div>
-            <ul class="mt-2 text-sm text-white/70 list-disc pl-5 space-y-1">
-              <li>Ustalaj warunki współpracy na piśmie.</li>
-              <li>Nie udostępniaj haseł ani kodów przed ustaleniem zasad.</li>
-              <li>W razie podejrzeń — zgłaszaj naruszenia.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
+     </div>
   </section>
 
-  <aside id="user-panel" class="drawer glass-soft" data-open="false" aria-label="Panel konta">
-
-    <div class="sticky top-0 z-[2] backdrop-blur-xl bg-black/20 border-b border-white/10">
-      <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
-        <a href="#katalog" class="flex items-center gap-3 flex-shrink-0">
-          <div class="h-10 w-10 rounded-xl ring-1 ring-white/10 bg-white/5 flex items-center justify-center font-black">V</div>
-          <div class="leading-tight hidden sm:block">
-            <div class="text-lg font-semibold tracking-tight">Velorie Market</div>
-            <div class="text-xs text-white/60">Panel konta</div>
+  <aside id="user-panel" class="fixed inset-y-0 right-0 z-[95] w-full md:max-w-4xl bg-[#030712] border-l border-white/10 shadow-2xl transform translate-x-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col" data-open="false">
+    
+    <div class="h-[72px] shrink-0 border-b border-white/10 flex items-center justify-between px-6 bg-[#030712]/80 backdrop-blur-xl">
+       <div class="flex items-center gap-3">
+          <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-rose-500 to-violet-600 flex items-center justify-center text-white font-black text-sm">V</div>
+          <span class="font-bold text-white tracking-tight">Panel Użytkownika</span>
+       </div>
+       <div class="flex items-center gap-3">
+          <div class="hidden sm:flex px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-emerald-400 items-center gap-2">
+             <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+             <span id="header-vpln-balance">0.00 VPLN</span>
           </div>
-        </a>
-
-        <div class="flex items-center gap-2 flex-shrink-0">
-          <div class="hidden sm:flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium border border-white/10">
-            <i data-lucide="wallet" class="h-4 w-4 text-[var(--accent)]"></i>
-            <span id="header-vpln-balance">0.00 VPLN</span>
-          </div>
-
-          <button id="btn-close-panel" class="inline-flex items-center gap-2 rounded-lg bg-white/5 border border-white/10 px-4 py-2 text-sm font-medium hover:bg-white/10 transition" type="button">
-            <i data-lucide="x" class="h-4 w-4"></i>
-            <span class="hidden sm:inline">Zamknij</span>
-          </button>
-
-          <a id="logout-btn" href="#" class="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)]/80 text-white px-4 py-2 text-sm font-medium hover:bg-[var(--accent)] transition">
-            <i data-lucide="log-out" class="h-4 w-4"></i>
-            <span class="hidden sm:inline">Wyloguj</span>
-          </a>
-        </div>
-      </div>
+          <button id="btn-close-panel" class="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition"><i data-lucide="x" class="h-5 w-5 text-slate-400"></i></button>
+       </div>
     </div>
 
-    <div class="mx-auto max-w-7xl p-4 md:p-8 w-full">
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-
-        <aside class="lg:col-span-1">
-          <div class="p-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl sticky top-24">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="avatar">
-                <img id="panel-avatar" src="" alt="Ty" />
-              </div>
-              <div class="min-w-0">
-                <div class="font-black tracking-tight truncate" id="panel-username">Użytkownik</div>
-                <div class="text-xs text-white/60 truncate">
-                  <span id="panel-status">Aktywne konto</span>
-                </div>
-              </div>
-            </div>
-
-            <nav class="flex flex-col gap-2">
-              <button class="flex items-center gap-4 px-5 py-4 rounded-lg bg-white/10 font-semibold text-white transition text-base border border-white/10"
-                      data-tab="edit" type="button">
-                <i data-lucide="pencil" class="h-6 w-6 text-[var(--accent)]"></i>
-                <span>Profil</span>
-              </button>
-
-              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base border border-transparent hover:border-white/10"
-                      data-tab="preview" type="button">
-                <i data-lucide="eye" class="h-6 w-6"></i>
-                <span>Podgląd</span>
-              </button>
-
-              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base border border-transparent hover:border-white/10"
-                      data-tab="listing" type="button">
-                <i data-lucide="file-plus" class="h-6 w-6"></i>
-                <span>Ogłoszenie</span>
-              </button>
-
-              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base border border-transparent hover:border-white/10"
-                      data-tab="shop" type="button">
-                <i data-lucide="shopping-bag" class="h-6 w-6"></i>
-                <span>Plany</span>
-              </button>
-
-              <a href="./wallet.html"
-                 class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base border border-transparent hover:border-white/10">
-                <i data-lucide="wallet" class="h-6 w-6"></i>
-                <span>Portfel</span>
-              </a>
-
-              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base border border-transparent hover:border-white/10"
-                      data-tab="settings" type="button">
-                <i data-lucide="settings" class="h-6 w-6"></i>
-                <span>Ustawienia</span>
-              </button>
-
-              <button class="flex items-center gap-4 px-5 py-4 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition text-base border border-transparent hover:border-white/10"
-                      data-tab="security" type="button">
-                <i data-lucide="shield" class="h-6 w-6"></i>
-                <span>Bezpieczeństwo</span>
-              </button>
-            </nav>
-          </div>
-        </aside>
-
-        <section class="lg:col-span-4 space-y-4">
-
-          <div class="glass rounded-[22px] p-4 flex items-center justify-between gap-3">
-            <div class="flex items-center gap-2 text-sm text-white/80">
-              <i data-lucide="circle-check" class="h-4 w-4 text-[var(--accent)]"></i>
-              <span id="save-status">Wszystko zapisane</span>
-            </div>
-            <div class="text-sm text-white/70">
-              Plan: <span id="plan-status" class="text-white/90 font-semibold">Standard</span>
-            </div>
+    <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
+       
+       <nav class="w-full md:w-64 bg-white/2 p-4 md:border-r border-white/5 flex flex-col gap-1 overflow-y-auto shrink-0">
+          
+          <div class="p-4 mb-4 rounded-xl bg-gradient-to-br from-white/5 to-transparent border border-white/5 flex items-center gap-3">
+             <img id="panel-avatar" src="" class="h-10 w-10 rounded-full object-cover bg-slate-800" />
+             <div class="overflow-hidden">
+                <div id="panel-username" class="font-bold text-white truncate text-sm">User</div>
+                <div id="panel-status" class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Free Plan</div>
+             </div>
           </div>
 
-          <section id="tab-edit" class="space-y-4">
-            <div class="glass rounded-[22px] p-5">
-              <div class="font-black flex items-center gap-2">
-                <i data-lucide="pencil" class="h-5 w-5 text-[var(--accent)]"></i>
-                Dane profilu
-              </div>
+          <button class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition text-left" data-tab="edit">
+             <i data-lucide="settings-2" class="h-4 w-4"></i> Edytuj Profil
+          </button>
+          <button class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition text-left" data-tab="listing">
+             <i data-lucide="file-plus" class="h-4 w-4"></i> Ogłoszenie
+          </button>
+          <button class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition text-left" data-tab="preview">
+             <i data-lucide="eye" class="h-4 w-4"></i> Podgląd
+          </button>
+          <div class="h-px bg-white/10 my-2"></div>
+          <button class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-rose-300 hover:text-rose-200 hover:bg-rose-500/10 transition text-left" data-tab="shop">
+             <i data-lucide="crown" class="h-4 w-4"></i> Plany / Premium
+          </button>
+          <button class="nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition text-left" data-tab="settings">
+             <i data-lucide="sliders" class="h-4 w-4"></i> Ustawienia
+          </button>
+          
+          <div class="mt-auto pt-4">
+             <button id="logout-btn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 transition text-left">
+                <i data-lucide="log-out" class="h-4 w-4"></i> Wyloguj
+             </button>
+          </div>
+       </nav>
 
-              <div class="mt-4 grid sm:grid-cols-2 gap-3">
+       <div class="flex-1 overflow-y-auto p-6 md:p-10 relative bg-[#030712]">
+          <div class="max-w-2xl mx-auto space-y-8 pb-20">
+             
+             <section id="tab-edit" class="space-y-6">
                 <div>
-                  <label class="label">Nick / Imię</label>
-                  <input id="edit-name" class="input" />
-                  <div class="mt-1 text-xs text-white/45">Min. 2 znaki.</div>
+                   <h2 class="text-2xl font-display font-bold text-white mb-1">Twój Profil</h2>
+                   <p class="text-slate-400 text-sm">To jak widzą Cię inni w katalogu.</p>
                 </div>
+                
+                <div class="grid gap-5">
+                   <div class="grid md:grid-cols-2 gap-5">
+                      <div>
+                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Nick / Imię</label>
+                         <input id="edit-name" class="input-modern w-full p-3" />
+                      </div>
+                      <div>
+                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Branża</label>
+                         <select id="edit-industry" class="input-modern w-full p-3">
+                            <option value="dev">Programista</option>
+                            <option value="gfx">Grafik</option>
+                            <option value="video">Montażysta</option>
+                            <option value="tech">Technik / DevOps</option>
+                            <option value="mc">Minecraft</option>
+                         </select>
+                      </div>
+                   </div>
+
+                   <div>
+                      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Avatar URL</label>
+                      <input id="edit-avatar-url" class="input-modern w-full p-3" placeholder="https://..." />
+                   </div>
+
+                   <div>
+                      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Bio / O mnie</label>
+                      <textarea id="edit-about" rows="4" class="input-modern w-full p-3" placeholder="Krótka historia..."></textarea>
+                   </div>
+                   
+                   <div class="grid md:grid-cols-3 gap-5">
+                      <div>
+                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Budżet Min (PLN)</label>
+                         <input id="edit-budget" type="number" class="input-modern w-full p-3" />
+                      </div>
+                      <div>
+                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Dostępność</label>
+                         <select id="edit-availability" class="input-modern w-full p-3">
+                            <option value="24h">24h</option>
+                            <option value="48h">48h</option>
+                            <option value="72h">72h</option>
+                            <option value="Tydzień">Tydzień</option>
+                         </select>
+                      </div>
+                   </div>
+
+                   <div>
+                      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Tagi (max 12, po przecinku)</label>
+                      <input id="edit-tags" class="input-modern w-full p-3" placeholder="React, Figma, Adobe..." />
+                   </div>
+
+                   <div class="pt-4 border-t border-white/10">
+                      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">Portfolio (URL do obrazków)</label>
+                      <div class="grid grid-cols-3 gap-3">
+                         <input id="edit-portfolio-1" class="input-modern w-full p-2 text-xs" placeholder="Img 1" />
+                         <input id="edit-portfolio-2" class="input-modern w-full p-2 text-xs" placeholder="Img 2" />
+                         <input id="edit-portfolio-3" class="input-modern w-full p-2 text-xs" placeholder="Img 3" />
+                      </div>
+                   </div>
+
+                   <div class="flex items-center gap-3 pt-4">
+                      <button id="btn-save-profile" class="btn-new btn-accent px-6 py-3 rounded-xl text-sm">Zapisz Zmiany</button>
+                      <button id="btn-reset-profile" class="btn-new btn-glass px-6 py-3 rounded-xl text-sm">Cofnij</button>
+                      <button id="btn-open-me-modal" class="btn-new btn-glass px-6 py-3 rounded-xl text-sm">Otwórz</button>
+                      <span id="save-status" class="text-xs text-slate-500 ml-auto italic">Wszystko aktualne</span>
+                   </div>
+                </div>
+             </section>
+
+             <section id="tab-listing" class="hidden space-y-6">
                 <div>
-                  <label class="label">Branża</label>
-                  <select id="edit-industry" class="input">
-                    <option value="dev">Programista</option>
-                    <option value="gfx">Grafik</option>
-                    <option value="video">Montażysta / Content</option>
-                    <option value="tech">Technik / DevOps</option>
-                    <option value="mc">Budowniczy Minecraft</option>
-                  </select>
+                   <h2 class="text-2xl font-display font-bold text-white mb-1">Twoje Ogłoszenie</h2>
+                   <p class="text-slate-400 text-sm">Treść widoczna na karcie w katalogu.</p>
                 </div>
-
-                <div class="sm:col-span-2">
-                  <label class="label">Opis</label>
-                  <textarea id="edit-about" class="input" rows="5" placeholder="Napisz kilka zdań o sobie..."></textarea>
+                <div class="grid gap-5 bg-white/5 border border-white/5 rounded-2xl p-6">
+                   <div>
+                      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Nagłówek (Catchphrase)</label>
+                      <input id="listing-title" class="input-modern w-full p-3" placeholder="np. Szybkie strony WWW w 3 dni" />
+                   </div>
+                   <div>
+                      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Preferowany Kontakt</label>
+                      <select id="listing-contact-main" class="input-modern w-full p-3">
+                         <option value="Discord">Discord</option>
+                         <option value="E-mail">E-mail</option>
+                         <option value="Instagram">Instagram</option>
+                         <option value="Facebook">Facebook</option>
+                      </select>
+                   </div>
+                   <div>
+                      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Krótki opis (zajawka)</label>
+                      <input id="listing-short" class="input-modern w-full p-3" maxlength="120" />
+                   </div>
+                   <div>
+                      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Pełna treść oferty</label>
+                      <textarea id="listing-long" rows="6" class="input-modern w-full p-3" placeholder="Szczegóły współpracy..."></textarea>
+                   </div>
+                   
+                   <div class="flex gap-3 pt-2">
+                      <button id="btn-publish" class="flex-1 btn-new btn-accent py-3 rounded-xl text-sm">Opublikuj</button>
+                      <button id="btn-unpublish" class="flex-1 btn-new btn-glass py-3 rounded-xl text-sm text-slate-400">Ukryj</button>
+                   </div>
                 </div>
+             </section>
 
+             <section id="tab-preview" class="hidden space-y-6">
                 <div>
-                  <label class="label">Dostępność</label>
-                  <select id="edit-availability" class="input">
-                    <option value="24h">24h</option>
-                    <option value="48h">48h</option>
-                    <option value="72h">72h</option>
-                    <option value="Tydzień">Tydzień</option>
-                  </select>
+                   <h2 class="text-2xl font-display font-bold text-white mb-1">Podgląd</h2>
+                   <p class="text-slate-400 text-sm">Tak wyglądasz w wynikach wyszukiwania.</p>
                 </div>
+                <div class="flex justify-center py-8">
+                   <div id="preview-card" class="w-full max-w-md"></div>
+                </div>
+             </section>
 
+             <section id="tab-shop" class="hidden space-y-6">
                 <div>
-                  <label class="label">Budżet minimalny (PLN)</label>
-                  <input id="edit-budget" class="input" type="number" min="0" step="1" />
+                   <h2 class="text-2xl font-display font-bold text-white mb-1">Plany & Boost</h2>
+                   <p class="text-slate-400 text-sm">Zwiększ widoczność w katalogu.</p>
+                   <span id="plan-status" class="hidden"></span> </div>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                   <div class="relative group p-6 rounded-2xl border border-rose-500/30 bg-gradient-to-b from-rose-500/10 to-transparent hover:bg-rose-500/15 transition-all">
+                      <div class="absolute top-0 right-0 p-3">
+                         <i data-lucide="zap" class="h-6 w-6 text-rose-500"></i>
+                      </div>
+                      <h3 class="text-lg font-bold text-white mb-1">Premium</h3>
+                      <div class="text-2xl font-black text-rose-400 mb-4">23.99 PLN <span class="text-xs font-medium text-slate-500">/mc</span></div>
+                      <ul class="text-sm text-slate-300 space-y-2 mb-6">
+                         <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-rose-500"></i> Odznaka Premium</li>
+                         <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-rose-500"></i> Wyżej w wynikach</li>
+                         <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-rose-500"></i> Złota ramka</li>
+                      </ul>
+                      <button id="btn-buy-premium" class="w-full btn-new btn-accent py-2 rounded-xl text-sm">Aktywuj</button>
+                      <button id="btn-cancel-premium" class="w-full mt-2 py-2 text-xs text-slate-500 hover:text-white">Anuluj subskrypcję</button>
+                   </div>
+
+                   <div class="relative group p-6 rounded-2xl border border-violet-500/30 bg-gradient-to-b from-violet-500/10 to-transparent hover:bg-violet-500/15 transition-all">
+                      <div class="absolute top-0 right-0 p-3">
+                         <i data-lucide="badge-check" class="h-6 w-6 text-violet-500"></i>
+                      </div>
+                      <h3 class="text-lg font-bold text-white mb-1">Verified</h3>
+                      <div class="text-2xl font-black text-violet-400 mb-4">19.55 PLN <span class="text-xs font-medium text-slate-500">/mc</span></div>
+                       <ul class="text-sm text-slate-300 space-y-2 mb-6">
+                         <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-violet-500"></i> Odznaka Zweryfikowany</li>
+                         <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-violet-500"></i> Buduje zaufanie</li>
+                         <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-violet-500"></i> Dostęp do zleceń PRO</li>
+                      </ul>
+                      <button id="btn-buy-verified" class="w-full btn-new btn-glass border-violet-500/50 text-violet-300 hover:bg-violet-500/20 py-2 rounded-xl text-sm">Aktywuj</button>
+                      <button id="btn-cancel-verified" class="w-full mt-2 py-2 text-xs text-slate-500 hover:text-white">Anuluj subskrypcję</button>
+                   </div>
                 </div>
+             </section>
 
-                <div class="sm:col-span-2">
-                  <label class="label">Tagi (oddziel przecinkami)</label>
-                  <input id="edit-tags" class="input" placeholder="React, Node, API..." />
-                  <div class="mt-1 text-xs text-white/45">Max 12 tagów.</div>
-                </div>
-
-                <div class="sm:col-span-2">
-                  <label class="label">Avatar (URL)</label>
-                  <input id="edit-avatar-url" class="input" placeholder="https://..." />
-                  <div class="mt-1 text-xs text-white/45">Jeśli puste — zostaje obecny.</div>
-                </div>
-              </div>
-
-              <div class="mt-4 flex flex-wrap items-center gap-2">
-                <button id="btn-save-profile" class="btn btn-primary px-4 py-3" type="button">
-                  <i data-lucide="save" class="h-4 w-4"></i>
-                  <span>Zapisz</span>
-                </button>
-                <button id="btn-reset-profile" class="btn btn-ghost px-4 py-3" type="button">
-                  <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
-                  <span>Przywróć</span>
-                </button>
-                <button id="btn-open-me-modal" class="btn btn-outline px-4 py-3" type="button">
-                  <i data-lucide="external-link" class="h-4 w-4"></i>
-                  <span>Otwórz profil</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="glass rounded-[22px] p-5">
-              <div class="font-black flex items-center gap-2">
-                <i data-lucide="images" class="h-5 w-5 text-[var(--accent)]"></i>
-                Portfolio (3 zdjęcia)
-              </div>
-              <p class="mt-2 text-sm text-white/70">
-                Widoczne w katalogu i w profilu.
-              </p>
-
-              <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+             <section id="tab-settings" class="hidden space-y-6">
                 <div>
-                  <label class="label">Zdjęcie 1 URL</label>
-                  <input id="edit-portfolio-1" class="input" placeholder="https://..." />
+                   <h2 class="text-2xl font-display font-bold text-white mb-1">Ustawienia</h2>
                 </div>
-                <div>
-                  <label class="label">Zdjęcie 2 URL</label>
-                  <input id="edit-portfolio-2" class="input" placeholder="https://..." />
+                <div class="bg-white/5 rounded-2xl border border-white/5 divide-y divide-white/5">
+                   <label class="flex items-center justify-between p-4 cursor-pointer">
+                      <div>
+                         <div class="font-bold text-sm text-white">Toasty / Powiadomienia</div>
+                         <div class="text-xs text-slate-500">Komunikaty o akcjach w rogu ekranu.</div>
+                      </div>
+                      <input id="set-toast" type="checkbox" class="accent-rose-500 h-5 w-5" />
+                   </label>
+                   <label class="flex items-center justify-between p-4 cursor-pointer">
+                      <div>
+                         <div class="font-bold text-sm text-white">Skrót klawiszowy "/"</div>
+                         <div class="text-xs text-slate-500">Szybkie przejście do wyszukiwarki.</div>
+                      </div>
+                      <input id="set-slash" type="checkbox" class="accent-rose-500 h-5 w-5" />
+                   </label>
+                   <label class="flex items-center justify-between p-4 cursor-pointer">
+                      <div>
+                         <div class="font-bold text-sm text-white">Ukryj budżet</div>
+                         <div class="text-xs text-slate-500">Nie pokazuj "od X PLN" na kartach.</div>
+                      </div>
+                      <input id="set-hide-budget" type="checkbox" class="accent-rose-500 h-5 w-5" />
+                   </label>
+                   <label class="flex items-center justify-between p-4 cursor-pointer">
+                      <div>
+                         <div class="font-bold text-sm text-white">Ukryj ocenę</div>
+                         <div class="text-xs text-slate-500">Nie pokazuj gwiazdek na kartach.</div>
+                      </div>
+                      <input id="set-hide-rating" type="checkbox" class="accent-rose-500 h-5 w-5" />
+                   </label>
+                   <label class="flex items-center justify-between p-4 cursor-pointer">
+                      <div>
+                         <div class="font-bold text-sm text-white">Focus Trap</div>
+                         <div class="text-xs text-slate-500">Dostępność w oknach modalnych.</div>
+                      </div>
+                      <input id="set-focus-trap" type="checkbox" class="accent-rose-500 h-5 w-5" />
+                   </label>
                 </div>
-                <div>
-                  <label class="label">Zdjęcie 3 URL</label>
-                  <input id="edit-portfolio-3" class="input" placeholder="https://..." />
+                <button id="btn-reset-settings" class="text-xs text-slate-500 hover:text-white underline">Przywróć domyślne</button>
+             </section>
+
+             <section id="tab-security" class="hidden space-y-6">
+                <div><h2 class="text-2xl font-display font-bold text-white mb-1">Bezpieczeństwo</h2></div>
+                <div class="p-6 bg-white/5 border border-white/5 rounded-2xl text-sm text-slate-400">
+                   Zalecamy ostrożność. To demo front-endowe.
                 </div>
-              </div>
-            </div>
-          </section>
+             </section>
 
-          <section id="tab-preview" class="space-y-4 hidden">
-            <div class="glass rounded-[22px] p-5">
-              <div class="font-black flex items-center gap-2">
-                <i data-lucide="eye" class="h-5 w-5 text-[var(--accent)]"></i>
-                Podgląd profilu
-              </div>
-              <p class="mt-2 text-sm text-white/70">
-                Ten podgląd pokazuje jak Twoja karta wygląda w katalogu.
-              </p>
-              <div class="mt-4" id="preview-card"></div>
-            </div>
-          </section>
-
-          <section id="tab-listing" class="space-y-4 hidden">
-            <div class="glass rounded-[22px] p-5">
-              <div class="font-black flex items-center gap-2">
-                <i data-lucide="file-plus" class="h-5 w-5 text-[var(--accent)]"></i>
-                Ogłoszenie
-              </div>
-              <p class="mt-2 text-sm text-white/70">
-                Uzupełnij opis i opublikuj wizytówkę w katalogu.
-              </p>
-
-              <div class="mt-4 grid sm:grid-cols-2 gap-3">
-                <div>
-                  <label class="label">Tytuł ogłoszenia</label>
-                  <input id="listing-title" class="input" placeholder="np. Programista React/Node — szybkie MVP" />
-                </div>
-                <div>
-                  <label class="label">Kanał kontaktu (główny)</label>
-                  <select id="listing-contact-main" class="input">
-                    <option value="Discord">Discord</option>
-                    <option value="E-mail">E-mail</option>
-                    <option value="Instagram">Instagram</option>
-                    <option value="Facebook">Facebook</option>
-                  </select>
-                </div>
-
-                <div class="sm:col-span-2">
-                  <label class="label">Krótki opis</label>
-                  <input id="listing-short" class="input" placeholder="2–3 zdania: co robisz i dla kogo." />
-                </div>
-
-                <div class="sm:col-span-2">
-                  <label class="label">Dłuższy opis</label>
-                  <textarea id="listing-long" class="input" rows="6" placeholder="Szczegóły usług, proces, terminy, zasady..."></textarea>
-                </div>
-              </div>
-
-              <div class="mt-4 flex flex-wrap items-center gap-2">
-                <button id="btn-publish" class="btn btn-primary px-4 py-3" type="button">
-                  <i data-lucide="rocket" class="h-4 w-4"></i>
-                  <span>Opublikuj / Zaktualizuj</span>
-                </button>
-                <button id="btn-unpublish" class="btn btn-outline px-4 py-3" type="button">
-                  <i data-lucide="eye-off" class="h-4 w-4"></i>
-                  <span>Ukryj</span>
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <section id="tab-shop" class="space-y-4 hidden">
-            <div class="glass rounded-[22px] p-5">
-              <div class="font-black flex items-center gap-2">
-                <i data-lucide="shopping-bag" class="h-5 w-5 text-[var(--accent)]"></i>
-                Plany i wyróżnienia
-              </div>
-              <p class="mt-2 text-sm text-white/70">
-                Aktywny plan wpływa na widoczność oraz oznaczenia profilu w wynikach.
-              </p>
-
-              <div class="mt-4 grid md:grid-cols-2 gap-3">
-                <div class="rounded-[22px] bg-white/5 border border-white/10 p-4">
-                  <div class="flex items-center justify-between gap-3">
-                    <div>
-                      <div class="text-sm font-black">Premium</div>
-                      <div class="text-xs text-white/60">Wyróżnienie w wynikach</div>
-                    </div>
-                    <div class="text-sm font-black">23.99 PLN/mies.</div>
-                  </div>
-                  <ul class="mt-3 text-sm text-white/70 list-disc pl-5 space-y-1">
-                    <li>Badge “Premium”</li>
-                    <li>Wyżej w “Polecane”</li>
-                    <li>Więcej klików</li>
-                  </ul>
-                  <button id="btn-buy-premium" class="mt-3 btn btn-primary w-full px-4 py-3" type="button">
-                    <i data-lucide="zap" class="h-4 w-4"></i>
-                    <span>Aktywuj Premium</span>
-                  </button>
-                  <button id="btn-cancel-premium" class="mt-2 btn btn-outline w-full px-4 py-3" type="button">
-                    <i data-lucide="x-circle" class="h-4 w-4"></i>
-                    <span>Wyłącz Premium</span>
-                  </button>
-                </div>
-
-                <div class="rounded-[22px] bg-white/5 border border-white/10 p-4">
-                  <div class="flex items-center justify-between gap-3">
-                    <div>
-                      <div class="text-sm font-black">Verified</div>
-                      <div class="text-xs text-white/60">Zaufanie + filtr Verified</div>
-                    </div>
-                    <div class="text-sm font-black">19.55 PLN/mies.</div>
-                  </div>
-                  <ul class="mt-3 text-sm text-white/70 list-disc pl-5 space-y-1">
-                    <li>Badge “Verified”</li>
-                    <li>Wyżej w sort “Zweryfikowani”</li>
-                    <li>Lepsza konwersja</li>
-                  </ul>
-                  <button id="btn-buy-verified" class="mt-3 btn btn-primary w-full px-4 py-3" type="button">
-                    <i data-lucide="badge-check" class="h-4 w-4"></i>
-                    <span>Aktywuj Verified</span>
-                  </button>
-                  <button id="btn-cancel-verified" class="mt-2 btn btn-outline w-full px-4 py-3" type="button">
-                    <i data-lucide="x-circle" class="h-4 w-4"></i>
-                    <span>Wyłącz Verified</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section id="tab-settings" class="space-y-4 hidden">
-            <div class="glass rounded-[22px] p-5">
-              <div class="font-black flex items-center gap-2">
-                <i data-lucide="settings" class="h-5 w-5 text-[var(--accent)]"></i>
-                Ustawienia
-              </div>
-              <div class="mt-4 grid sm:grid-cols-2 gap-3">
-                <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none">
-                  <input id="set-toast" type="checkbox" class="mt-1" />
-                  <div>
-                    <div class="font-black text-sm">Toasty</div>
-                    <div class="text-xs text-white/60">Powiadomienia “Kopiowano”, “Zapisano” itd.</div>
-                  </div>
-                </label>
-
-                <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none">
-                  <input id="set-slash" type="checkbox" class="mt-1" />
-                  <div>
-                    <div class="font-black text-sm">Skrót “/”</div>
-                    <div class="text-xs text-white/60">Fokus w pole wyszukiwarki</div>
-                  </div>
-                </label>
-
-                <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none">
-                  <input id="set-hide-budget" type="checkbox" class="mt-1" />
-                  <div>
-                    <div class="font-black text-sm">Ukryj budżet</div>
-                    <div class="text-xs text-white/60">Nie pokazuj “od X PLN” na kartach</div>
-                  </div>
-                </label>
-
-                <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none">
-                  <input id="set-hide-rating" type="checkbox" class="mt-1" />
-                  <div>
-                    <div class="font-black text-sm">Ukryj ocenę</div>
-                    <div class="text-xs text-white/60">Nie pokazuj “Ocena” na kartach</div>
-                  </div>
-                </label>
-
-                <label class="rounded-[18px] bg-white/5 border border-white/10 p-4 flex items-start gap-3 cursor-pointer select-none sm:col-span-2">
-                  <input id="set-focus-trap" type="checkbox" class="mt-1" />
-                  <div>
-                    <div class="font-black text-sm">Focus trap w modalu</div>
-                    <div class="text-xs text-white/60">Tab nie ucieka poza modal</div>
-                  </div>
-                </label>
-              </div>
-
-              <div class="mt-4 flex flex-wrap gap-2">
-                <button id="btn-reset-settings" class="btn btn-outline px-4 py-3" type="button">
-                  <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
-                  Przywróć domyślne
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <section id="tab-security" class="space-y-4 hidden">
-            <div class="glass rounded-[22px] p-5">
-              <div class="font-black flex items-center gap-2">
-                <i data-lucide="shield" class="h-5 w-5 text-[var(--accent)]"></i>
-                Bezpieczeństwo
-              </div>
-              <ul class="mt-3 text-sm text-white/70 list-disc pl-5 space-y-1">
-                <li>Ustal zakres i terminy przed startem.</li>
-                <li>Nie wysyłaj prywatnych danych bez potrzeby.</li>
-                <li>Rozważ zaliczkę / etapy.</li>
-              </ul>
-              <div class="mt-4 rounded-[18px] bg-white/5 border border-white/10 p-4 text-sm text-white/70">
-                Ten projekt to demo front-only (localStorage). Nie ma prawdziwych płatności ani weryfikacji.
-              </div>
-            </div>
-          </section>
-
-        </section>
-      </div>
+          </div>
+       </div>
     </div>
   </aside>
 
   <script>
-    /***********************************************************************
-     * Velorie Market — market.html (UX upgrade v2.1)
-     * ✅ Ulepszone sticky filters (Sentinel + Observer) - TERAZ WYŁĄCZONE
-     * ✅ Nowe efekty hover kart i Premium Glow
-     * ✅ Zachowana struktura (local storage, wallet integration)
-     ***********************************************************************/
-
     (function(){
+      /* Utility Helpers */
       const $ = (sel, root=document) => root.querySelector(sel);
       const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-
       const now = () => Date.now();
+      const safeParse = (v, f) => { try { return JSON.parse(v); } catch { return f; } };
+      const safeStringify = (v, f="{}") => { try { return JSON.stringify(v); } catch { return f; } };
+      const escapeHTML = (str) => String(str??"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'}[m]));
+      const normalizeText = (s) => String(s||"").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"");
+      const debounce = (fn, d=250) => { let t; return (...a) => { clearTimeout(t); t=setTimeout(()=>fn(...a), d); }; };
+      function decodeJwt(token){ try { return JSON.parse(atob(token.split('.')[1])); } catch { return null; } }
 
-      function safeParse(v, fallback){
-        try { return JSON.parse(v); } catch { return fallback; }
-      }
-      function safeStringify(v, fallback="{}"){
-        try { return JSON.stringify(v); } catch { return fallback; }
-      }
-      function escapeHTML(str){
-        return String(str ?? "")
-          .replaceAll("&","&amp;")
-          .replaceAll("<","&lt;")
-          .replaceAll(">","&gt;")
-          .replaceAll('"',"&quot;")
-          .replaceAll("'","&#039;");
-      }
-      function normalizeText(s){
-        return String(s||"")
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/\p{Diacritic}/gu,"");
-      }
-      function debounce(fn, delay=250){
-        let t=null;
-        return (...args)=>{
-          clearTimeout(t);
-          t=setTimeout(()=>fn(...args), delay);
-        };
-      }
-
-      // --- JWT decode ---
-      function decodeJwt(token){
-        try { return JSON.parse(atob(token.split('.')[1])); }
-        catch { return null; }
-      }
-
-      /* ---------------------- Header height & Sticky Observer ---------------------- */
-      function bindHeaderHeightVar(){
-        const header = $("#app-header");
-        if(!header) return;
-
-        const set = () => {
-          const h = Math.round(header.getBoundingClientRect().height || 66);
-          document.documentElement.style.setProperty("--header-h", h + "px");
-        };
-
-        set();
-        window.addEventListener("resize", set, {passive:true});
-      }
-
-      function initStickyFiltersObserver() {
-        const sentinel = $("#filters-sentinel");
-        const filtersBar = $("#filters-bar");
-        
-        if (!sentinel || !filtersBar) return;
-
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            // Jeśli sentinel nie jest widoczny (jest nad viewportem), to znaczy, że filtry dotarły do góry
-            if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
-              filtersBar.classList.add("is-pinned");
-            } else {
-              filtersBar.classList.remove("is-pinned");
-            }
-          });
-        }, {
-          threshold: 0,
-          rootMargin: `-${parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'))}px 0px 0px 0px`
-        });
-
-        observer.observe(sentinel);
-      }
-
-      /* ---------------------- Toasts ---------------------- */
-      const Toast = (() => {
-        let wrap=null;
-        let queue=[];
-        let showing=false;
-
-        function ensure(){
-          if(wrap) return wrap;
-          wrap=document.createElement("div");
-          wrap.id="toast-wrap";
-          wrap.className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[220] space-y-2";
-          document.body.appendChild(wrap);
-          return wrap;
-        }
-        function showNext(){
-          if(showing) return;
-          const item=queue.shift();
-          if(!item) return;
-          showing=true;
-          ensure();
-
-          const el=document.createElement("div");
-          el.className="glass rounded-2xl px-4 py-3 text-sm text-white/90 border border-white/10 shadow-glow max-w-[92vw] flex items-center gap-2";
-          el.innerHTML=`
-            <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white/5 border border-white/10">
-              <i data-lucide="${item.icon||"sparkles"}" class="h-4 w-4 text-[var(--accent)]"></i>
-            </span>
-            <span>${escapeHTML(item.message)}</span>
-          `;
-          wrap.appendChild(el);
-          try{ lucide.createIcons(); }catch{}
-
-          setTimeout(()=>{
-            el.style.opacity="0";
-            el.style.transform="translateY(6px)";
-            el.style.transition="opacity .25s ease, transform .25s ease";
-            setTimeout(()=>{
-              el.remove();
-              showing=false;
-              showNext();
-            }, 260);
-          }, item.ms||1700);
-        }
-        return {
-          push(message, icon="sparkles", ms=1700){
-            queue.push({message, icon, ms});
-            showNext();
-          }
-        };
-      })();
-
-      /* ---------------------- Storage ---------------------- */
+      /* --- STATE & STORAGE --- */
       const LS = {
         keyProfiles: "vm_profiles_v2",
         keySaved: "vm_saved_v2",
         keySubs: "vm_subs_v2",
         keyMe: "vm_me_v2",
         keySettings: "vm_settings_v2",
-
         getProfiles(){ return safeParse(localStorage.getItem(this.keyProfiles), null); },
-        setProfiles(list){ localStorage.setItem(this.keyProfiles, safeStringify(list,"[]")); },
-
+        setProfiles(l){ localStorage.setItem(this.keyProfiles, safeStringify(l,"[]")); },
         getSaved(){ return new Set(safeParse(localStorage.getItem(this.keySaved), [])); },
-        setSaved(setOrArr){
-          const arr = Array.isArray(setOrArr) ? setOrArr : Array.from(setOrArr);
-          localStorage.setItem(this.keySaved, safeStringify(arr,"[]"));
-        },
-
+        setSaved(setOrArr){ const arr=Array.isArray(setOrArr)?setOrArr:Array.from(setOrArr); localStorage.setItem(this.keySaved, safeStringify(arr,"[]")); },
         getSubs(){ return safeParse(localStorage.getItem(this.keySubs), {premium:false, verified:false}); },
-        setSubs(obj){ localStorage.setItem(this.keySubs, safeStringify(obj,"{}")); },
-
+        setSubs(o){ localStorage.setItem(this.keySubs, safeStringify(o,"{}")); },
         getMe(){ return safeParse(localStorage.getItem(this.keyMe), null); },
-        setMe(obj){ localStorage.setItem(this.keyMe, safeStringify(obj,"{}")); },
-
+        setMe(o){ localStorage.setItem(this.keyMe, safeStringify(o,"{}")); },
         getSettings(){ return safeParse(localStorage.getItem(this.keySettings), {toast:true, slash:true, hideBudget:false, hideRating:false, focusTrap:true}); },
-        setSettings(obj){ localStorage.setItem(this.keySettings, safeStringify(obj,"{}")); },
+        setSettings(o){ localStorage.setItem(this.keySettings, safeStringify(o,"{}")); },
       };
 
-      const notify = (msg, icon="sparkles", ms=1700)=>{
-        const s=LS.getSettings();
-        if(s.toast) Toast.push(msg, icon, ms);
+      const state = {
+        q:"", industry:"all", premiumOnly:false, verifiedOnly:false, availableOnly:false, savedOnly:false, sort:"recommended", budgetMin:null, budgetMax:null,
+        pageSize:6, shown:0, modalOpen:false, modalList:[], modalIndex:-1, lastFocus:null
       };
 
-      /* ---------------------- Seed Data ---------------------- */
+      /* --- SEED DATA (Original) --- */
       const FALLBACK_PROFILES = [
-        {
-          id:"p1",
-          name:"zxq0",
-          industry:"dev",
-          industryLabel:"Programista",
-          tagline:"React • Node • API • Automatyzacje",
-          about:"Buduję szybkie MVP, integracje i automatyzacje. Działam konkretnie: zakres → prototyp → wdrożenie.\n\nPreferuję: React, Node, API, deployment, dashboardy.",
-          rating:4.9,
-          availableIn:"48h",
-          minBudget:300,
-          location:"Online",
-          premium:true,
-          verified:true,
-          avatar:"https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop",
-          portfolio:[
-            "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=900&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=900&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?q=80&w=900&auto=format&fit=crop"
-          ],
-          createdAt: now() - 1000*60*60*24*10
-        },
-        {
-          id:"p2",
-          name:"Klaudia",
-          industry:"gfx",
-          industryLabel:"Grafik",
-          tagline:"Branding • UI • Miniatury • Packi",
-          about:"Robię branding, UI i grafiki pod social. Lubię mocny kontrast i clean systemy.\n\nDostarczam pliki + guideline (opcjonalnie).",
-          rating:4.7,
-          availableIn:"24h",
-          minBudget:200,
-          location:"Online",
-          premium:true,
-          verified:false,
-          avatar:"https://images.unsplash.com/photo-1548142813-c348350df52b?q=80&w=512&auto=format&fit=crop",
-          portfolio:[
-            "https://images.unsplash.com/photo-1526498460520-4c246339dccb?q=80&w=900&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=900&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=900&auto=format&fit=crop"
-          ],
-          createdAt: now() - 1000*60*60*24*4
-        },
-        {
-          id:"p3",
-          name:"kubus",
-          industry:"tech",
-          industryLabel:"Technik / DevOps",
-          tagline:"Linux • Proxy • Security • Optymalizacja",
-          about:"Pomagam z serwerami, bezpieczeństwem i optymalizacją. Ustawiam proxy, monitoring, backupy.\n\nW cenie: checklist + rekomendacje.",
-          rating:4.8,
-          availableIn:"72h",
-          minBudget:250,
-          location:"Online",
-          premium:false,
-          verified:true,
-          avatar:"https://images.unsplash.com/photo-1603415526960-f7e0328b7cf6?q=80&w=512&auto=format&fit=crop",
-          portfolio:[
-            "https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=900&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=900&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=900&auto=format&fit=crop"
-          ],
-          createdAt: now() - 1000*60*60*24*7
-        },
-        {
-          id:"p4",
-          name:"A.I.",
-          industry:"video",
-          industryLabel:"Montażysta / Content",
-          tagline:"Montaż • Shortsy • Motion • TikTok",
-          about:"Montaż shortów, reels i długich form. Dostarczam szybkie iteracje + wersje A/B.\n\nWorkflow: brief → draft → poprawki → final.",
-          rating:4.6,
-          availableIn:"48h",
-          minBudget:300,
-          location:"Online",
-          premium:false,
-          verified:false,
-          avatar:"https://images.unsplash.com/photo-1520975682038-1c5d5cfc20a1?q=80&w=512&auto=format&fit=crop",
-          portfolio:[
-            "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=900&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=900&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=900&auto=format&fit=crop"
-          ],
-          createdAt: now() - 1000*60*60*24*2
-        }
+        { id:"p1", name:"zxq0", industry:"dev", industryLabel:"Programista", tagline:"React • Node • API • Automatyzacje", about:"Buduję szybkie MVP, integracje i automatyzacje.", rating:4.9, availableIn:"48h", minBudget:300, location:"Online", premium:true, verified:true, avatar:"https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop", portfolio:["https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=900","https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=900","https://images.unsplash.com/photo-1526378722484-bd91ca387e72?q=80&w=900"], createdAt: now() },
+        { id:"p2", name:"Klaudia", industry:"gfx", industryLabel:"Grafik", tagline:"Branding • UI • Miniatury", about:"Robię branding, UI i grafiki pod social.", rating:4.7, availableIn:"24h", minBudget:200, location:"Online", premium:true, verified:false, avatar:"https://images.unsplash.com/photo-1548142813-c348350df52b?q=80&w=512&auto=format&fit=crop", portfolio:["https://images.unsplash.com/photo-1526498460520-4c246339dccb?q=80&w=900","",""], createdAt: now()-100000 },
+        { id:"p3", name:"kubus", industry:"tech", industryLabel:"DevOps", tagline:"Linux • Proxy • Security", about:"Pomagam z serwerami i bezpieczeństwem.", rating:4.8, availableIn:"72h", minBudget:250, location:"Online", premium:false, verified:true, avatar:"https://images.unsplash.com/photo-1603415526960-f7e0328b7cf6?q=80&w=512", portfolio:[], createdAt: now()-200000 },
+        { id:"p4", name:"A.I.", industry:"video", industryLabel:"Montażysta", tagline:"Shortsy • Motion • TikTok", about:"Montaż shortów i reels.", rating:4.6, availableIn:"48h", minBudget:300, location:"Online", premium:false, verified:false, avatar:"https://images.unsplash.com/photo-1520975682038-1c5d5cfc20a1?q=80&w=512", portfolio:[], createdAt: now()-300000 }
       ];
 
       function ensureInit(){
         if(!LS.getProfiles()) LS.setProfiles(FALLBACK_PROFILES);
-
-        if(!LS.getMe()){
-          LS.setMe({
-            id:"me",
-            name:"zxq0",
-            industry:"dev",
-            about:"Tworzę produkty web, automatyzacje i integracje. Działam szybko i konkretnie.",
-            availability:"48h",
-            minBudget:300,
-            tags:["React","Node","API","Automatyzacje"],
-            avatar:"https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512&auto=format&fit=crop",
-            portfolio:["","",""],
-            listing:{
-              title:"Programista React/Node — szybkie MVP",
-              contactMain:"Discord",
-              short:"Buduję MVP, dashboardy i integracje. Szybkie iteracje i konkretne wdrożenia.",
-              long:"Zakres → prototyp → wdrożenie. Integracje API, panele, automatyzacje, deployment.\n\nUstalamy cele i deadline, pracuję iteracyjnie.",
-              published:true
-            }
-          });
-        }
+        if(!LS.getMe()) LS.setMe({ id:"me", name:"zxq0", industry:"dev", about:"Tworzę produkty web.", availability:"48h", minBudget:300, tags:["React","Node"], avatar:"https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=512", portfolio:["","",""], listing:{ title:"Programista React", contactMain:"Discord", short:"Buduję MVP.", long:"Pełna oferta...", published:true } });
         if(!localStorage.getItem(LS.keySaved)) LS.setSaved([]);
         if(!localStorage.getItem(LS.keySubs)) LS.setSubs({premium:false, verified:false});
         if(!localStorage.getItem(LS.keySettings)) LS.setSettings({toast:true, slash:true, hideBudget:false, hideRating:false, focusTrap:true});
       }
 
-      /* ---------------------- State ---------------------- */
-      const state = {
-        q:"",
-        industry:"all",
-        premiumOnly:false,
-        verifiedOnly:false,
-        availableOnly:false,
-        savedOnly:false,
-        sort:"recommended",
-        budgetMin:null,
-        budgetMax:null,
+      /* --- TOAST SYSTEM --- */
+      const Toast = (() => {
+         let container;
+         const ensure = () => {
+            if(container) return;
+            container = document.createElement("div");
+            container.className = "fixed bottom-5 right-5 z-[200] flex flex-col gap-2 pointer-events-none";
+            document.body.appendChild(container);
+         };
+         return {
+            push(msg, icon="check") {
+               if(!LS.getSettings().toast) return;
+               ensure();
+               const el = document.createElement("div");
+               el.className = "pointer-events-auto flex items-center gap-3 bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl shadow-2xl shadow-black/50 translate-y-10 opacity-0 transition-all duration-300 transform";
+               el.innerHTML = `<i data-lucide="${icon}" class="h-4 w-4 text-rose-500"></i><span class="text-sm font-medium">${escapeHTML(msg)}</span>`;
+               container.appendChild(el);
+               try { lucide.createIcons(); } catch {}
+               requestAnimationFrame(() => el.classList.remove("translate-y-10", "opacity-0"));
+               setTimeout(() => { el.classList.add("translate-y-5", "opacity-0"); setTimeout(() => el.remove(), 300); }, 2500);
+            }
+         }
+      })();
+      const notify = (m, i) => Toast.push(m, i);
 
-        pageSize:4,
-        shown:0,
+      /* --- HELPERS --- */
+      const industryLabel = (c) => ({dev:"Programista", gfx:"Grafik", video:"Montażysta", tech:"Technik/DevOps", mc:"Budowniczy MC"}[c] || "Freelancer");
+      const formatMoney = (n) => n ? `${n} PLN` : "";
+      
+      /* --- RENDER CARD (New Premium Design) --- */
+      function profileCardHTML(p) {
+         const settings = LS.getSettings();
+         const saved = LS.getSaved().has(p.id);
+         const borderClass = p.premium ? "premium-border" : "border-white/10 hover:border-white/20";
+         
+         const badges = [];
+         if(p.premium) badges.push(`<span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20"><i data-lucide="zap" class="h-3 w-3"></i> PRO</span>`);
+         if(p.verified) badges.push(`<span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20"><i data-lucide="badge-check" class="h-3 w-3"></i> VERIFIED</span>`);
+         
+         const thumbs = (p.portfolio||[]).slice(0,3).map((src, i) => 
+            src ? `<div class="aspect-[4/3] bg-black/50 rounded-lg overflow-hidden border border-white/5"><img src="${escapeHTML(src)}" class="w-full h-full object-cover opacity-70 hover:opacity-100 transition-opacity" loading="lazy"/></div>` 
+                : `<div class="aspect-[4/3] bg-white/5 rounded-lg border border-white/5 flex items-center justify-center"><i data-lucide="image-off" class="h-4 w-4 text-white/20"></i></div>`
+         ).join("");
 
-        modalOpen:false,
-        modalList:[],
-        modalIndex:-1,
-        lastFocus:null
-      };
+         const chips = [];
+         if(!settings.hideRating) chips.push(`<span class="bg-white/5 px-2 py-1 rounded border border-white/5"><i data-lucide="star" class="h-3 w-3 inline mr-1 text-amber-400"></i>${p.rating}</span>`);
+         chips.push(`<span class="bg-white/5 px-2 py-1 rounded border border-white/5"><i data-lucide="clock" class="h-3 w-3 inline mr-1 text-blue-400"></i>${p.availableIn}</span>`);
+         if(!settings.hideBudget && p.minBudget) chips.push(`<span class="bg-white/5 px-2 py-1 rounded border border-white/5 text-emerald-400">od ${p.minBudget} PLN</span>`);
 
+         return `
+         <article class="glass-card rounded-2xl p-5 ${borderClass} group relative">
+            <div class="flex items-start justify-between gap-4 mb-4">
+               <div class="flex items-center gap-3">
+                  <div class="h-14 w-14 rounded-2xl overflow-hidden bg-slate-800 shadow-lg shrink-0">
+                     <img src="${escapeHTML(p.avatar||"")}" class="w-full h-full object-cover" loading="lazy" alt=""/>
+                  </div>
+                  <div class="min-w-0">
+                     <h3 class="font-display font-bold text-white text-lg leading-tight group-hover:text-rose-400 transition-colors truncate">${escapeHTML(p.name)}</h3>
+                     <div class="text-xs text-slate-400 font-medium mb-1 truncate">${escapeHTML(p.tagline||"")}</div>
+                     <div class="flex gap-2 flex-wrap">${badges.join("")}</div>
+                  </div>
+               </div>
+               <button class="h-9 w-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-rose-400 transition shrink-0" data-action="save" data-id="${p.id}">
+                  <i data-lucide="${saved ? 'bookmark-check' : 'bookmark'}" class="h-4 w-4 ${saved ? 'text-rose-500 fill-rose-500' : ''}"></i>
+               </button>
+            </div>
+            
+            <div class="flex flex-wrap gap-2 mb-4 text-[11px] font-semibold text-slate-400">
+               ${chips.join("")}
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 mb-4">
+               ${thumbs}
+            </div>
+
+            <button class="w-full btn-new btn-glass py-2.5 rounded-xl text-sm group-hover:bg-white/10 group-hover:border-white/20" data-action="open" data-id="${p.id}">
+               Zobacz Profil
+            </button>
+         </article>
+         `;
+      }
+
+      /* --- LOGIC PRESERVED FROM ORIGINAL --- */
+      function matchesBudget(p){
+         const min = state.budgetMin, max = state.budgetMax;
+         const b = Number(p.minBudget||0);
+         if(min!=null && b<min) return false;
+         if(max!=null && b>max) return false;
+         return true;
+      }
+      function matchesSearch(p){
+         const q = normalizeText(state.q).trim();
+         if(!q) return true;
+         return normalizeText([p.name, p.tagline, industryLabel(p.industry), p.about].join(" ")).includes(q);
+      }
       function parseAvailableHours(str){
-        const s=String(str||"").toLowerCase();
-        if(s.includes("tydz")) return 168;
-        const m=s.match(/(\d+)\s*h/);
-        return m ? Number(m[1]) : 9999;
+         const s=String(str||"").toLowerCase();
+         if(s.includes("tydz")) return 168;
+         const m=s.match(/(\d+)\s*h/);
+         return m ? Number(m[1]) : 9999;
       }
       function scoreRecommended(p){
-        const premium = p.premium ? 1 : 0;
-        const verified = p.verified ? 1 : 0;
-        const rating = Number(p.rating||0);
-        const recency = typeof p.createdAt==="number" ? p.createdAt : 0;
-        return premium*4 + verified*2.2 + rating*1.2 + recency/1e12;
+         return (p.premium?4:0) + (p.verified?2.2:0) + (Number(p.rating||0)*1.2) + ((p.createdAt||0)/1e12);
       }
 
-      /* ---------------------- UI helpers ---------------------- */
-      function setOverlay(open){
-        const ov=$("#overlay");
-        if(!ov) return;
-        ov.dataset.open=open?"true":"false";
-        ov.setAttribute("aria-hidden", open?"false":"true");
-      }
-      function lockBody(lock){
-        document.body.style.overflow = lock ? "hidden" : "";
-      }
-      function setPanelOpen(open){
-        const panel=$("#user-panel");
-        if(!panel) return;
-        panel.dataset.open=open?"true":"false";
-        const any = open || state.modalOpen;
-        setOverlay(any);
-        lockBody(any);
-        if(open){
-          const btn=panel.querySelector('[data-tab]');
-          setTimeout(()=>btn?.focus(),0);
-        }
-      }
-      function setModalOpen(open){
-        const modal=$("#profile-modal");
-        if(!modal) return;
-        modal.dataset.open=open?"true":"false";
-        state.modalOpen=open;
-        const any = open || ($("#user-panel")?.dataset.open==="true");
-        setOverlay(any);
-        lockBody(any);
+      function getFilteredList() {
+         let all = LS.getProfiles() || [];
+         const me = LS.getMe();
+         const subs = LS.getSubs();
+         if(me && me.listing?.published) {
+             const meP = { ...me, ...me.listing, industryLabel: industryLabel(me.industry), rating: 4.9, verified: subs.verified, premium: subs.premium, id:"me", createdAt: now() };
+             all = [meP, ...all.filter(x=>x.id!=="me")];
+         }
+         
+         const savedSet = LS.getSaved();
+         let list = all.filter(p => {
+             if(state.industry!=="all" && p.industry!==state.industry) return false;
+             if(state.premiumOnly && !p.premium) return false;
+             if(state.verifiedOnly && !p.verified) return false;
+             if(state.availableOnly && parseAvailableHours(p.availableIn) > 72) return false;
+             if(state.savedOnly && !savedSet.has(p.id)) return false;
+             if(!matchesBudget(p)) return false;
+             if(!matchesSearch(p)) return false;
+             return true;
+         });
 
-        if(open){
-          if(LS.getSettings().focusTrap) installFocusTrap(modal);
-          setTimeout(()=>$("#modal-close")?.focus(),0);
-        }else{
-          uninstallFocusTrap(modal);
-          if(state.lastFocus) setTimeout(()=>state.lastFocus.focus?.(),0);
-        }
+         if(state.sort==="newest") list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+         else if(state.sort==="rating") list.sort((a,b)=>(Number(b.rating||0)-Number(a.rating||0)));
+         else if(state.sort==="verified") list.sort((a,b)=>((b.verified?1:0)-(a.verified?1:0)) || (scoreRecommended(b)-scoreRecommended(a)));
+         else list.sort((a,b)=>scoreRecommended(b)-scoreRecommended(a));
+         
+         return list;
       }
 
-      /* ---------------------- Focus trap ---------------------- */
-      const focusTrapState = new WeakMap();
-      function getFocusable(root){
-        const sel = [
-          "a[href]",
-          "button:not([disabled])",
-          "textarea:not([disabled])",
-          "input:not([disabled])",
-          "select:not([disabled])",
-          "[tabindex]:not([tabindex='-1'])"
-        ].join(",");
-        return $$(sel, root).filter(el=>!!(el.offsetWidth||el.offsetHeight||el.getClientRects().length));
-      }
-      function installFocusTrap(modal){
-        if(focusTrapState.has(modal)) return;
-        const onKeydown=(e)=>{
-          if(e.key!=="Tab") return;
-          const f=getFocusable(modal);
-          if(!f.length) return;
-          const first=f[0];
-          const last=f[f.length-1];
-          if(e.shiftKey){
-            if(document.activeElement===first){
-              e.preventDefault(); last.focus();
-            }
-          }else{
-            if(document.activeElement===last){
-              e.preventDefault(); first.focus();
-            }
-          }
-        };
-        modal.addEventListener("keydown", onKeydown);
-        focusTrapState.set(modal, {onKeydown});
-      }
-      function uninstallFocusTrap(modal){
-        const s=focusTrapState.get(modal);
-        if(!s) return;
-        modal.removeEventListener("keydown", s.onKeydown);
-        focusTrapState.delete(modal);
-      }
+      function renderList(resetShown=true) {
+         const list = getFilteredList();
+         if(resetShown) state.shown = Math.min(state.pageSize, list.length);
+         
+         $("#stat-results").textContent = list.length;
+         $("#stat-saved").textContent = LS.getSaved().size;
+         $("#stat-filters").textContent = [state.q, state.industry!="all", state.premiumOnly, state.verifiedOnly, state.budgetMin].filter(Boolean).length;
+         $("#saved-pill").textContent = LS.getSaved().size;
+         $("#saved-pill-m").className = LS.getSaved().size ? "absolute top-0 right-0 h-2 w-2 bg-rose-500 rounded-full" : "hidden";
+         $("#shown-count").textContent = Math.min(state.shown, list.length);
+         $("#total-count").textContent = list.length;
 
-      /* ---------------------- Scroll progress ---------------------- */
-      function initProgress(){
-        const bar=$("#scroll-progress");
-        if(!bar) return;
-        let ticking=false;
-        const onScroll=()=>{
-          if(ticking) return;
-          ticking=true;
-          requestAnimationFrame(()=>{
-            const doc=document.documentElement;
-            const max=doc.scrollHeight - doc.clientHeight;
-            const p=max<=0 ? 0 : (doc.scrollTop/max)*100;
-            bar.style.width = p+"%";
-            ticking=false;
-          });
-        };
-        window.addEventListener("scroll", onScroll, {passive:true});
-        onScroll();
-      }
-
-      /* ---------------------- Reveal observer ---------------------- */
-      function initReveal(){
-        const els=$$(".reveal");
-        if(!els.length) return;
-        const io=new IntersectionObserver((entries)=>{
-          entries.forEach(e=>{
-            if(e.isIntersecting) e.target.classList.add("is-visible");
-          });
-        },{threshold:0.12});
-        els.forEach(el=>io.observe(el));
-      }
-
-      /* ---------------------- Wallet-like particles ---------------------- */
-      function createParticles(){
-        const container = document.getElementById("particles-container");
-        if(!container) return;
-        const particleCount = 28;
-        for(let i=0;i<particleCount;i++){
-          const particle = document.createElement("span");
-          const size = 24 + (i % 5) * 12;
-          particle.className = "absolute rounded-full opacity-20 blur-2xl particle";
-          particle.style.width = `${size}px`;
-          particle.style.height = `${size}px`;
-          particle.style.background = (i % 3) ? "var(--accent)" : "#4f46e5";
-          particle.style.left = `${Math.random() * 100}%`;
-          particle.style.top = `${Math.random() * 100}%`;
-          particle.style.animationDuration = `${10 + (i % 5)}s`;
-          particle.style.animationDelay = `${i * 0.2}s`;
-          container.appendChild(particle);
-        }
-      }
-
-      /* ---------------------- Data access ---------------------- */
-      function industryLabel(code){
-        switch(code){
-          case "dev": return "Programista";
-          case "gfx": return "Grafik";
-          case "video": return "Montażysta / Content";
-          case "tech": return "Technik / DevOps";
-          case "mc": return "Budowniczy Minecraft";
-          default: return "Freelancer";
-        }
-      }
-
-      function getAllProfiles(){
-        const profiles = LS.getProfiles() || [];
-        const me = LS.getMe();
-        const subs = LS.getSubs();
-
-        let list = profiles.slice();
-        if(me && me.listing?.published){
-          const meProfile = {
-            id: me.id || "me",
-            name: me.name || "Me",
-            industry: me.industry || "dev",
-            industryLabel: industryLabel(me.industry || "dev"),
-            tagline: me.listing?.title || "Ogłoszenie",
-            about: me.listing?.long || me.about || "",
-            rating: 4.9,
-            availableIn: me.availability || "48h",
-            minBudget: Number(me.minBudget || 0) || 0,
-            location: "Online",
-            premium: !!subs.premium,
-            verified: !!subs.verified,
-            avatar: me.avatar || "",
-            portfolio: (me.portfolio || ["","",""]).filter(Boolean).length ? me.portfolio : [
-              "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=900&auto=format&fit=crop",
-              "https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=900&auto=format&fit=crop",
-              "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?q=80&w=900&auto=format&fit=crop"
-            ],
-            createdAt: now() - 1000*60*60*24*1
-          };
-          list = list.filter(p=>p.id!==meProfile.id);
-          list.unshift(meProfile);
-        }
-        return list;
-      }
-
-      function matchesBudget(p){
-        const min = state.budgetMin;
-        const max = state.budgetMax;
-        const b = Number(p.minBudget || 0) || 0;
-        if(min != null && b < min) return false;
-        if(max != null && b > max) return false;
-        return true;
-      }
-
-      function matchesSearch(p){
-        const q = normalizeText(state.q).trim();
-        if(!q) return true;
-        const hay = normalizeText([p.name, p.tagline, p.industryLabel, p.about].filter(Boolean).join(" "));
-        return hay.includes(q);
-      }
-
-      function getFilteredProfiles(){
-        const all = getAllProfiles();
-        const savedSet = LS.getSaved();
-        let list = all.filter(p=>{
-          if(state.industry !== "all" && p.industry !== state.industry) return false;
-          if(state.premiumOnly && !p.premium) return false;
-          if(state.verifiedOnly && !p.verified) return false;
-          if(state.availableOnly && parseAvailableHours(p.availableIn) > 72) return false;
-          if(state.savedOnly && !savedSet.has(p.id)) return false;
-          if(!matchesBudget(p)) return false;
-          if(!matchesSearch(p)) return false;
-          return true;
-        });
-
-        if(state.sort === "newest"){
-          list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-        }else if(state.sort === "rating"){
-          list.sort((a,b)=>(Number(b.rating||0)-Number(a.rating||0)));
-        }else if(state.sort === "verified"){
-          list.sort((a,b)=>{
-            const av = a.verified?1:0, bv=b.verified?1:0;
-            if(bv!==av) return bv-av;
-            return scoreRecommended(b)-scoreRecommended(a);
-          });
-        }else{
-          list.sort((a,b)=>scoreRecommended(b)-scoreRecommended(a));
-        }
-
-        return list;
-      }
-
-      /* ---------------------- Rendering ---------------------- */
-      function formatMoney(n){
-        const v = Number(n||0);
-        if(!Number.isFinite(v) || v<=0) return "";
-        return `${v} PLN`;
-      }
-
-      function isSaved(id){
-        return LS.getSaved().has(id);
-      }
-
-      function profileCardHTML(p){
-        const settings = LS.getSettings();
-        const saved = isSaved(p.id);
-
-        const tagsLine = [];
-        if(!settings.hideRating) tagsLine.push(`<span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena ${escapeHTML(String(p.rating ?? "—"))}</span>`);
-        tagsLine.push(`<span class="chip"><i data-lucide="clock-3" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(p.availableIn||"—")}</span>`);
-        tagsLine.push(`<span class="chip"><i data-lucide="map-pin" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(p.location||"Online")}</span>`);
-        if(!settings.hideBudget && p.minBudget){
-          tagsLine.push(`<span class="chip"><i data-lucide="banknote" class="h-3.5 w-3.5 text-[var(--accent)]"></i> od ${escapeHTML(formatMoney(p.minBudget))}</span>`);
-        }
-
-        const badges = [
-          p.verified ? `<span class="badge badge-verified"><i data-lucide="badge-check" class="h-3.5 w-3.5"></i> Verified</span>` : "",
-          p.premium ? `<span class="badge badge-premium"><i data-lucide="zap" class="h-3.5 w-3.5"></i> Premium</span>` : ""
-        ].join("");
-
-        const portfolio = (p.portfolio||[]).slice(0,3);
-        const thumbs = portfolio.map((src,i)=>`
-          <div class="thumb aspect-[16/10]">
-            <img src="${escapeHTML(src)}" alt="Portfolio ${i+1}" loading="lazy" />
-          </div>
-        `).join("");
-
-        // Klasa dla premium
-        const cardClass = p.premium ? "profile-card profile-card-premium" : "profile-card";
-
-        return `
-          <article class="${cardClass} p-4 md:p-5">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div class="flex items-center gap-3 min-w-0">
-                <div class="avatar">
-                  <img src="${escapeHTML(p.avatar||"")}" alt="${escapeHTML(p.name)}" loading="lazy" />
-                </div>
-                <div class="min-w-0">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <div class="text-lg font-black tracking-tight truncate">${escapeHTML(p.name)}</div>
-                    ${badges ? `<div class="flex items-center gap-2">${badges}</div>` : ""}
-                  </div>
-                  <div class="text-sm text-white/70 truncate">${escapeHTML(p.tagline||"")}</div>
-                  <div class="text-xs text-white/55 mt-1">${escapeHTML(p.industryLabel||industryLabel(p.industry))}</div>
-                </div>
-              </div>
-
-              <div class="flex items-center gap-2 md:justify-end">
-                <button class="btn btn-ghost px-3 py-2 text-sm" type="button" data-action="save" data-id="${escapeHTML(p.id)}" aria-pressed="${saved ? "true":"false"}">
-                  <i data-lucide="bookmark" class="h-4 w-4"></i>
-                  <span>${saved ? "Zapisano":"Zapisz"}</span>
-                </button>
-                <button class="btn btn-outline px-3 py-2 text-sm" type="button" data-action="open" data-id="${escapeHTML(p.id)}">
-                  <i data-lucide="external-link" class="h-4 w-4"></i>
-                  <span>Otwórz</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="mt-4 flex flex-wrap gap-2">
-              ${tagsLine.join("")}
-            </div>
-
-            <div class="mt-4 grid grid-cols-3 gap-2">
-              ${thumbs || `<div class="col-span-3 text-sm text-white/55">Brak portfolio</div>`}
-            </div>
-          </article>
-        `;
-      }
-
-      function updateStats(list){
-        const savedCount = LS.getSaved().size;
-        $("#stat-saved").textContent = String(savedCount);
-        $("#stat-results").textContent = String(list.length);
-        $("#stat-filters").textContent = String(countActiveFilters());
-        $("#results-hint").textContent = list.length ? `Znaleziono: ${list.length}` : "Brak wyników";
-
-        $("#total-count").textContent = String(list.length);
-        $("#shown-count").textContent = String(Math.min(state.shown, list.length));
-
-        $("#saved-pill").textContent = String(savedCount);
-        $("#saved-pill-m").textContent = String(savedCount);
-        $("#m-saved-count").textContent = String(savedCount);
-      }
-
-      function sortLabel(v){
-        switch(v){
-          case "newest": return "Najnowsze";
-          case "rating": return "Ocena";
-          case "verified": return "Zweryfikowani";
-          default: return "Polecane";
-        }
-      }
-
-      function countActiveFilters(){
-        let c=0;
-        if(state.q.trim()) c++;
-        if(state.industry!=="all") c++;
-        if(state.sort!=="recommended") c++;
-        if(state.savedOnly) c++;
-        if(state.premiumOnly) c++;
-        if(state.verifiedOnly) c++;
-        if(state.availableOnly) c++;
-        if(state.budgetMin!=null) c++;
-        if(state.budgetMax!=null) c++;
-        return c;
+         const container = $("#profiles-list");
+         if(!list.length) {
+            container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-500 flex flex-col items-center"><i data-lucide="ghost" class="h-12 w-12 mb-4 opacity-50"></i><p>Nic nie znaleziono.</p></div>`;
+            $("#btn-load-more").style.display = "none";
+         } else {
+            container.innerHTML = list.slice(0, state.shown).map(profileCardHTML).join("");
+            const canMore = state.shown < list.length;
+            $("#btn-load-more").style.display = "flex";
+            $("#btn-load-more").disabled = !canMore;
+            $("#btn-load-more span").textContent = canMore ? "Wczytaj więcej" : "To już wszystko";
+         }
+         
+         renderActiveFilters();
+         
+         $$("[data-action='open']").forEach(b => b.onclick = () => openModal(b.dataset.id, list));
+         $$("[data-action='save']").forEach(b => b.onclick = (e) => { e.stopPropagation(); toggleSave(b.dataset.id); });
+         
+         try{ lucide.createIcons(); }catch{}
       }
 
       function renderActiveFilters(){
-        const wrap=$("#active-filters");
-        if(!wrap) return;
+         const wrap=$("#active-filters");
+         if(!wrap) return;
+         const pills=[];
+         if(state.q.trim()) pills.push(["q", `Szukaj: ${state.q}`]);
+         if(state.industry!=="all") pills.push(["industry", `Branża: ${industryLabel(state.industry)}`]);
+         if(state.savedOnly) pills.push(["saved", "Zapisane"]);
+         if(state.premiumOnly) pills.push(["premium", "Premium"]);
+         if(state.verifiedOnly) pills.push(["verified", "Verified"]);
+         if(state.availableOnly) pills.push(["avail", "≤72h"]);
+         if(state.budgetMin!=null) pills.push(["bmin", `Budżet ≥ ${state.budgetMin}`]);
+         if(state.budgetMax!=null) pills.push(["bmax", `Budżet ≤ ${state.budgetMax}`]);
 
-        const pills=[];
-        const addPill=(key,label)=>{
-          pills.push(`
-            <span class="pill" data-key="${escapeHTML(key)}">
-              ${escapeHTML(label)}
-              <button type="button" aria-label="Usuń filtr" data-action="remove-pill" data-key="${escapeHTML(key)}">
-                <i data-lucide="x" class="h-3.5 w-3.5"></i>
-              </button>
+         wrap.innerHTML = pills.map(([k,l]) => `
+            <span class="tag-modern inline-flex items-center gap-1 cursor-pointer hover:bg-red-500/20 hover:text-red-300" data-action="remove-pill" data-key="${k}">
+               ${escapeHTML(l)} <i data-lucide="x" class="h-3 w-3"></i>
             </span>
-          `);
-        };
-
-        if(state.q.trim()) addPill("q", `Szukaj: ${state.q.trim().slice(0,18)}${state.q.trim().length>18?"…":""}`);
-        if(state.industry!=="all") addPill("industry", `Branża: ${industryLabel(state.industry)}`);
-        if(state.sort!=="recommended") addPill("sort", `Sort: ${sortLabel(state.sort)}`);
-        if(state.savedOnly) addPill("saved", "Zapisane");
-        if(state.premiumOnly) addPill("premium", "Premium");
-        if(state.verifiedOnly) addPill("verified", "Verified");
-        if(state.availableOnly) addPill("avail", "≤72h");
-        if(state.budgetMin!=null) addPill("bmin", `Budżet ≥ ${state.budgetMin}`);
-        if(state.budgetMax!=null) addPill("bmax", `Budżet ≤ ${state.budgetMax}`);
-
-        wrap.innerHTML = pills.join("");
-        wrap.classList.toggle("hidden", pills.length===0);
+         `).join("");
+         wrap.classList.toggle("hidden", !pills.length);
+         wrap.classList.toggle("flex", !!pills.length);
       }
 
-      function renderList(resetShown=true){
-        const list = getFilteredProfiles();
-        if(resetShown){
-          state.shown = Math.min(state.pageSize, list.length);
-        }
-
-        updateStats(list);
-        renderActiveFilters();
-
-        const container=$("#profiles-list");
-        if(!container) return;
-
-        if(!list.length){
-          container.innerHTML = `
-            <div class="glass rounded-[26px] p-6 text-white/70">
-              <div class="flex items-start gap-3">
-                <i data-lucide="search-x" class="h-5 w-5 text-[var(--accent)] mt-0.5"></i>
-                <div>
-                  <div class="font-black text-white">Brak wyników</div>
-                  <div class="text-sm text-white/65 mt-1">Spróbuj zmienić filtry lub wyczyścić wyszukiwanie.</div>
-                  <button id="btn-empty-reset" class="mt-4 btn btn-outline px-4 py-3" type="button">
-                    <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
-                    Wyczyść filtry
-                  </button>
-                </div>
-              </div>
-            </div>
-          `;
-          $("#btn-load-more").disabled = true;
-          $("#btn-load-more").classList.add("opacity-50","pointer-events-none");
-          try{ lucide.createIcons(); }catch{}
-          $("#btn-empty-reset")?.addEventListener("click", resetFilters);
-          return;
-        }
-
-        const shownList = list.slice(0, state.shown);
-        container.innerHTML = shownList.map(profileCardHTML).join("");
-
-        const canMore = state.shown < list.length;
-        $("#btn-load-more").disabled = !canMore;
-        $("#btn-load-more").classList.toggle("opacity-50", !canMore);
-        $("#btn-load-more").classList.toggle("pointer-events-none", !canMore);
-
-        $$("#profiles-list [data-action='open']").forEach(btn=>{
-          btn.addEventListener("click", ()=>{
-            const id=btn.getAttribute("data-id");
-            openProfileModalById(id, getFilteredProfiles());
-          });
-        });
-        $$("#profiles-list [data-action='save']").forEach(btn=>{
-          btn.addEventListener("click", ()=>{
-            const id=btn.getAttribute("data-id");
-            toggleSaved(id);
-            renderList(false);
-          });
-        });
-
-        try{ lucide.createIcons(); }catch{}
+      function toggleSave(id) {
+         const s = LS.getSaved();
+         if(s.has(id)) { s.delete(id); notify("Usunięto z zapisanych", "trash"); }
+         else { s.add(id); notify("Zapisano profil", "bookmark-check"); }
+         LS.setSaved(s);
+         renderList(false);
+         // Update active modal
+         if(state.modalOpen && state.modalList[state.modalIndex]?.id === id) {
+            updateModalContent();
+         }
       }
 
-      /* ---------------------- Saved ---------------------- */
-      function toggleSaved(id){
-        const set = LS.getSaved();
-        if(set.has(id)){
-          set.delete(id);
-          LS.setSaved(set);
-          notify("Usunięto z zapisanych", "bookmark-x");
-        }else{
-          set.add(id);
-          LS.setSaved(set);
-          notify("Zapisano profil", "bookmark");
-        }
+      /* --- MODAL LOGIC (New Style) --- */
+      function openModal(id, list) {
+         const fullList = list || getFilteredList();
+         state.modalList = fullList;
+         const idx = fullList.findIndex(p => p.id === id);
+         if(idx < 0) return;
+         state.modalIndex = idx;
+         state.modalOpen = true;
+         updateModalContent();
+         
+         $("#profile-modal").classList.remove("hidden");
+         $("#profile-modal").classList.add("flex");
+         $("#overlay").classList.remove("pointer-events-none", "opacity-0");
+         document.body.style.overflow = "hidden";
       }
 
-      /* ---------------------- Modal ---------------------- */
-      function setModalContent(p){
-        $("#modal-avatar").src = p.avatar || "";
-        $("#modal-name").textContent = p.name || "Profil";
-        const badges=[];
-        if(p.verified) badges.push(`<span class="badge badge-verified"><i data-lucide="badge-check" class="h-3.5 w-3.5"></i> Verified</span>`);
-        if(p.premium) badges.push(`<span class="badge badge-premium"><i data-lucide="zap" class="h-3.5 w-3.5"></i> Premium</span>`);
-        $("#modal-badges").innerHTML = badges.join("");
-
-        const sub = `${p.industryLabel || industryLabel(p.industry)} • ${p.location||"Online"} • ${p.availableIn||"—"}${p.minBudget?` • od ${formatMoney(p.minBudget)}`:""}`;
-        $("#modal-sub").textContent = sub;
-
-        const chips=[];
-        if(!LS.getSettings().hideRating) chips.push(`<span class="chip"><i data-lucide="star" class="h-3.5 w-3.5 text-[var(--accent)]"></i> Ocena ${escapeHTML(String(p.rating ?? "—"))}</span>`);
-        chips.push(`<span class="chip"><i data-lucide="clock-3" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(p.availableIn||"—")}</span>`);
-        chips.push(`<span class="chip"><i data-lucide="map-pin" class="h-3.5 w-3.5 text-[var(--accent)]"></i> ${escapeHTML(p.location||"Online")}</span>`);
-        if(!LS.getSettings().hideBudget && p.minBudget) chips.push(`<span class="chip"><i data-lucide="banknote" class="h-3.5 w-3.5 text-[var(--accent)]"></i> od ${escapeHTML(formatMoney(p.minBudget))}</span>`);
-        $("#modal-chips").innerHTML = chips.join("");
-
-        const portfolio=(p.portfolio||[]).slice(0,3);
-        $("#modal-portfolio").innerHTML = portfolio.map((src,i)=>`
-          <div class="thumb aspect-[16/10]">
-            <img src="${escapeHTML(src)}" alt="Portfolio ${i+1}" />
-          </div>
-        `).join("");
-
-        $("#modal-about").textContent = p.about || "";
-
-        const saved=isSaved(p.id);
-        const b=$("#btn-save-from-modal");
-        b.innerHTML = `<i data-lucide="bookmark" class="h-4 w-4"></i> ${saved ? "Zapisano" : "Zapisz"}`;
-        b.setAttribute("aria-pressed", saved ? "true" : "false");
-
-        try{ lucide.createIcons(); }catch{}
+      function closeModal() {
+         state.modalOpen = false;
+         $("#profile-modal").classList.add("hidden");
+         $("#profile-modal").classList.remove("flex");
+         if($("#user-panel").dataset.open !== "true") {
+            $("#overlay").classList.add("pointer-events-none", "opacity-0");
+            document.body.style.overflow = "";
+         }
       }
 
-      function openProfileModalById(id, listForModal){
-        const fullList = listForModal && listForModal.length ? listForModal : getFilteredProfiles();
-        state.modalList = fullList;
-        const idx = fullList.findIndex(p=>p.id===id);
-        state.modalIndex = idx >= 0 ? idx : 0;
-        const p = fullList[state.modalIndex];
-        if(!p) return;
+      function updateModalContent() {
+         const p = state.modalList[state.modalIndex];
+         if(!p) return;
+         
+         $("#modal-avatar").src = p.avatar || "";
+         $("#modal-name").textContent = p.name;
+         $("#modal-sub").textContent = `${industryLabel(p.industry)} • ${p.location||"Online"}`;
+         
+         let bHTML = "";
+         if(p.premium) bHTML += `<i data-lucide="zap" class="h-4 w-4 text-rose-500 fill-rose-500"></i>`;
+         if(p.verified) bHTML += `<i data-lucide="badge-check" class="h-4 w-4 text-emerald-500 fill-emerald-500"></i>`;
+         $("#modal-badges").innerHTML = bHTML;
 
-        state.lastFocus = document.activeElement;
-        setModalContent(p);
-        setModalOpen(true);
+         $("#modal-chips").innerHTML = [
+            `⭐️ ${p.rating}`, `💰 od ${p.minBudget||0} PLN`, p.industryLabel
+         ].map(t => `<span class="px-2 py-1 rounded bg-white/5 border border-white/5 text-xs text-slate-300 font-mono">${t}</span>`).join("");
 
-        const url = new URL(window.location.href);
-        url.hash = `profile=${encodeURIComponent(p.id)}`;
-        history.replaceState(null, "", url.toString());
+         $("#modal-portfolio").innerHTML = (p.portfolio||[]).slice(0,3).map(src => 
+            src ? `<img src="${escapeHTML(src)}" class="rounded-lg border border-white/10 hover:scale-105 transition-transform cursor-pointer" />` : `<div class="rounded-lg bg-white/5 h-20"></div>`
+         ).join("");
+
+         $("#modal-about").textContent = p.about || "";
+         
+         const saved = LS.getSaved().has(p.id);
+         const btn = $("#btn-save-from-modal");
+         btn.innerHTML = saved ? `<i data-lucide="bookmark-check" class="h-4 w-4"></i> Zapisano` : `<i data-lucide="bookmark" class="h-4 w-4"></i> Zapisz`;
+         btn.onclick = () => toggleSave(p.id);
+         
+         $("#btn-copy-name").onclick = () => { navigator.clipboard.writeText(p.name); notify("Skopiowano nick", "copy"); };
+
+         try{ lucide.createIcons(); }catch{}
       }
 
-      function closeProfileModal(){
-        const url = new URL(window.location.href);
-        url.hash = "katalog";
-        history.replaceState(null, "", url.toString());
-        setModalOpen(false);
+      /* --- USER PANEL LOGIC --- */
+      function togglePanel(open) {
+         const p = $("#user-panel");
+         p.dataset.open = open ? "true" : "false";
+         p.style.transform = open ? "translateX(0)" : "translateX(100%)";
+         if(open) {
+            $("#overlay").classList.remove("pointer-events-none", "opacity-0");
+            fillPanel();
+         } else if(!state.modalOpen) {
+            $("#overlay").classList.add("pointer-events-none", "opacity-0");
+         }
       }
 
-      function modalGo(delta){
-        if(!state.modalOpen) return;
-        const list=state.modalList || [];
-        if(!list.length) return;
-        state.modalIndex = (state.modalIndex + delta + list.length) % list.length;
-        const p=list[state.modalIndex];
-        setModalContent(p);
+      function fillPanel() {
+         const me = LS.getMe();
+         if(!me) return;
+         $("#panel-username").textContent = me.name;
+         $("#panel-avatar").src = me.avatar || "";
+         
+         $("#edit-name").value = me.name || "";
+         $("#edit-industry").value = me.industry || "dev";
+         $("#edit-about").value = me.about || "";
+         $("#edit-budget").value = me.minBudget || "";
+         $("#edit-availability").value = me.availability || "48h";
+         $("#edit-tags").value = (me.tags||[]).join(", ");
+         $("#edit-avatar-url").value = me.avatar || "";
+         $("#edit-portfolio-1").value = me.portfolio?.[0] || "";
+         $("#edit-portfolio-2").value = me.portfolio?.[1] || "";
+         $("#edit-portfolio-3").value = me.portfolio?.[2] || "";
 
-        const url = new URL(window.location.href);
-        url.hash = `profile=${encodeURIComponent(p.id)}`;
-        history.replaceState(null, "", url.toString());
+         $("#listing-title").value = me.listing?.title || "";
+         $("#listing-contact-main").value = me.listing?.contactMain || "Discord";
+         $("#listing-short").value = me.listing?.short || "";
+         $("#listing-long").value = me.listing?.long || "";
+         
+         const subs = LS.getSubs();
+         $("#panel-status").textContent = subs.premium ? "PREMIUM" : "FREE PLAN";
+         $("#panel-status").className = subs.premium ? "text-[10px] text-rose-400 font-bold uppercase tracking-wider" : "text-[10px] text-slate-500 uppercase font-bold tracking-wider";
       }
 
-      function tryOpenFromHash(){
-        const h = window.location.hash || "";
-        if(!h.startsWith("#profile=")) return false;
-        const id = decodeURIComponent(h.replace("#profile=",""));
-        const list = getFilteredProfiles();
-        const found = list.find(p=>p.id===id) || getAllProfiles().find(p=>p.id===id);
-        if(found){
-          openProfileModalById(found.id, list);
-          return true;
-        }
-        return false;
-      }
-
-      /* ---------------------- Filters bindings ---------------------- */
-      function syncFilterUI(){
-        $("#search-input").value = state.q;
-        $("#industry-select").value = state.industry;
-        $("#sort-select").value = state.sort;
-        $("#budget-min").value = state.budgetMin ?? "";
-        $("#budget-max").value = state.budgetMax ?? "";
-
-        const setChip = (id, on)=>{
-          const el=$(id);
-          if(!el) return;
-          el.dataset.active = on ? "true" : "false";
-          el.setAttribute("aria-pressed", on ? "true":"false");
-        };
-        setChip("#filter-saved", state.savedOnly);
-        setChip("#filter-premium", state.premiumOnly);
-        setChip("#filter-verified", state.verifiedOnly);
-        setChip("#filter-available", state.availableOnly);
-      }
-
-      function resetFilters(){
-        state.q="";
-        state.industry="all";
-        state.sort="recommended";
-        state.savedOnly=false;
-        state.premiumOnly=false;
-        state.verifiedOnly=false;
-        state.availableOnly=false;
-        state.budgetMin=null;
-        state.budgetMax=null;
-        syncFilterUI();
-        renderList(true);
-        notify("Wyczyszczono filtry", "rotate-ccw");
-      }
-
-      function bindFilters(){
-        const onSearch = debounce((e)=>{
-          state.q = e.target.value || "";
-          renderList(true);
-        }, 180);
-
-        $("#search-input")?.addEventListener("input", onSearch);
-
-        $("#industry-select")?.addEventListener("change",(e)=>{
-          state.industry = e.target.value;
-          renderList(true);
-        });
-
-        $("#sort-select")?.addEventListener("change",(e)=>{
-          state.sort = e.target.value;
-          renderList(true);
-        });
-
-        $("#filter-saved")?.addEventListener("click", ()=>{
-          state.savedOnly = !state.savedOnly;
-          syncFilterUI();
-          renderList(true);
-        });
-        $("#filter-premium")?.addEventListener("click", ()=>{
-          state.premiumOnly = !state.premiumOnly;
-          syncFilterUI();
-          renderList(true);
-        });
-        $("#filter-verified")?.addEventListener("click", ()=>{
-          state.verifiedOnly = !state.verifiedOnly;
-          syncFilterUI();
-          renderList(true);
-        });
-        $("#filter-available")?.addEventListener("click", ()=>{
-          state.availableOnly = !state.availableOnly;
-          syncFilterUI();
-          renderList(true);
-        });
-
-        $("#budget-min")?.addEventListener("input", debounce((e)=>{
-          const v = e.target.value.trim();
-          state.budgetMin = v==="" ? null : Math.max(0, Number(v));
-          renderList(true);
-        }, 150));
-
-        $("#budget-max")?.addEventListener("input", debounce((e)=>{
-          const v = e.target.value.trim();
-          state.budgetMax = v==="" ? null : Math.max(0, Number(v));
-          renderList(true);
-        }, 150));
-
-        $$("[data-budget-preset]").forEach(btn=>{
-          btn.addEventListener("click", ()=>{
-            const v = Number(btn.getAttribute("data-budget-preset")||"0");
-            if(v<=0){
-              state.budgetMax = null;
-              $("#budget-max").value = "";
-            }else{
-              state.budgetMax = v;
-              $("#budget-max").value = String(v);
-            }
-            renderList(true);
-          });
-        });
-
-        $("#btn-reset-filters")?.addEventListener("click", resetFilters);
-
-        $("#active-filters")?.addEventListener("click", (e)=>{
-          const t=e.target.closest("[data-action='remove-pill']");
-          if(!t) return;
-          const key = t.getAttribute("data-key");
-          if(!key) return;
-          switch(key){
-            case "q": state.q=""; break;
-            case "industry": state.industry="all"; break;
-            case "sort": state.sort="recommended"; break;
-            case "saved": state.savedOnly=false; break;
-            case "premium": state.premiumOnly=false; break;
-            case "verified": state.verifiedOnly=false; break;
-            case "avail": state.availableOnly=false; break;
-            case "bmin": state.budgetMin=null; break;
-            case "bmax": state.budgetMax=null; break;
-          }
-          syncFilterUI();
-          renderList(true);
-        });
-
-        $("#btn-load-more")?.addEventListener("click", ()=>{
-          const list=getFilteredProfiles();
-          state.shown = Math.min(state.shown + state.pageSize, list.length);
-          renderList(false);
-        });
-      }
-
-      /* ---------------------- Header / Mobile binds ---------------------- */
-      function bindHeader(){
-        const focusSearch = ()=>{
-          $("#search-input")?.scrollIntoView({behavior:"smooth", block:"center"});
-          setTimeout(()=>$("#search-input")?.focus(), 120);
-        };
-
-        $("#btn-jump-search")?.addEventListener("click", focusSearch);
-        $("#m-search")?.addEventListener("click", focusSearch);
-
-        const toggleSavedFilter = ()=>{
-          state.savedOnly = !state.savedOnly;
-          syncFilterUI();
-          renderList(true);
-          notify(state.savedOnly ? "Pokazuję zapisane" : "Wyłączono filtr zapisane", "bookmark");
-        };
-
-        $("#btn-open-saved")?.addEventListener("click", toggleSavedFilter);
-        $("#btn-open-saved-m")?.addEventListener("click", toggleSavedFilter);
-        $("#m-saved")?.addEventListener("click", toggleSavedFilter);
-
-        const openPanel=()=>setPanelOpen(true);
-        $("#btn-open-panel")?.addEventListener("click", openPanel);
-        $("#btn-open-panel-m")?.addEventListener("click", openPanel);
-        $("#btn-open-panel-inline")?.addEventListener("click", openPanel);
-        $("#m-account")?.addEventListener("click", openPanel);
-
-        $("#btn-close-panel")?.addEventListener("click", ()=>setPanelOpen(false));
-
-        $("#overlay")?.addEventListener("click", ()=>{
-          if(state.modalOpen) closeProfileModal();
-          else if($("#user-panel")?.dataset.open==="true") setPanelOpen(false);
-        });
-
-        document.addEventListener("keydown", (e)=>{
-          if(e.key==="Escape"){
-            if(state.modalOpen) closeProfileModal();
-            else if($("#user-panel")?.dataset.open==="true") setPanelOpen(false);
-          }
-
-          const s=LS.getSettings();
-          if(s.slash && e.key==="/" && !e.ctrlKey && !e.metaKey && !e.altKey){
-            const tag = (document.activeElement?.tagName || "").toLowerCase();
-            const isTyping = tag==="input" || tag==="textarea" || tag==="select";
-            if(!isTyping){
-              e.preventDefault();
-              $("#search-input")?.focus();
-            }
-          }
-
-          if(state.modalOpen){
-            if(e.key==="ArrowLeft") modalGo(-1);
-            if(e.key==="ArrowRight") modalGo(1);
-          }
-        }, {passive:false});
-      }
-
-      /* ---------------------- Modal binds ---------------------- */
-      function bindModal(){
-        $("#modal-close")?.addEventListener("click", closeProfileModal);
-        $("#modal-prev")?.addEventListener("click", ()=>modalGo(-1));
-        $("#modal-next")?.addEventListener("click", ()=>modalGo(1));
-
-        $("#btn-copy-name")?.addEventListener("click", async ()=>{
-          const name = $("#modal-name")?.textContent || "";
-          try{
-            await navigator.clipboard.writeText(name);
-            notify("Skopiowano nick", "copy");
-          }catch{
-            notify("Nie udało się skopiować", "alert-triangle");
-          }
-        });
-
-        $("#btn-save-from-modal")?.addEventListener("click", ()=>{
-          const list=state.modalList||[];
-          const p=list[state.modalIndex];
-          if(!p) return;
-          toggleSaved(p.id);
-          setModalContent(p);
-          renderList(false);
-        });
-      }
-
-      /* ---------------------- Panel tabs ---------------------- */
-      function bindPanelTabs(){
-        const panel=$("#user-panel");
-        if(!panel) return;
-
-        const navBtns = $$("#user-panel [data-tab]");
-
-        const setTab=(tab)=>{
-          navBtns.forEach(b=>{
-            const active = b.getAttribute("data-tab")===tab;
-            b.classList.toggle("bg-white/10", active);
-            b.classList.toggle("font-semibold", active);
-            b.classList.toggle("text-white", active);
-            b.classList.toggle("text-white/70", !active);
-
-            const icon = b.querySelector("i[data-lucide]");
-            if(icon){
-              icon.classList.toggle("text-[var(--accent)]", active);
-            }
-          });
-
-          ["edit","preview","listing","shop","settings","security"].forEach(t=>{
-            const sec=$("#tab-"+t);
-            if(sec) sec.classList.toggle("hidden", t!==tab);
-          });
-
-          if(tab==="preview") renderPreviewCard();
-          if(tab==="settings") syncSettingsUI();
-          try{ lucide.createIcons(); }catch{}
-        };
-
-        navBtns.forEach(btn=>{
-          btn.addEventListener("click", ()=>setTab(btn.getAttribute("data-tab")));
-        });
-
-        setTab("edit");
-      }
-
-      function setSaveStatus(txt){
-        const el=$("#save-status");
-        if(el) el.textContent = txt;
-      }
-
-      function updatePlanUI(){
-        const subs=LS.getSubs();
-        const planEl=$("#plan-status");
-        const p=[];
-        if(subs.premium) p.push("Premium");
-        if(subs.verified) p.push("Verified");
-        planEl.textContent = p.length ? p.join(" + ") : "Standard";
+      function saveProfile() {
+         const me = LS.getMe();
+         me.name = $("#edit-name").value;
+         me.industry = $("#edit-industry").value;
+         me.about = $("#edit-about").value;
+         me.minBudget = parseInt($("#edit-budget").value) || 0;
+         me.availability = $("#edit-availability").value;
+         me.tags = $("#edit-tags").value.split(",").map(s=>s.trim()).filter(Boolean);
+         me.avatar = $("#edit-avatar-url").value;
+         me.portfolio = [$("#edit-portfolio-1").value, $("#edit-portfolio-2").value, $("#edit-portfolio-3").value];
+         
+         me.listing = me.listing || {};
+         me.listing.title = $("#listing-title").value;
+         me.listing.contactMain = $("#listing-contact-main").value;
+         me.listing.short = $("#listing-short").value;
+         me.listing.long = $("#listing-long").value;
+         
+         LS.setMe(me);
+         notify("Zapisano profil", "save");
+         renderList(false);
+         fillPanel();
+         renderPreviewCard();
       }
 
       function renderPreviewCard(){
-        const me=LS.getMe();
-        const subs=LS.getSubs();
-        if(!me) return;
-        const meProfile = {
-          id: me.id || "me",
-          name: me.name || "Me",
-          industry: me.industry || "dev",
-          industryLabel: industryLabel(me.industry || "dev"),
-          tagline: me.listing?.title || "Ogłoszenie",
-          about: me.listing?.long || me.about || "",
-          rating: 4.9,
-          availableIn: me.availability || "48h",
-          minBudget: Number(me.minBudget || 0) || 0,
-          location: "Online",
-          premium: !!subs.premium,
-          verified: !!subs.verified,
-          avatar: me.avatar || "",
-          portfolio: (me.portfolio || ["","",""]).filter(Boolean).length ? me.portfolio : [
-            "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=900&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=900&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?q=80&w=900&auto=format&fit=crop"
-          ],
-          createdAt: now()
-        };
-        $("#preview-card").innerHTML = profileCardHTML(meProfile);
-        try{ lucide.createIcons(); }catch{}
-
-        $("#preview-card [data-action='open']")?.addEventListener("click", ()=>{
-          openProfileModalById(meProfile.id, getFilteredProfiles());
-        });
-        $("#preview-card [data-action='save']")?.addEventListener("click", ()=>{
-          toggleSaved(meProfile.id);
-          renderPreviewCard();
-          renderList(false);
-        });
+         const me = LS.getMe();
+         const subs = LS.getSubs();
+         $("#preview-card").innerHTML = profileCardHTML({...me, ...me.listing, industryLabel: industryLabel(me.industry), premium:subs.premium, verified:subs.verified, id:"me"});
+         try{ lucide.createIcons(); }catch{}
       }
 
-      function fillPanelFromMe(){
-        const me=LS.getMe();
-        if(!me) return;
-        $("#panel-avatar").src = me.avatar || "";
-        $("#panel-username").textContent = me.name || "Użytkownik";
+      /* --- EVENTS --- */
+      function bindEvents() {
+         $("#search-input").oninput = debounce((e) => { state.q = e.target.value; renderList(true); });
+         $("#industry-select").onchange = (e) => { state.industry = e.target.value; renderList(true); };
+         $("#sort-select").onchange = (e) => { state.sort = e.target.value; renderList(true); };
+         $("#budget-min").oninput = debounce((e) => { state.budgetMin = parseInt(e.target.value)||null; renderList(true); });
+         $("#budget-max").oninput = debounce((e) => { state.budgetMax = parseInt(e.target.value)||null; renderList(true); });
+         
+         const bindChip = (id, prop) => {
+            $(id).onclick = () => { 
+               state[prop] = !state[prop]; 
+               $(id).dataset.active = state[prop];
+               renderList(true);
+               if(state[prop]) notify("Filtr włączony", "filter");
+            };
+         };
+         bindChip("#filter-saved", "savedOnly");
+         bindChip("#filter-premium", "premiumOnly");
+         bindChip("#filter-verified", "verifiedOnly");
+         bindChip("#filter-available", "availableOnly");
 
-        $("#edit-name").value = me.name || "";
-        $("#edit-industry").value = me.industry || "dev";
-        $("#edit-about").value = me.about || "";
-        $("#edit-availability").value = me.availability || "48h";
-        $("#edit-budget").value = String(me.minBudget ?? "");
-        $("#edit-tags").value = (me.tags || []).join(", ");
-        $("#edit-avatar-url").value = me.avatar || "";
+         $("#btn-reset-filters").onclick = () => {
+             state.q = ""; state.industry = "all"; state.premiumOnly = false; state.verifiedOnly = false; state.budgetMin = null; state.budgetMax=null;
+             $("#search-input").value = ""; $("#budget-min").value = ""; $("#budget-max").value = "";
+             $$(".tag-modern").forEach(t => t.dataset.active = "false");
+             renderList(true);
+             notify("Wyczyszczono filtry", "rotate-ccw");
+         };
 
-        $("#edit-portfolio-1").value = me.portfolio?.[0] || "";
-        $("#edit-portfolio-2").value = me.portfolio?.[1] || "";
-        $("#edit-portfolio-3").value = me.portfolio?.[2] || "";
+         $("#active-filters").onclick = (e) => {
+            const t = e.target.closest("[data-action='remove-pill']");
+            if(!t) return;
+            const k = t.dataset.key;
+            if(k=="q") state.q=""; 
+            if(k=="industry") state.industry="all";
+            if(k=="saved") state.savedOnly=false;
+            if(k=="premium") state.premiumOnly=false;
+            if(k=="verified") state.verifiedOnly=false;
+            if(k=="avail") state.availableOnly=false;
+            if(k=="bmin") state.budgetMin=null;
+            if(k=="bmax") state.budgetMax=null;
+            renderList(true);
+         };
 
-        $("#listing-title").value = me.listing?.title || "";
-        $("#listing-contact-main").value = me.listing?.contactMain || "Discord";
-        $("#listing-short").value = me.listing?.short || "";
-        $("#listing-long").value = me.listing?.long || "";
-      }
+         $("#btn-load-more").onclick = () => { state.shown += state.pageSize; renderList(false); };
 
-      const autosave = debounce(()=>{
-        const me=LS.getMe();
-        if(!me) return;
-
-        const name=$("#edit-name").value.trim();
-        const industry=$("#edit-industry").value;
-        const about=$("#edit-about").value;
-        const avail=$("#edit-availability").value;
-        const budget = Number($("#edit-budget").value || 0);
-        const tags = $("#edit-tags").value.split(",").map(s=>s.trim()).filter(Boolean).slice(0,12);
-        const avatarUrl=$("#edit-avatar-url").value.trim();
-
-        const p1=$("#edit-portfolio-1").value.trim();
-        const p2=$("#edit-portfolio-2").value.trim();
-        const p3=$("#edit-portfolio-3").value.trim();
-
-        me.name = name || me.name;
-        me.industry = industry || me.industry;
-        me.about = about;
-        me.availability = avail;
-        me.minBudget = Number.isFinite(budget) ? budget : me.minBudget;
-        me.tags = tags;
-        if(avatarUrl) me.avatar = avatarUrl;
-        me.portfolio = [p1,p2,p3];
-
-        me.listing = me.listing || {};
-        me.listing.title = $("#listing-title").value;
-        me.listing.contactMain = $("#listing-contact-main").value;
-        me.listing.short = $("#listing-short").value;
-        me.listing.long = $("#listing-long").value;
-
-        LS.setMe(me);
-        setSaveStatus("Zapisano automatycznie");
-        setTimeout(()=>setSaveStatus("Wszystko zapisane"), 900);
-
-        $("#panel-avatar").src = me.avatar || "";
-        $("#panel-username").textContent = me.name || "Użytkownik";
-
-        renderList(false);
-      }, 350);
-
-      function bindPanelForms(){
-        [
-          "edit-name","edit-industry","edit-about","edit-availability","edit-budget","edit-tags","edit-avatar-url",
-          "edit-portfolio-1","edit-portfolio-2","edit-portfolio-3",
-          "listing-title","listing-contact-main","listing-short","listing-long"
-        ].forEach(id=>{
-          $("#"+id)?.addEventListener("input", ()=>{
-            setSaveStatus("Edytujesz…");
-            autosave();
-          });
-          $("#"+id)?.addEventListener("change", ()=>{
-            setSaveStatus("Edytujesz…");
-            autosave();
-          });
-        });
-
-        $("#btn-save-profile")?.addEventListener("click", ()=>{
-          notify("Zapisano profil", "save");
-          renderPreviewCard();
-          renderList(false);
-        });
-
-        $("#btn-reset-profile")?.addEventListener("click", ()=>{
-          fillPanelFromMe();
-          notify("Przywrócono wartości", "rotate-ccw");
-        });
-
-        $("#btn-open-me-modal")?.addEventListener("click", ()=>{
-          openProfileModalById("me", getFilteredProfiles());
-        });
-
-        $("#btn-publish")?.addEventListener("click", ()=>{
-          const me=LS.getMe();
-          if(!me) return;
-          me.listing = me.listing || {};
-          me.listing.published = true;
-          LS.setMe(me);
-          notify("Opublikowano ogłoszenie", "rocket");
-          renderList(false);
-        });
-
-        $("#btn-unpublish")?.addEventListener("click", ()=>{
-          const me=LS.getMe();
-          if(!me) return;
-          me.listing = me.listing || {};
-          me.listing.published = false;
-          LS.setMe(me);
-          notify("Ukryto ogłoszenie", "eye-off");
-          renderList(false);
-        });
-
-        $("#btn-buy-premium")?.addEventListener("click", ()=>{
-          const subs=LS.getSubs();
-          subs.premium = true;
-          LS.setSubs(subs);
-          notify("Aktywowano Premium", "zap");
-          updatePlanUI();
-          renderList(false);
-          renderPreviewCard();
-        });
-        $("#btn-cancel-premium")?.addEventListener("click", ()=>{
-          const subs=LS.getSubs();
-          subs.premium = false;
-          LS.setSubs(subs);
-          notify("Wyłączono Premium", "x-circle");
-          updatePlanUI();
-          renderList(false);
-          renderPreviewCard();
-        });
-        $("#btn-buy-verified")?.addEventListener("click", ()=>{
-          const subs=LS.getSubs();
-          subs.verified = true;
-          LS.setSubs(subs);
-          notify("Aktywowano Verified", "badge-check");
-          updatePlanUI();
-          renderList(false);
-          renderPreviewCard();
-        });
-        $("#btn-cancel-verified")?.addEventListener("click", ()=>{
-          const subs=LS.getSubs();
-          subs.verified = false;
-          LS.setSubs(subs);
-          notify("Wyłączono Verified", "x-circle");
-          updatePlanUI();
-          renderList(false);
-          renderPreviewCard();
-        });
-      }
-
-      /* ---------------------- Settings ---------------------- */
-      function syncSettingsUI(){
-        const s=LS.getSettings();
-        $("#set-toast").checked = !!s.toast;
-        $("#set-slash").checked = !!s.slash;
-        $("#set-hide-budget").checked = !!s.hideBudget;
-        $("#set-hide-rating").checked = !!s.hideRating;
-        $("#set-focus-trap").checked = !!s.focusTrap;
-      }
-
-      function bindSettings(){
-        const apply=()=>{
-          const s={
-            toast: $("#set-toast").checked,
-            slash: $("#set-slash").checked,
-            hideBudget: $("#set-hide-budget").checked,
-            hideRating: $("#set-hide-rating").checked,
-            focusTrap: $("#set-focus-trap").checked
-          };
-          LS.setSettings(s);
-          notify("Zapisano ustawienia", "settings");
-          renderList(false);
-          if(state.modalOpen){
-            const p = state.modalList?.[state.modalIndex];
-            if(p) setModalContent(p);
-          }
-        };
-
-        ["set-toast","set-slash","set-hide-budget","set-hide-rating","set-focus-trap"].forEach(id=>{
-          $("#"+id)?.addEventListener("change", apply);
-        });
-
-        $("#btn-reset-settings")?.addEventListener("click", ()=>{
-          LS.setSettings({toast:true, slash:true, hideBudget:false, hideRating:false, focusTrap:true});
-          syncSettingsUI();
-          notify("Przywrócono ustawienia", "rotate-ccw");
-          renderList(false);
-        });
-      }
-
-      /* ---------------------- Boot ---------------------- */
-      function boot(){
-        ensureInit();
-        bindHeaderHeightVar();
-
-        $("#footer-year").textContent = "© " + new Date().getFullYear();
-        updatePlanUI();
-
-        createParticles();
-
-        // JWT (opcjonalnie)
-        const authToken = localStorage.getItem("authToken");
-        if(authToken){
-          const userData = decodeJwt(authToken);
-          if(userData){
-            const balEl = $("#header-vpln-balance");
-            if(balEl){
-              balEl.textContent = `${(userData.vplnBalance || 0).toFixed(2)} VPLN`;
+         $("#modal-close").onclick = closeModal;
+         $("#overlay").onclick = () => { closeModal(); togglePanel(false); };
+         $("#modal-next").onclick = () => { if(state.modalOpen) { state.modalIndex = (state.modalIndex+1)%state.modalList.length; updateModalContent(); }};
+         $("#modal-prev").onclick = () => { if(state.modalOpen) { state.modalIndex = (state.modalIndex-1+state.modalList.length)%state.modalList.length; updateModalContent(); }};
+         document.onkeydown = (e) => { 
+            if(e.key === "Escape") { closeModal(); togglePanel(false); }
+            if(state.modalOpen) {
+                if(e.key === "ArrowRight") $("#modal-next").click();
+                if(e.key === "ArrowLeft") $("#modal-prev").click();
             }
-            const u = $("#panel-username");
-            if(u && userData.username) u.textContent = userData.username;
-          }
-        }
+            if(e.key === "/" && !["INPUT","TEXTAREA"].includes(document.activeElement.tagName) && LS.getSettings().slash) {
+               e.preventDefault(); $("#search-input").focus();
+            }
+         };
 
-        $("#logout-btn")?.addEventListener("click", (e)=>{
-          e.preventDefault();
-          localStorage.removeItem("authToken");
-          window.location.href = "./index.html";
-        });
+         $("#btn-open-panel").onclick = () => togglePanel(true);
+         $("#btn-open-panel-m").onclick = () => togglePanel(true);
+         $("#btn-open-panel-inline").onclick = () => togglePanel(true);
+         $("#m-account").onclick = () => togglePanel(true);
+         $("#btn-close-panel").onclick = () => togglePanel(false);
+         
+         $$(".nav-tab").forEach(t => t.onclick = () => {
+            $$(".nav-tab").forEach(x => { x.classList.remove("text-white","bg-white/5"); x.classList.add("text-slate-400"); });
+            t.classList.add("text-white","bg-white/5");
+            t.classList.remove("text-slate-400");
+            ["edit","listing","preview","shop","settings","security"].forEach(s => $(`#tab-${s}`).classList.add("hidden"));
+            $(`#tab-${t.dataset.tab}`).classList.remove("hidden");
+            if(t.dataset.tab === "preview") renderPreviewCard();
+         });
 
-        initProgress();
-        initReveal();
-        
-        // ZMIANA: Wyłączono observer (Sticky Filters disabled)
-        // initStickyFiltersObserver(); 
+         $("#btn-save-profile").onclick = saveProfile;
+         $("#btn-reset-profile").onclick = () => { fillPanel(); notify("Cofnięto zmiany", "rotate-ccw"); };
+         $("#btn-open-me-modal").onclick = () => { togglePanel(false); openModal("me", getFilteredList()); };
+         $("#btn-publish").onclick = () => { const me = LS.getMe(); me.listing.published = true; LS.setMe(me); notify("Opublikowano!", "rocket"); renderList(false); };
+         $("#btn-unpublish").onclick = () => { const me = LS.getMe(); me.listing.published = false; LS.setMe(me); notify("Ukryto ogłoszenie", "eye-off"); renderList(false); };
+         
+         $("#btn-buy-premium").onclick = () => { LS.setSubs({...LS.getSubs(), premium:true}); notify("Witaj w Premium!", "zap"); fillPanel(); };
+         $("#btn-cancel-premium").onclick = () => { LS.setSubs({...LS.getSubs(), premium:false}); notify("Anulowano Premium", "info"); fillPanel(); };
+         $("#btn-buy-verified").onclick = () => { LS.setSubs({...LS.getSubs(), verified:true}); notify("Konto zweryfikowane!", "check-circle"); fillPanel(); };
+         $("#btn-cancel-verified").onclick = () => { LS.setSubs({...LS.getSubs(), verified:false}); notify("Anulowano weryfikację", "info"); fillPanel(); };
+         
+         $("#set-toast").onchange = (e) => LS.setSettings({...LS.getSettings(), toast:e.target.checked});
+         $("#set-slash").onchange = (e) => LS.setSettings({...LS.getSettings(), slash:e.target.checked});
+         $("#set-hide-budget").onchange = (e) => LS.setSettings({...LS.getSettings(), hideBudget:e.target.checked});
+         $("#set-hide-rating").onchange = (e) => LS.setSettings({...LS.getSettings(), hideRating:e.target.checked});
+         $("#set-focus-trap").onchange = (e) => LS.setSettings({...LS.getSettings(), focusTrap:e.target.checked});
+         $("#btn-reset-settings").onclick = () => { LS.setSettings({toast:true, slash:true, hideBudget:false, hideRating:false, focusTrap:true}); syncSettings(); notify("Przywrócono domyślne", "rotate-ccw"); };
 
-        bindFilters();
-        bindHeader();
-        bindModal();
+         window.onscroll = () => {
+             const h = document.documentElement, b = document.body, st = 'scrollTop', sh = 'scrollHeight';
+             const pct = (h[st]||b[st]) / ((h[sh]||b[sh]) - h.clientHeight) * 100;
+             $("#scroll-progress").style.width = pct + "%";
+             $("#app-header").classList.toggle("bg-[#030712]/80", window.scrollY > 50);
+             $("#app-header").classList.toggle("border-white/5", window.scrollY > 50);
+         };
+         
+         $("#m-search").onclick = () => { window.scrollTo({top:0, behavior:'smooth'}); $("#search-input").focus(); };
+         $("#m-saved").onclick = () => { state.savedOnly = !state.savedOnly; renderList(true); notify(state.savedOnly?"Pokaż zapisane":"Wszystkie", "bookmark"); };
+      }
 
-        bindPanelTabs();
-        fillPanelFromMe();
-        bindPanelForms();
-        bindSettings();
+      function syncSettings(){
+         const s = LS.getSettings();
+         $("#set-toast").checked = s.toast; 
+         $("#set-slash").checked = s.slash; 
+         $("#set-hide-budget").checked = s.hideBudget; 
+         $("#set-hide-rating").checked = s.hideRating; 
+         $("#set-focus-trap").checked = s.focusTrap;
+      }
 
-        syncFilterUI();
-        renderList(true);
-
-        setTimeout(()=>{ tryOpenFromHash(); }, 30);
-
-        try{ lucide.createIcons(); }catch{}
+      /* --- INIT --- */
+      function boot(){
+         ensureInit();
+         state.pageSize = 6; state.shown = 6;
+         bindEvents();
+         syncSettings();
+         renderList(true);
+         // Auto-open active tab
+         $(`[data-tab="edit"]`).click();
+         setTimeout(() => { if(window.location.hash.startsWith("#profile=")) openModal(decodeURIComponent(window.location.hash.slice(9))); }, 100);
       }
 
       document.addEventListener("DOMContentLoaded", boot);
