@@ -7,7 +7,6 @@
   
   <meta name="description" content="Dołącz do profesjonalnej platformy dla freelancerów." />
   <meta name="theme-color" content="#0a1030" />
-   <link rel="icon" type="image/png" href="favicon.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -174,7 +173,7 @@
     <div class="w-full max-w-md px-8 py-10 relative flex flex-col h-full lg:h-auto justify-center">
       
       <div class="mb-10 text-center lg:text-left">
-        <a href="index.html" class="inline-flex items-center gap-3 mb-8 group hover:opacity-80 transition">
+        <a href="/" class="inline-flex items-center gap-3 mb-8 group hover:opacity-80 transition">
           <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="h-10 w-auto drop-shadow-[0_0_15px_rgba(255,3,84,0.5)]" />
           <span class="font-bold text-xl tracking-tight">Velorie Market</span>
         </a>
@@ -189,7 +188,7 @@
 
       <div class="thin-scroll lg:max-h-[60vh] overflow-y-auto pr-2">
         
-        <form id="view-login" class="form-view active space-y-5" onsubmit="event.preventDefault();">
+        <form id="view-login" class="form-view active space-y-5" onsubmit="handleLogin(event)">
           
           <div class="v-input-group">
             <input type="email" placeholder="Adres email" class="v-input" required />
@@ -225,7 +224,7 @@
           </button>
         </form>
 
-        <form id="view-register" class="form-view space-y-5" onsubmit="validateRegister(event)">
+        <form id="view-register" class="form-view space-y-5" onsubmit="handleRegister(event)">
           
           <div class="grid grid-cols-2 gap-4">
             <label>
@@ -364,6 +363,10 @@
   <script>
     lucide.createIcons();
 
+    // === KONFIGURACJA API ===
+    // Dla Railway używamy relatywnej ścieżki (frontend i backend to to samo)
+    const API_URL = '/api'; 
+
     const tabLogin = document.getElementById('tab-login');
     const tabRegister = document.getElementById('tab-register');
     const viewLogin = document.getElementById('view-login');
@@ -383,20 +386,110 @@
       }
     }
 
-    function validateRegister(e) {
+    // === LOGIKA REJESTRACJI (Połączona z backendem) ===
+    async function handleRegister(e) {
       e.preventDefault();
+      
+      const form = e.target;
+      const submitBtn = form.querySelector('button');
+      const originalBtnContent = submitBtn.innerHTML; // Zapamiętujemy tekst i ikonę
+
+      // Pobranie danych z formularza
+      const email = form.querySelector('input[type="email"]').value;
+      const username = form.querySelector('input[placeholder="Nazwa użytkownika / Firmy"]').value;
+      
+      // Pobranie roli (radio button)
+      let role = 'freelancer';
+      const roleInput = document.querySelector('input[name="role"]:checked');
+      if (roleInput) role = roleInput.value;
+
       const p1 = document.getElementById('reg-pass').value;
       const p2 = document.getElementById('reg-pass-2').value;
 
+      // Szybka walidacja frontendu
       if(p1 !== p2) {
         alert("Hasła nie są identyczne!");
-        return false;
+        return;
       }
       if(p1.length < 6) {
-        alert("Hasło za krótkie!");
-        return false;
+        alert("Hasło musi mieć minimum 6 znaków!");
+        return;
       }
-      alert("Wygląda dobrze! (Symulacja)");
+
+      // Stan ładowania
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Tworzenie konta...</span>';
+
+      try {
+        const response = await fetch(`${API_URL}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, username, password: p1, role })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Wystąpił błąd rejestracji');
+        }
+
+        // Sukces
+        alert("Konto utworzone pomyślnie! Możesz się zalogować.");
+        form.reset(); // Czyści formularz
+        switchTab('login'); // Przełącza na logowanie
+        
+        // Opcjonalnie: automatycznie wpisz email w logowaniu
+        viewLogin.querySelector('input[type="email"]').value = email;
+
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        // Przywrócenie przycisku
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnContent;
+        lucide.createIcons(); // Ważne: przywraca ikonę w przycisku
+      }
+    }
+
+    // === LOGIKA LOGOWANIA (Połączona z backendem) ===
+    async function handleLogin(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const submitBtn = form.querySelector('button');
+        const originalBtnContent = submitBtn.innerHTML;
+
+        const email = form.querySelector('input[type="email"]').value;
+        const password = form.querySelector('input[type="password"]').value;
+
+        // Stan ładowania
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>Logowanie...</span>';
+
+        try {
+            const response = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Błąd logowania');
+            }
+
+            // Sukces - Przekierowanie
+            // Tutaj możesz zapisać token JWT jeśli go używasz (localStorage.setItem('token', data.token))
+            window.location.href = '/'; 
+
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnContent;
+            lucide.createIcons();
+        }
     }
   </script>
 </body>
