@@ -7,6 +7,7 @@
   
   <meta name="description" content="Dołącz do profesjonalnej platformy dla freelancerów." />
   <meta name="theme-color" content="#0a1030" />
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -38,7 +39,7 @@
         radial-gradient(circle at 85% 30%, rgba(255,3,84,0.08), transparent 40%);
     }
 
-    /* Inputy premium */
+    /* Inputy */
     .v-input-group { position: relative; transition: all 0.3s ease; }
     .v-input {
       width: 100%;
@@ -182,8 +183,8 @@
       </div>
 
       <div class="flex gap-8 border-b border-white/10 mb-8">
-        <button onclick="switchTab('login')" id="tab-login" class="tab-btn active pb-2 text-sm font-semibold uppercase tracking-wider">Logowanie</button>
-        <button onclick="switchTab('register')" id="tab-register" class="tab-btn pb-2 text-sm font-semibold uppercase tracking-wider">Rejestracja</button>
+        <button id="tab-login" type="button" class="tab-btn active pb-2 text-sm font-semibold uppercase tracking-wider">Logowanie</button>
+        <button id="tab-register" type="button" class="tab-btn pb-2 text-sm font-semibold uppercase tracking-wider">Rejestracja</button>
       </div>
 
       <div class="thin-scroll lg:max-h-[60vh] overflow-y-auto pr-2">
@@ -372,15 +373,23 @@
     const viewLogin = document.getElementById('view-login');
     const viewRegister = document.getElementById('view-register');
 
+    // === LOGIKA ZAKŁADEK (NAPRAWIONA) ===
+    if(tabLogin && tabRegister) {
+      tabLogin.addEventListener('click', function() { switchTab('login'); });
+      tabRegister.addEventListener('click', function() { switchTab('register'); });
+    }
+
     function switchTab(mode) {
       if(mode === 'login') {
         tabLogin.classList.add('active');
         tabRegister.classList.remove('active');
+        
         viewLogin.classList.add('active');
         viewRegister.classList.remove('active');
       } else {
         tabRegister.classList.add('active');
         tabLogin.classList.remove('active');
+        
         viewRegister.classList.add('active');
         viewLogin.classList.remove('active');
       }
@@ -392,13 +401,11 @@
       
       const form = e.target;
       const submitBtn = form.querySelector('button');
-      const originalBtnContent = submitBtn.innerHTML; // Zapamiętujemy tekst i ikonę
+      const originalBtnContent = submitBtn.innerHTML; 
 
-      // Pobranie danych z formularza
       const email = form.querySelector('input[type="email"]').value;
       const username = form.querySelector('input[placeholder="Nazwa użytkownika / Firmy"]').value;
       
-      // Pobranie roli (radio button)
       let role = 'freelancer';
       const roleInput = document.querySelector('input[name="role"]:checked');
       if (roleInput) role = roleInput.value;
@@ -406,7 +413,6 @@
       const p1 = document.getElementById('reg-pass').value;
       const p2 = document.getElementById('reg-pass-2').value;
 
-      // Szybka walidacja frontendu
       if(p1 !== p2) {
         alert("Hasła nie są identyczne!");
         return;
@@ -416,7 +422,6 @@
         return;
       }
 
-      // Stan ładowania
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span>Tworzenie konta...</span>';
 
@@ -433,21 +438,19 @@
             throw new Error(data.error || 'Wystąpił błąd rejestracji');
         }
 
-        // Sukces
         alert("Konto utworzone pomyślnie! Możesz się zalogować.");
-        form.reset(); // Czyści formularz
-        switchTab('login'); // Przełącza na logowanie
+        form.reset(); 
+        switchTab('login'); 
         
-        // Opcjonalnie: automatycznie wpisz email w logowaniu
-        viewLogin.querySelector('input[type="email"]').value = email;
+        const loginEmail = viewLogin.querySelector('input[type="email"]');
+        if(loginEmail) loginEmail.value = email;
 
       } catch (err) {
         alert(err.message);
       } finally {
-        // Przywrócenie przycisku
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalBtnContent;
-        lucide.createIcons(); // Ważne: przywraca ikonę w przycisku
+        lucide.createIcons(); 
       }
     }
 
@@ -462,7 +465,6 @@
         const email = form.querySelector('input[type="email"]').value;
         const password = form.querySelector('input[type="password"]').value;
 
-        // Stan ładowania
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span>Logowanie...</span>';
 
@@ -480,7 +482,6 @@
             }
 
             // Sukces - Przekierowanie
-            // Tutaj możesz zapisać token JWT jeśli go używasz (localStorage.setItem('token', data.token))
             window.location.href = '/'; 
 
         } catch (err) {
