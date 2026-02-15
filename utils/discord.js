@@ -1,5 +1,5 @@
-const { Client, GatewayIntentBits } = require('discord.js');
-const User = require('../models/User'); 
+const { Client, GatewayIntentBits, Events } = require('discord.js'); // Dodano Events
+const User = require('../models/User');
 
 const client = new Client({ 
     intents: [GatewayIntentBits.Guilds] 
@@ -15,37 +15,32 @@ const initDiscord = (token, channelId) => {
     
     statsChannelId = channelId;
     
-    client.login(token)
-        .then(() => console.log(`🤖 Discord Bot zalogowany jako ${client.user.tag}`))
-        .catch(err => console.error("❌ Błąd logowania do Discorda:", err));
+    client.login(token).catch(err => console.error("❌ Błąd logowania do Discorda:", err));
 };
+
+// === TU BYŁA ZMIANA (używamy Events.ClientReady) ===
+client.once(Events.ClientReady, (c) => {
+    console.log(`🤖 Discord Bot zalogowany jako ${c.user.tag}`);
+    updateDiscordStats();
+});
 
 const updateDiscordStats = async () => {
     if (!client.isReady() || !statsChannelId) return;
 
     try {
-     
         const count = await User.countDocuments();
-        
-       
         const channel = await client.channels.fetch(statsChannelId);
         
         if (channel) {
-        
             await channel.setName(`🚀〢Zarejestrowani : ${count}`);
-            
             console.log(`✅ [Discord] Zaktualizowano licznik: ${count}`);
-        } else {
-            console.error(`❌ [Discord] Nie znaleziono kanału o ID: ${statsChannelId}`);
         }
     } catch (error) {
-       
-        console.error("❌ [Discord] Błąd aktualizacji:", error.message);
+        // Ignorujemy błędy limitów czasowych (Rate Limits), są normalne przy częstych zmianach
+        if (error.code !== 50013 && error.code !== 50001) { 
+            console.error("❌ [Discord] Błąd aktualizacji:", error.message);
+        }
     }
 };
-
-client.once('ready', () => {
-    updateDiscordStats();
-});
 
 module.exports = { initDiscord, updateDiscordStats };
