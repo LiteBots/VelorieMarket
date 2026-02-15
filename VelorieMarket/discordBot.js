@@ -42,7 +42,7 @@ const initDiscordBot = () => {
     return;
   }
 
-  client.once('ready', () => {
+  client.once('clientReady', () => {
     console.log(`🤖 [Discord] Zalogowano jako ${client.user.tag}`);
     updateDiscordStats(); // Pierwsze odświeżenie po starcie
   });
