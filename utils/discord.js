@@ -29,7 +29,7 @@ async function updateDiscordStats() {
         // KLUCZOWY MOMENT: Liczenie użytkowników w bazie
         const count = await User.countDocuments(); 
         
-        await channel.setName(`Użytkownicy: ${count}`);
+        await channel.setName(`🚀〢 Użytkownicy: ${count}`);
         console.log(`✅ [Discord] Zaktualizowano licznik: ${count}`);
     } catch (err) {
         console.error("❌ [Discord] Błąd podczas aktualizacji licznika:", err.message);
