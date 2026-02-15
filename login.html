@@ -39,7 +39,7 @@
         radial-gradient(circle at 85% 30%, rgba(255,3,84,0.08), transparent 40%);
     }
 
-    /* Inputy */
+    /* Inputy premium */
     .v-input-group { position: relative; transition: all 0.3s ease; }
     .v-input {
       width: 100%;
@@ -94,7 +94,7 @@
       transform: translateY(-1px);
     }
 
-    /* Karty wyboru konta */
+    /* Karty wyboru konta (Radio) */
     .role-card-input { display: none; }
     .role-card {
       cursor: pointer;
@@ -104,18 +104,24 @@
       transition: all 0.2s ease;
       position: relative; overflow: hidden;
     }
+    .role-card:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.2); }
+    
     .role-card-input:checked + .role-card {
       border-color: var(--accent);
       background: linear-gradient(180deg, rgba(255,3,84,0.1), rgba(0,0,0,0));
+      box-shadow: 0 0 20px rgba(255,3,84,0.15) inset;
     }
-    .role-check { opacity: 0; transform: scale(0.5); transition: all 0.3s; }
+    .role-check {
+      opacity: 0; transform: scale(0.5); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
     .role-card-input:checked + .role-card .role-check { opacity: 1; transform: scale(1); }
 
-    /* Showcase */
+    /* Prawy panel (Showcase) */
     .showcase-bg {
       background-image: 
         radial-gradient(at 0% 0%, rgba(124,58,237,0.15) 0px, transparent 50%),
         radial-gradient(at 100% 100%, rgba(255,3,84,0.15) 0px, transparent 50%);
+      background-size: cover;
     }
     .grid-pattern {
       background-image: 
@@ -124,12 +130,15 @@
       background-size: 40px 40px;
     }
 
-    /* 3D Card */
+    /* Animacja karty 3D */
     .perspective-1000 { perspective: 1000px; }
     .card-3d {
       transform-style: preserve-3d;
       transform: rotateY(-10deg) rotateX(5deg);
       animation: float-3d 6s ease-in-out infinite;
+      box-shadow: 
+        -20px 20px 60px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(255,255,255,0.1);
     }
     @keyframes float-3d {
       0%, 100% { transform: rotateY(-10deg) rotateX(5deg) translateY(0); }
@@ -137,7 +146,7 @@
     }
 
     /* Zakładki */
-    .tab-btn { position: relative; color: rgba(255,255,255,0.5); transition: color 0.3s; }
+    .tab-btn { position: relative; color: rgba(255,255,255,0.5); transition: color 0.3s; cursor: pointer; }
     .tab-btn.active { color: white; }
     .tab-btn::after {
       content: ''; position: absolute; bottom: -8px; left: 50%; width: 0; height: 2px;
@@ -145,6 +154,7 @@
     }
     .tab-btn.active::after { width: 100%; }
 
+    /* Animacje formularzy */
     .form-view { display: none; opacity: 0; transform: translateY(10px); animation: fadeUp 0.4s forwards; }
     .form-view.active { display: block; }
     @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
@@ -326,7 +336,7 @@
 
     async function handleRegister(e) {
       e.preventDefault();
-      console.log("🚀 Rozpoczynam wysyłkę formularza rejestracji...");
+      console.log("🚀 Start rejestracji...");
       
       const form = e.target;
       const formData = new FormData(form);
@@ -340,10 +350,10 @@
 
       const submitBtn = form.querySelector('button[type="submit"]');
       submitBtn.disabled = true;
-      submitBtn.innerText = "Tworzenie...";
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = "<span>Tworzenie...</span>";
 
       try {
-        console.log("📡 Wysyłam dane do:", `${API_URL}/register`, data);
         const response = await fetch(`${API_URL}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -351,18 +361,16 @@
         });
 
         const result = await response.json();
-        console.log("📥 Odpowiedź serwera:", result);
-
-        if (!response.ok) throw new Error(result.error || "Błąd serwera");
+        if (!response.ok) throw new Error(result.error || "Błąd");
 
         alert("Konto utworzone pomyślnie!");
         location.reload();
       } catch (err) {
-        console.error("❌ Błąd fetch:", err);
-        alert("Błąd: " + err.message);
+        alert(err.message);
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = "Utwórz konto";
+        submitBtn.innerHTML = originalText;
+        lucide.createIcons();
       }
     }
 
