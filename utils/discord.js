@@ -1,46 +1,39 @@
-const { Client, GatewayIntentBits, Events } = require('discord.js'); // Dodano Events
-const User = require('../models/User');
+const { Client, GatewayIntentBits } = require('discord.js');
+const User = require('../models/User'); // Upewnij się, że ścieżka jest poprawna
 
-const client = new Client({ 
-    intents: [GatewayIntentBits.Guilds] 
-});
+let discordClient;
+let statsChannelId;
 
-let statsChannelId = null;
-
-const initDiscord = (token, channelId) => {
-    if (!token || !channelId) {
-        console.log("⚠️ Brak konfiguracji Discorda. Bot nie wystartuje.");
-        return;
-    }
-    
+function initDiscord(token, channelId) {
+    discordClient = new Client({ intents: [GatewayIntentBits.Guilds] });
     statsChannelId = channelId;
-    
-    client.login(token).catch(err => console.error("❌ Błąd logowania do Discorda:", err));
-};
 
-// === TU BYŁA ZMIANA (używamy Events.ClientReady) ===
-client.once(Events.ClientReady, (c) => {
-    console.log(`🤖 Discord Bot zalogowany jako ${c.user.tag}`);
-    updateDiscordStats();
-});
+    discordClient.once('ready', () => {
+        console.log(`🤖 Discord Bot zalogowany jako ${discordClient.user.tag}`);
+        updateDiscordStats();
+    });
 
-const updateDiscordStats = async () => {
-    if (!client.isReady() || !statsChannelId) return;
+    discordClient.login(token);
+}
+
+async function updateDiscordStats() {
+    if (!discordClient || !statsChannelId) return;
 
     try {
-        const count = await User.countDocuments();
-        const channel = await client.channels.fetch(statsChannelId);
+        const channel = await discordClient.channels.fetch(statsChannelId);
+        if (!channel) {
+            console.log("❌ [Discord] Nie znaleziono kanału o podanym ID");
+            return;
+        }
+
+        // KLUCZOWY MOMENT: Liczenie użytkowników w bazie
+        const count = await User.countDocuments(); 
         
-        if (channel) {
-            await channel.setName(`🚀〢Zarejestrowani : ${count}`);
-            console.log(`✅ [Discord] Zaktualizowano licznik: ${count}`);
-        }
-    } catch (error) {
-        // Ignorujemy błędy limitów czasowych (Rate Limits), są normalne przy częstych zmianach
-        if (error.code !== 50013 && error.code !== 50001) { 
-            console.error("❌ [Discord] Błąd aktualizacji:", error.message);
-        }
+        await channel.setName(`Użytkownicy: ${count}`);
+        console.log(`✅ [Discord] Zaktualizowano licznik: ${count}`);
+    } catch (err) {
+        console.error("❌ [Discord] Błąd podczas aktualizacji licznika:", err.message);
     }
-};
+}
 
 module.exports = { initDiscord, updateDiscordStats };
