@@ -12,6 +12,7 @@ const User = require('./models/User');
 const { initDiscord, updateDiscordStats } = require('./utils/discord');
 
 const app = express();
+// Railway dynamicznie przydziela port, process.env.PORT jest niezbędny
 const PORT = process.env.PORT || 3000;
 
 // === KONFIGURACJA BEZPIECZEŃSTWA ===
@@ -19,17 +20,19 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            // Odblokowano skrypty CDN i inline
+            // scriptSrc: Pozwalamy na skrypty z self, inline (Tailwind) oraz zewnętrzne biblioteki
             scriptSrc: ["'self'", "'unsafe-inline'", "cdn.tailwindcss.com", "unpkg.com"],
-            // Odblokowano obrazki z zaufanych domen
+            // imgSrc: Pozwalamy na ładowanie obrazków z Twoich zaufanych źródeł
             imgSrc: ["'self'", "data:", "i.imgur.com", "i.pravatar.cc", "https://*"],
-            // Odblokowano style i fonty Google
+            // styleSrc: Niezbędne dla Google Fonts i inline styles Tailwind
             styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
             fontSrc: ["'self'", "fonts.gstatic.com"],
-            // KLUCZOWE: Pozwalamy na fetch/XHR do naszego API ('self')
+            // connectSrc: TO JEST KLUCZOWE. Pozwala fetch() łączyć się z Twoim API na Railway
             connectSrc: ["'self'", "https://*", "http://*"]
         }
-    }
+    },
+    // Wyłączenie blokady cross-origin dla zasobów zewnętrznych
+    crossOriginEmbedderPolicy: false
 }));
 
 app.use(cors());
@@ -38,8 +41,12 @@ app.use(express.json());
 // Serwowanie plików statycznych z głównego katalogu
 app.use(express.static(__dirname));
 
-// Ochrona przed Brute-Force
-const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
+// Ochrona przed Brute-Force (API Limiter)
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { error: "Zbyt wiele prób logowania. Spróbuj ponownie za 15 minut." }
+});
 app.use('/api', apiLimiter);
 
 // === POŁĄCZENIE Z BAZĄ DANYCH ===
@@ -50,12 +57,15 @@ if (!process.env.MONGO_URL) {
 
 mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log('✅ Połączono z MongoDB'))
-    .catch(err => console.error('❌ Błąd połączenia z MongoDB:', err));
+    .catch(err => {
+        console.error('❌ Błąd połączenia z MongoDB:', err.message);
+        // Nie zabijamy procesu, aby Railway mógł spróbować zrestartować kontener
+    });
 
 // === INICJALIZACJA DISCORDA ===
 initDiscord(process.env.DISCORD_TOKEN, process.env.DISCORD_STATS_CHANNEL_ID);
 
-// === SCHEMATY WALIDACJI ===
+// === SCHEMATY WALIDACJI (JOI) ===
 const registerSchema = Joi.object({
     username: Joi.string().min(3).max(30).required(),
     email: Joi.string().email().required(),
@@ -75,7 +85,6 @@ app.post('/api/register', async (req, res) => {
     console.log(`📥 [API] Próba rejestracji:`, req.body);
 
     try {
-        // 1. Walidacja formatu danych
         const { error } = registerSchema.validate(req.body);
         if (error) {
             console.log(`⚠️ [Walidacja] Błąd: ${error.details[0].message}`);
@@ -83,35 +92,33 @@ app.post('/api/register', async (req, res) => {
         }
 
         const { username, email, password, role } = req.body;
+        const normalizedEmail = email.toLowerCase();
 
-        // 2. Czy email jest unikalny
-        const userExists = await User.findOne({ email: email.toLowerCase() });
+        const userExists = await User.findOne({ email: normalizedEmail });
         if (userExists) {
-            console.log(`⚠️ [Rejestracja] Email zajęty: ${email}`);
+            console.log(`⚠️ [Rejestracja] Email zajęty: ${normalizedEmail}`);
             return res.status(409).json({ error: "Użytkownik o tym adresie email już istnieje." });
         }
 
-        // 3. Bezpieczne hasło
         const hashedPassword = await bcrypt.hash(password, 10);
         
-        // 4. Próba zapisu do bazy
         const newUser = new User({ 
             username, 
-            email: email.toLowerCase(), 
+            email: normalizedEmail, 
             password: hashedPassword, 
             role 
         });
 
         await newUser.save();
-        console.log(`✅ [Baza] Nowy użytkownik zapisany pomyślnie!`);
+        console.log(`✅ [Baza] Nowy użytkownik zapisany pomyślnie: ${normalizedEmail}`);
 
-        // 5. Aktualizacja Discorda (asynchronicznie)
+        // Aktualizacja Discorda
         console.log(`📡 [Discord] Wywołuję aktualizację licznika...`);
         updateDiscordStats(); 
 
         res.status(201).json({ message: "Konto utworzone pomyślnie." });
     } catch (err) {
-        console.error("❌ [Serwer] Błąd podczas zapisu w /api/register:", err);
+        console.error("❌ [Serwer] Błąd podczas rejestracji:", err);
         res.status(500).json({ error: "Wystąpił błąd podczas tworzenia konta." });
     }
 });
@@ -124,25 +131,27 @@ app.post('/api/login', async (req, res) => {
         const { error } = loginSchema.validate(req.body);
         if (error) return res.status(400).json({ error: "Niepoprawny format danych." });
 
-        const user = await User.findOne({ email: req.body.email.toLowerCase() });
+        const normalizedEmail = req.body.email.toLowerCase();
+        const user = await User.findOne({ email: normalizedEmail });
+        
         if (!user) {
-            console.log(`⚠️ [Logowanie] Nie znaleziono: ${req.body.email}`);
+            console.log(`⚠️ [Logowanie] Nie znaleziono: ${normalizedEmail}`);
             return res.status(401).json({ error: "Błędny email lub hasło." });
         }
 
         const validPass = await bcrypt.compare(req.body.password, user.password);
         if (!validPass) {
-            console.log(`⚠️ [Logowanie] Złe hasło dla: ${req.body.email}`);
+            console.log(`⚠️ [Logowanie] Złe hasło dla: ${normalizedEmail}`);
             return res.status(401).json({ error: "Błędny email lub hasło." });
         }
 
-        console.log(`✅ [Logowanie] Sukces: ${user.email}`);
+        console.log(`✅ [Logowanie] Sukces: ${normalizedEmail}`);
         res.json({ 
             message: "Zalogowano pomyślnie.", 
             user: { id: user._id, username: user.username, role: user.role } 
         });
     } catch (err) {
-        console.error("❌ [Serwer] Błąd podczas /api/login:", err);
+        console.error("❌ [Serwer] Błąd podczas logowania:", err);
         res.status(500).json({ error: "Błąd serwera." });
     }
 });
