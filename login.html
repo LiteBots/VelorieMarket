@@ -278,7 +278,13 @@
 
   <script>
     lucide.createIcons();
-    const API_URL = '/api';
+
+    
+    // =========================================================
+    const API_URL = 'https://www.velorie.pl/api';
+    
+   
+
 
     // Obsługa zakładek
     const btnL = document.getElementById('btn-tab-login'), btnR = document.getElementById('btn-tab-register'), viewL = document.getElementById('view-login'), viewR = document.getElementById('view-register');
@@ -287,6 +293,11 @@
 
     async function handleAuth(e, type) {
       e.preventDefault();
+      
+      // DIAGNOSTYKA: Pokaż w konsoli, że przycisk działa
+      console.log(`🟢 [Frontend] Próba wysyłki formularza: ${type}`);
+      console.log(`🌍 [Frontend] Wysyłam do: ${API_URL}/${type}`);
+
       const btn = e.target.querySelector('button[type="submit"]');
       
       if (type === 'register') {
@@ -302,19 +313,23 @@
       const data = Object.fromEntries(new FormData(e.target));
 
       try {
-        const res = await fetch(`${API_URL}/${type}`, {
+        const res = await fetch(`${API_URL}/${type}`, { // używa zaktualizowanego URL
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
 
+        console.log(`🔵 [Frontend] Status odpowiedzi: ${res.status}`);
+
         const result = await res.json();
         if (!res.ok) throw new Error(result.error || "Błąd serwera");
 
         alert(type === 'login' ? "Witaj ponownie!" : "Konto utworzone!");
-        window.location.href = '/';
+        // Opcjonalnie: Przekierowanie
+        // window.location.href = '/dashboard.html'; 
       } catch (err) {
-        alert(err.message);
+        console.error("🔴 [Frontend] Błąd:", err);
+        alert(`Wystąpił błąd: ${err.message}`);
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalText;
