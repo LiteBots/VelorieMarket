@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Zaloguj się – Velorie Market</title>
+  
+  <meta name="description" content="Dołącz do profesjonalnej platformy dla freelancerów." />
+  <meta name="theme-color" content="#0a1030" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap');
+
+    :root{
+      --accent:#ff0354;
+      --accent2:#7c3aed;
+      --bg1:#00010f;
+      --bg2:#0a1030;
+      --discord: #5865F2;
+      --input-bg: rgba(0, 0, 0, 0.3);
+      --input-border: rgba(255, 255, 255, 0.08);
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: #00010f;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    /* === TŁO I EFEKTY === */
+    .aurora-bg {
+      position: absolute; inset: 0; pointer-events: none; z-index: 0;
+      background: 
+        radial-gradient(circle at 15% 50%, rgba(124,58,237,0.08), transparent 40%),
+        radial-gradient(circle at 85% 30%, rgba(255,3,84,0.08), transparent 40%);
+    }
+
+    /* Inputy premium */
+    .v-input-group { position: relative; transition: all 0.3s ease; }
+    .v-input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 12px;
+      padding: 16px 16px 16px 48px;
+      color: white;
+      font-size: 15px;
+      outline: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .v-input:focus {
+      border-color: var(--accent);
+      background: rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 0 4px rgba(255, 3, 84, 0.15);
+    }
+    .v-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+    .v-icon {
+      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+      color: rgba(255, 255, 255, 0.4);
+      transition: color 0.2s;
+    }
+    .v-input:focus ~ .v-icon { color: var(--accent); }
+
+    /* Przyciski */
+    .btn-primary {
+      background: linear-gradient(135deg, #ff0354, #7c3aed);
+      position: relative; overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .btn-primary::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+      transform: translateX(-100%); transition: transform 0.5s;
+    }
+    .btn-primary:hover::before { transform: translateX(100%); }
+    .btn-primary:hover {
+      box-shadow: 0 0 30px rgba(255, 3, 84, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-discord {
+      background: rgba(88, 101, 242, 0.1);
+      border: 1px solid rgba(88, 101, 242, 0.3);
+      color: #fff;
+      transition: all 0.2s;
+    }
+    .btn-discord:hover {
+      background: rgba(88, 101, 242, 0.2);
+      border-color: #5865F2;
+      transform: translateY(-1px);
+    }
+
+    /* Karty wyboru konta (Radio) */
+    .role-card-input { display: none; }
+    .role-card {
+      cursor: pointer;
+      border: 1px solid var(--input-border);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 16px;
+      transition: all 0.2s ease;
+      position: relative; overflow: hidden;
+    }
+    .role-card:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.2); }
+    
+    .role-card-input:checked + .role-card {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, rgba(255,3,84,0.1), rgba(0,0,0,0));
+      box-shadow: 0 0 20px rgba(255,3,84,0.15) inset;
+    }
+    .role-check {
+      opacity: 0; transform: scale(0.5); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .role-card-input:checked + .role-card .role-check { opacity: 1; transform: scale(1); }
+
+    /* Prawy panel (Showcase) */
+    .showcase-bg {
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(124,58,237,0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(255,3,84,0.15) 0px, transparent 50%);
+      background-size: cover;
+    }
+    .grid-pattern {
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* Animacja karty 3D */
+    .perspective-1000 { perspective: 1000px; }
+    .card-3d {
+      transform-style: preserve-3d;
+      transform: rotateY(-10deg) rotateX(5deg);
+      animation: float-3d 6s ease-in-out infinite;
+      box-shadow: 
+        -20px 20px 60px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(255,255,255,0.1);
+    }
+    @keyframes float-3d {
+      0%, 100% { transform: rotateY(-10deg) rotateX(5deg) translateY(0); }
+      50% { transform: rotateY(-8deg) rotateX(2deg) translateY(-15px); }
+    }
+
+    /* Zakładki */
+    .tab-btn { position: relative; color: rgba(255,255,255,0.5); transition: color 0.3s; cursor: pointer; }
+    .tab-btn.active { color: white; }
+    .tab-btn::after {
+      content: ''; position: absolute; bottom: -8px; left: 50%; width: 0; height: 2px;
+      background: var(--accent); transition: all 0.3s; transform: translateX(-50%);
+    }
+    .tab-btn.active::after { width: 100%; }
+
+    /* Animacje formularzy */
+    .form-view { display: none; opacity: 0; transform: translateY(10px); animation: fadeUp 0.4s forwards; }
+    .form-view.active { display: block; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    .thin-scroll::-webkit-scrollbar { width: 4px; }
+    .thin-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+  </style>
+</head>
+
+<body class="min-h-screen flex items-stretch">
+
+  <div class="w-full lg:w-[45%] flex flex-col justify-center items-center relative z-10 bg-[#00010f] border-r border-white/5 shadow-2xl">
+    <div class="aurora-bg"></div>
+
+    <div class="w-full max-w-md px-8 py-10 relative flex flex-col h-full lg:h-auto justify-center">
+      <div class="mb-10 text-center lg:text-left">
+        <a href="/" class="inline-flex items-center gap-3 mb-8 group hover:opacity-80 transition">
+          <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="h-10 w-auto drop-shadow-[0_0_15px_rgba(255,3,84,0.5)]" />
+          <span class="font-bold text-xl tracking-tight">Velorie Market</span>
+        </a>
+        <h1 class="text-4xl font-black tracking-tight mb-2 text-white">Witaj w świecie <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-[#ff0354] to-[#7c3aed]">freelancingu</span>.</h1>
+        <p class="text-white/50 text-base">Zaloguj się lub stwórz konto, aby zacząć.</p>
+      </div>
+
+      <div class="flex gap-8 border-b border-white/10 mb-8">
+        <button id="btn-tab-login" type="button" class="tab-btn active pb-2 text-sm font-semibold uppercase tracking-wider">Logowanie</button>
+        <button id="btn-tab-register" type="button" class="tab-btn pb-2 text-sm font-semibold uppercase tracking-wider">Rejestracja</button>
+      </div>
+
+      <div class="thin-scroll lg:max-h-[60vh] overflow-y-auto pr-2">
+        
+        <form id="view-login" class="form-view active space-y-5" onsubmit="handleAuth(event, 'login')">
+          <div class="v-input-group">
+            <input type="email" name="email" placeholder="Adres email" class="v-input" required />
+            <i data-lucide="mail" class="v-icon h-5 w-5"></i>
+          </div>
+          <div class="v-input-group">
+            <input type="password" name="password" placeholder="Hasło" class="v-input" required />
+            <i data-lucide="lock" class="v-icon h-5 w-5"></i>
+          </div>
+          <button type="submit" class="w-full py-4 rounded-xl btn-primary font-bold text-base flex items-center justify-center gap-2 shadow-lg">
+            <span>Zaloguj się</span>
+            <i data-lucide="arrow-right" class="h-5 w-5"></i>
+          </button>
+          <div class="relative py-2">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
+            <div class="relative flex justify-center"><span class="bg-[#00010f] px-4 text-xs text-white/40 uppercase">lub</span></div>
+          </div>
+          <button type="button" class="w-full py-3.5 rounded-xl btn-discord font-medium text-sm flex items-center justify-center gap-3">
+            <img src="https://i.imgur.com/h3hjStL.png" alt="Discord" class="h-6 w-auto object-contain" />
+            <span>Zaloguj przez Discord</span>
+          </button>
+        </form>
+
+        <form id="view-register" class="form-view space-y-5" onsubmit="handleAuth(event, 'register')">
+          <div class="grid grid-cols-2 gap-4">
+            <label>
+              <input type="radio" name="role" value="freelancer" class="role-card-input" checked>
+              <div class="role-card p-4 flex flex-col items-center text-center gap-3 h-full justify-center">
+                <div class="p-3 rounded-full bg-white/5 text-[var(--accent)]"><i data-lucide="code-2" class="h-6 w-6"></i></div>
+                <div class="font-bold text-sm">Freelancer</div>
+              </div>
+            </label>
+            <label>
+              <input type="radio" name="role" value="client" class="role-card-input">
+              <div class="role-card p-4 flex flex-col items-center text-center gap-3 h-full justify-center">
+                <div class="p-3 rounded-full bg-white/5 text-[var(--accent2)]"><i data-lucide="briefcase" class="h-6 w-6"></i></div>
+                <div class="font-bold text-sm">Firma</div>
+              </div>
+            </label>
+          </div>
+          <div class="v-input-group">
+            <input type="text" name="username" placeholder="Nazwa użytkownika" class="v-input" required />
+            <i data-lucide="user" class="v-icon h-5 w-5"></i>
+          </div>
+          <div class="v-input-group">
+            <input type="email" name="email" placeholder="Adres email" class="v-input" required />
+            <i data-lucide="at-sign" class="v-icon h-5 w-5"></i>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="v-input-group">
+              <input type="password" id="reg-pass-1" name="password" placeholder="Hasło" class="v-input" required />
+              <i data-lucide="key" class="v-icon h-5 w-5"></i>
+            </div>
+            <div class="v-input-group">
+              <input type="password" id="reg-pass-2" placeholder="Powtórz" class="v-input" required />
+              <i data-lucide="check" class="v-icon h-5 w-5"></i>
+            </div>
+          </div>
+          <button type="submit" class="w-full py-4 rounded-xl btn-primary font-bold">Utwórz konto</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="hidden lg:flex flex-1 relative items-center justify-center overflow-hidden bg-[#0a1030]">
+    <div class="absolute inset-0 showcase-bg"></div>
+    <div class="absolute inset-0 grid-pattern opacity-20"></div>
+    <div class="perspective-1000 relative z-10 scale-110">
+      <div class="card-3d w-[420px] h-[560px] rounded-[32px] bg-black/40 border border-white/10 backdrop-blur-xl p-6 flex flex-col">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex gap-2"><div class="w-3 h-3 rounded-full bg-red-500/50"></div><div class="w-3 h-3 rounded-full bg-yellow-500/50"></div><div class="w-3 h-3 rounded-full bg-green-500/50"></div></div>
+          <div class="px-3 py-1 rounded-full bg-white/5 text-[10px] text-white/50 font-mono">velorie.user_profile</div>
+        </div>
+        <div class="flex flex-col items-center mt-4">
+          <div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-[#ff0354] to-[#7c3aed] mb-4 shadow-[0_0_30px_rgba(255,3,84,0.3)]">
+            <img src="https://i.pravatar.cc/150?img=33" alt="Avatar" class="w-full h-full rounded-full object-cover border-2 border-[#0a1030]" />
+          </div>
+          <h3 class="text-xl font-bold">Alex Dev</h3>
+          <p class="text-[var(--accent)] text-xs font-semibold uppercase mt-1">Java Developer</p>
+        </div>
+        <div class="grid grid-cols-3 gap-3 mt-8">
+          <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5"><div class="text-lg font-bold">98%</div><div class="text-[10px] text-white/40">Oceny</div></div>
+          <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5"><div class="text-lg font-bold">42</div><div class="text-[10px] text-white/40">Zlecenia</div></div>
+          <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5"><div class="text-lg font-bold">2h</div><div class="text-[10px] text-white/40">Odp.</div></div>
+        </div>
+        <div class="mt-auto pt-6"><div class="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-center text-sm text-white/60">Skontaktuj się</div></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    
+    // =========================================================
+    const API_URL = '/api';
+    
+   
+
+
+    // Obsługa zakładek
+    const btnL = document.getElementById('btn-tab-login'), btnR = document.getElementById('btn-tab-register'), viewL = document.getElementById('view-login'), viewR = document.getElementById('view-register');
+    btnL.onclick = () => { btnL.classList.add('active'); btnR.classList.remove('active'); viewL.classList.add('active'); viewR.classList.remove('active'); };
+    btnR.onclick = () => { btnR.classList.add('active'); btnL.classList.remove('active'); viewR.classList.add('active'); viewL.classList.remove('active'); };
+
+    async function handleAuth(e, type) {
+      e.preventDefault();
+      
+      // DIAGNOSTYKA: Pokaż w konsoli, że przycisk działa
+      console.log(`🟢 [Frontend] Próba wysyłki formularza: ${type}`);
+      console.log(`🌍 [Frontend] Wysyłam do: ${API_URL}/${type}`);
+
+      const btn = e.target.querySelector('button[type="submit"]');
+      
+      if (type === 'register') {
+        const p1 = document.getElementById('reg-pass-1').value;
+        const p2 = document.getElementById('reg-pass-2').value;
+        if (p1 !== p2) { alert("Hasła nie są identyczne!"); return; }
+      }
+
+      btn.disabled = true;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = "<span>Przetwarzanie...</span>";
+
+      const data = Object.fromEntries(new FormData(e.target));
+
+      try {
+        const res = await fetch(`${API_URL}/${type}`, { // używa zaktualizowanego URL
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        console.log(`🔵 [Frontend] Status odpowiedzi: ${res.status}`);
+
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || "Błąd serwera");
+
+        alert(type === 'login' ? "Witaj ponownie!" : "Konto utworzone!");
+        // Opcjonalnie: Przekierowanie
+        // window.location.href = '/dashboard.html'; 
+      } catch (err) {
+        console.error("🔴 [Frontend] Błąd:", err);
+        alert(`Wystąpił błąd: ${err.message}`);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        lucide.createIcons();
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <title>Velorie Market – Platforma ogłoszeniowa dla freelancerów</title>
+  <meta name="description" content="Velorie Market to platforma ogłoszeniowa dla freelancerów: programistów, grafików, techników, budowniczych Minecraft, content creatorów i montażystów. Bez escrow – kontakt i płatność poza platformą." />
+  <meta name="keywords" content="freelancer, ogłoszenia, zlecenia, programista, grafik, montażysta, minecraft builder, content creator, velorie market" />
+  <meta name="theme-color" content="#0a1030" />
+
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script type="application/ld+json" id="schema-json"></script>
+
+  <style>
+    :root{
+      --accent:#ff0354;
+      --accent2:#7c3aed;
+      --bg1:#00010f;
+      --bg2:#0a1030;
+      --stroke: rgba(255,255,255,.12);
+    }
+
+    html{scroll-behavior:smooth}
+    body{
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.18), transparent 60%),
+        radial-gradient(900px 600px at 85% 15%, rgba(255,3,84,.16), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      min-height:100svh; /* iOS */
+      min-height:100dvh; /* modern */
+      overflow-x:hidden;
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+    body.is-locked{
+      height: 100svh;
+      height: 100dvh;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    /* grid like auth */
+    .grid-bg{
+      position: fixed; inset: 0;
+      pointer-events: none;
+      opacity: .22;
+      background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.95) 0%, rgba(0,0,0,.20) 55%, transparent 75%);
+      transform: translateZ(0);
+      animation: gridFloat 12s ease-in-out infinite;
+    }
+    @keyframes gridFloat{
+      0%,100% { transform: translate3d(0,0,0) scale(1); }
+      50% { transform: translate3d(0,-10px,0) scale(1.02); }
+    }
+
+    /* aurora blobs like auth */
+    .aurora{
+      position: fixed; inset: -20%;
+      pointer-events: none;
+      filter: blur(46px) saturate(125%);
+      opacity: .90;
+      transform: translateZ(0);
+    }
+    .blob{
+      position:absolute;
+      width: clamp(320px, 40vw, 560px);
+      height: clamp(320px, 40vw, 560px);
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,3,84,.35), transparent 60%),
+        radial-gradient(circle at 70% 70%, rgba(124,58,237,.35), transparent 60%);
+      animation: blob 14s ease-in-out infinite;
+      mix-blend-mode: screen;
+    }
+    .blob.b1{ left: 8%; top: 8%; }
+    .blob.b2{
+      width: clamp(360px, 48vw, 680px);
+      height: clamp(360px, 48vw, 680px);
+      left: 62%; top: 18%;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(124,58,237,.38), transparent 60%),
+        radial-gradient(circle at 70% 70%, rgba(255,3,84,.28), transparent 60%);
+      animation-duration: 18s;
+      animation-delay: -3s;
+    }
+    @keyframes blob{
+      0%,100% { transform: translate(0,0) scale(1); }
+      30% { transform: translate(40px, 18px) scale(1.08); }
+      60% { transform: translate(-28px, 34px) scale(0.98); }
+    }
+
+    /* noise overlay like auth */
+    .noise{
+      position: fixed; inset: 0;
+      pointer-events: none;
+      opacity: .09;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+    }
+
+    /* reveal */
+    .animate-on-scroll{
+      opacity:0;
+      transform: translateY(24px);
+      transition: opacity .6s ease-out, transform .6s ease-out;
+      will-change: opacity, transform;
+    }
+    .animate-on-scroll.is-visible{ opacity:1; transform: translateY(0); }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 999px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,.08); }
+
+    /* glass like auth */
+    .glass{
+      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+      border: 1px solid var(--stroke);
+      box-shadow:
+        0 18px 60px rgba(0,0,0,.50),
+        inset 0 1px 0 rgba(255,255,255,.10);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .glass-soft{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .glass, .glass-soft{ backdrop-filter: none; -webkit-backdrop-filter:none; }
+    }
+
+    .lift{ transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease, filter .2s ease; }
+    .lift:hover{ transform: translateY(-2px); }
+
+    /* buttons */
+    .btn-primary{
+      background: linear-gradient(135deg, rgba(255,3,84,1), rgba(124,58,237,1));
+      box-shadow:
+        0 12px 26px rgba(255,3,84,.18),
+        0 10px 32px rgba(124,58,237,.16);
+    }
+    .btn-primary:hover{ filter: brightness(1.06); }
+    .btn-primary:active{ transform: translateY(1px); }
+    .btn-ghost{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .btn-ghost:hover{ background: rgba(255,255,255,.08); }
+
+    /* particles */
+    @keyframes particle-animation{
+      0%,100%{ transform: translateY(0%) translateX(0%) rotate(0deg); }
+      50%{ transform: translateY(-10%) translateX(5%) rotate(20deg); }
+    }
+    .particle{
+      animation-name: particle-animation;
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
+    }
+
+    /* 3D card */
+    .perspective-container{ perspective: 1500px; }
+    @keyframes subtle-3d-rotate{
+      0%,100%{ transform: rotateX(5deg) rotateY(-8deg); }
+      50%{ transform: rotateX(-5deg) rotateY(8deg); }
+    }
+    #market-mockup{
+      transform-style: preserve-3d;
+      animation: subtle-3d-rotate 15s ease-in-out infinite;
+      transform: rotateX(5deg) rotateY(-8deg);
+    }
+
+    /* progress bar */
+    #scroll-progress{
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: 2px;
+      width: 0%;
+      background: var(--accent);
+      z-index: 60;
+      box-shadow: 0 10px 30px rgba(255,3,84,.35);
+    }
+
+    /* reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      html{ scroll-behavior: auto; }
+      .grid-bg, .blob, #market-mockup{ animation: none !important; }
+      .particle{ animation: none !important; }
+      .lift{ transition: none !important; }
+    }
+
+    /* logo polish */
+    .brand-logo{
+      height: 40px;
+      width: auto;
+      max-width: 140px;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 22px rgba(255,3,84,.12));
+    }
+
+    /* ===== UNDER CONSTRUCTION OVERLAY ===== */
+    #uc-overlay{
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+    }
+    #uc-overlay.hidden{ display: none; }
+
+    /* tint + blur (full screen) */
+    .uc-backdrop{
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    /* center panel (responsive: scroll on small heights) */
+    .uc-panel{
+      position: relative;
+      width: min(720px, 100%);
+      border-radius: 26px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 30px 90px rgba(0,0,0,.60);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      max-height: min(720px, calc(100svh - 32px));
+      max-height: min(720px, calc(100dvh - 32px));
+      overflow: auto;
+    }
+    .uc-panel-inner{ padding: 22px; }
+    @media (min-width: 640px){
+      .uc-panel-inner{ padding: 26px; }
+    }
+    .uc-title{
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      font-size: clamp(26px, 4vw, 44px);
+    }
+    .uc-sub{
+      margin-top: 10px;
+      color: rgba(255,255,255,.72);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 56ch;
+    }
+    .uc-pill{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.80);
+      font-size: 12px;
+    }
+    .uc-form{
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 560px){
+      .uc-form{ grid-template-columns: 1fr auto; align-items: center; }
+    }
+    .uc-input{
+      width: 100%;
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.14);
+      color: rgba(255,255,255,.90);
+      outline: none;
+    }
+    .uc-input:focus{
+      border-color: rgba(255,3,84,.55);
+      box-shadow: 0 0 0 3px rgba(255,3,84,.18);
+    }
+    .uc-status{
+      margin-top: 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,.70);
+      min-height: 18px;
+    }
+
+    /* developer button (safe-area aware) */
+    #dev-btn{
+      position: fixed;
+      right: calc(14px + env(safe-area-inset-right));
+      bottom: calc(14px + env(safe-area-inset-bottom));
+      z-index: 10000;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: rgba(255,255,255,.85);
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 14px 40px rgba(0,0,0,.45);
+      transition: transform .15s ease, background .15s ease;
+      user-select: none;
+    }
+    #dev-btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.09); }
+    #dev-btn:active{ transform: translateY(0px); }
+
+    /* mobile nav panel */
+    #mobile-nav[hidden]{ display:none; }
+  </style>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          boxShadow: {
+            glow: "0 10px 40px rgba(255,3,84,0.45)",
+          }
+        }
+      }
+    };
+  </script>
+</head>
+
+<body class="min-h-screen text-white/90 selection:bg-[#ff0354]/40 selection:text-white">
+  <!-- UNDER CONSTRUCTION OVERLAY -->
+  <div id="uc-overlay" aria-modal="true" role="dialog">
+    <div class="uc-backdrop" aria-hidden="true"></div>
+
+    <div class="uc-panel">
+      <div class="uc-panel-inner">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <span class="uc-pill">
+            <i data-lucide="construction" class="h-4 w-4"></i>
+            <span>Tryb: W budowie</span>
+          </span>
+
+          <span class="text-xs text-white/50">
+            Więcej informacji niebawem!
+          </span>
+        </div>
+
+        <h2 class="uc-title mt-4">Strona jest w budowie</h2>
+        <p class="uc-sub">
+          Zostaw e-mail — damy znać, gdy startujemy.
+        </p>
+
+        <form id="uc-form" class="uc-form" autocomplete="off">
+          <input
+            id="uc-email"
+            type="email"
+            class="uc-input"
+            placeholder="Twój adres e-mail"
+            inputmode="email"
+            required
+          />
+          <button
+            id="uc-submit"
+            type="submit"
+            class="inline-flex items-center justify-center gap-2 rounded-2xl btn-primary lift px-5 py-3 text-sm font-semibold"
+          >
+            <i data-lucide="send" class="h-4 w-4"></i>
+            <span>Zapisz się</span>
+          </button>
+        </form>
+
+        <div id="uc-status" class="uc-status"></div>
+
+        <div class="mt-4 text-xs text-white/50">
+          Klikając „Zapisz się”, wysyłasz nam swój adres email, który użyjemy do poinformowania cię podczas startu naszej platformy.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Developer button -->
+  <button id="dev-btn" type="button" class="lift">
+    <span class="inline-flex items-center gap-2">
+      <i data-lucide="terminal" class="h-4 w-4"></i>
+      <span>Developer</span>
+    </span>
+  </button>
+
+  <div class="aurora" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+  </div>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
+
+  <div id="scroll-progress" aria-hidden="true"></div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 glass-soft">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-3">
+      <a href="#hero" class="flex items-center gap-3 min-w-0">
+        <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo" />
+        <div class="leading-tight min-w-0">
+          <div class="text-base sm:text-lg font-semibold tracking-tight truncate">Velorie Market</div>
+          <div class="text-[11px] sm:text-xs text-white/60 truncate">Platforma ogłoszeniowa • Freelancerzy</div>
+        </div>
+      </a>
+
+      <!-- desktop nav -->
+      <nav class="hidden lg:flex items-center gap-1 text-sm text-white/70">
+        <a href="#o-platformie" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">O platformie</a>
+        <a href="#dla-kogo" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">Dla kogo</a>
+        <a href="#jak-to-dziala" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">Jak to działa</a>
+        <a href="#statystyki" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">Statystyki</a>
+        <a href="#faq" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">FAQ</a>
+      </nav>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <a href="#kontakt" class="hidden sm:inline-flex items-center gap-2 rounded-xl btn-ghost lift px-4 py-2 text-sm font-medium text-white">
+          <i data-lucide="mail" class="h-4 w-4"></i>
+          <span>Kontakt</span>
+        </a>
+
+        <a href="login.html" class="hidden sm:inline-flex items-center gap-2 rounded-xl btn-primary lift px-4 py-2 text-sm font-semibold">
+          <i data-lucide="user" class="h-4 w-4"></i>
+          <span>Zaloguj / Zarejestruj się</span>
+        </a>
+
+        <!-- mobile menu button -->
+        <button id="menu-btn" type="button"
+          class="inline-flex lg:hidden items-center justify-center rounded-xl btn-ghost lift px-3 py-2"
+          aria-label="Otwórz menu" aria-expanded="false" aria-controls="mobile-nav">
+          <i data-lucide="menu" class="h-5 w-5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- mobile nav -->
+    <div id="mobile-nav" hidden class="lg:hidden border-t border-white/10">
+      <div class="mx-auto max-w-7xl px-4 py-3 grid gap-2 text-sm text-white/80">
+        <a href="#o-platformie" class="rounded-xl px-3 py-2 hover:bg-white/5">O platformie</a>
+        <a href="#dla-kogo" class="rounded-xl px-3 py-2 hover:bg-white/5">Dla kogo</a>
+        <a href="#jak-to-dziala" class="rounded-xl px-3 py-2 hover:bg-white/5">Jak to działa</a>
+        <a href="#statystyki" class="rounded-xl px-3 py-2 hover:bg-white/5">Statystyki</a>
+        <a href="#faq" class="rounded-xl px-3 py-2 hover:bg-white/5">FAQ</a>
+        <div class="pt-2 flex flex-col gap-2">
+          <a href="#kontakt" class="inline-flex items-center justify-center gap-2 rounded-2xl btn-ghost lift px-4 py-3 font-semibold">
+            <i data-lucide="mail" class="h-4 w-4"></i><span>Kontakt</span>
+          </a>
+          <a href="market.html" class="inline-flex items-center justify-center gap-2 rounded-2xl btn-primary lift px-4 py-3 font-semibold">
+            <i data-lucide="user" class="h-4 w-4"></i><span>Zaloguj / Zarejestruj się</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10">
+    <!-- HERO -->
+    <section id="hero" class="relative overflow-hidden">
+      <div id="particles-container" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden"></div>
+
+      <div class="mx-auto max-w-7xl px-4 py-16 sm:py-20 md:py-28 grid lg:grid-cols-2 gap-10 items-center">
+        <div id="hero-text" class="space-y-6">
+          <span class="inline-flex flex-wrap items-center gap-2 rounded-full glass-soft px-3 py-1 text-[11px] sm:text-xs text-white/80">
+            <i data-lucide="sparkles" class="h-3 w-3"></i>
+            <span>Bez escrow • Bez prowizji od płatności • Tylko łączenie ludzi</span>
+          </span>
+
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05]">
+            <span class="block">Znajdź zleceniodawcę</span>
+            <span class="block text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">albo sprawdzonego freelancera</span>
+          </h1>
+
+          <p class="max-w-xl text-white/70">
+            Velorie Market to informacyjna platforma ogłoszeniowa dla freelancerów i zleceniodawców.
+            Publikujesz ofertę lub przeglądasz profile — a kontakt i płatność odbywają się poza platformą.
+          </p>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <a href="#o-platformie" class="inline-flex items-center gap-2 rounded-2xl btn-primary lift px-5 py-3 text-sm font-semibold">
+              <i data-lucide="info" class="h-4 w-4"></i>
+              <span>Dowiedz się więcej</span>
+            </a>
+            <a href="#jak-to-dziala" class="inline-flex items-center gap-2 rounded-2xl btn-ghost lift px-5 py-3 text-sm font-semibold text-white">
+              <i data-lucide="workflow" class="h-4 w-4"></i>
+              <span>Jak to działa</span>
+            </a>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3 text-xs text-white/60">
+            <span class="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1">
+              <i data-lucide="shield" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+              Brak escrow — nie przetwarzamy płatności
+            </span>
+            <span class="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1">
+              <i data-lucide="message-circle" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+              Kontakt: Discord / e-mail / social
+            </span>
+            <span class="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1">
+              <i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
+              Profile + ogłoszenia + portfolio
+            </span>
+          </div>
+        </div>
+
+        <!-- Mockup -->
+        <div class="animate-on-scroll perspective-container">
+          <div id="market-mockup" class="relative mx-auto w-full max-w-xl lg:max-w-2xl">
+            <div class="absolute -inset-4 -z-10 rounded-[2rem] bg-[conic-gradient(from_180deg_at_50%_50%,rgba(255,3,84,0.35),transparent,rgba(124,58,237,0.35),transparent)] blur-2xl"></div>
+
+            <div class="relative rounded-[2rem] glass p-3">
+              <div class="rounded-[1.5rem] border border-white/10 bg-black/55 p-3">
+                <div class="rounded-2xl bg-gradient-to-br from-white/10 to-white/5 overflow-hidden ring-1 ring-white/10">
+                  <div class="aspect-[16/10] sm:aspect-video p-4 sm:p-5">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span class="h-2.5 w-2.5 rounded-full bg-white/20"></span>
+                        <span class="h-2.5 w-2.5 rounded-full bg-white/20"></span>
+                        <span class="h-2.5 w-2.5 rounded-full bg-white/20"></span>
+                      </div>
+                      <span class="text-xs text-white/60">velorie.market</span>
+                    </div>
+
+                    <div class="mt-5 grid grid-cols-12 gap-3">
+                      <div class="col-span-12 sm:col-span-7 space-y-3">
+                        <div class="h-4 w-3/4 rounded bg-white/10"></div>
+                        <div class="h-3 w-full rounded bg-white/10"></div>
+                        <div class="h-3 w-11/12 rounded bg-white/10"></div>
+                        <div class="h-3 w-10/12 rounded bg-white/10"></div>
+
+                        <div class="mt-4 grid grid-cols-2 gap-3">
+                          <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                            <div class="flex items-center gap-2">
+                              <i data-lucide="code" class="h-4 w-4 text-[var(--accent)]"></i>
+                              <div class="text-xs text-white/70">Programista</div>
+                            </div>
+                            <div class="mt-2 h-3 w-4/5 rounded bg-white/10"></div>
+                          </div>
+                          <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                            <div class="flex items-center gap-2">
+                              <i data-lucide="palette" class="h-4 w-4 text-[var(--accent)]"></i>
+                              <div class="text-xs text-white/70">Grafik</div>
+                            </div>
+                            <div class="mt-2 h-3 w-3/5 rounded bg-white/10"></div>
+                          </div>
+                        </div>
+
+                        <div class="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] px-3 py-2 text-xs font-semibold">
+                          <i data-lucide="zap" class="h-4 w-4"></i>
+                          Ogłoszenia + profile + portfolio
+                        </div>
+                      </div>
+
+                      <div class="col-span-12 sm:col-span-5 space-y-3">
+                        <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                          <div class="flex items-center justify-between">
+                            <div class="text-xs text-white/70">Szybki kontakt</div>
+                            <i data-lucide="message-square" class="h-4 w-4 text-white/50"></i>
+                          </div>
+                          <div class="mt-2 h-3 w-full rounded bg-white/10"></div>
+                          <div class="mt-2 h-3 w-10/12 rounded bg-white/10"></div>
+                        </div>
+
+                        <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                          <div class="flex items-center justify-between">
+                            <div class="text-xs text-white/70">Brak escrow</div>
+                            <i data-lucide="shield-off" class="h-4 w-4 text-white/50"></i>
+                          </div>
+                          <div class="mt-2 h-3 w-full rounded bg-white/10"></div>
+                          <div class="mt-2 h-3 w-9/12 rounded bg-white/10"></div>
+                        </div>
+
+                        <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                          <div class="flex items-center justify-between">
+                            <div class="text-xs text-white/70">Kategorie</div>
+                            <i data-lucide="layers" class="h-4 w-4 text-white/50"></i>
+                          </div>
+                          <div class="mt-3 flex flex-wrap gap-2">
+                            <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[11px] text-white/70">Minecraft</span>
+                            <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[11px] text-white/70">Wideo</span>
+                            <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[11px] text-white/70">Grafika</span>
+                            <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[11px] text-white/70">Dev</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 flex items-center justify-center gap-2 text-xs text-white/60 px-2 text-center">
+              <i data-lucide="award" class="h-3.5 w-3.5"></i>
+              <span>Informacyjna strona główna — funkcje ogłoszeń i wyszukiwania są w osobnej podstronie</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- O PLATFORMIE -->
+    <section id="o-platformie" class="relative py-16 sm:py-20">
+      <div class="mx-auto max-w-7xl px-4">
+        <div class="grid lg:grid-cols-12 gap-8 items-start">
+          <div class="lg:col-span-7 space-y-4">
+            <h2 class="text-3xl md:text-4xl font-black">O czym jest Velorie Market?</h2>
+            <p class="text-white/70 max-w-2xl">
+              To platforma ogłoszeniowa, której celem jest <span class="text-white font-semibold">skojarzenie zleceniodawcy i zleceniobiorcy</span>.
+              Nie prowadzimy płatności escrow i nie pośredniczymy w rozliczeniach — po znalezieniu odpowiedniej osoby dogadujecie się już poza platformą.
+            </p>
+
+            <div class="grid sm:grid-cols-2 gap-4 pt-4">
+              <div class="animate-on-scroll glass rounded-2xl p-5">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="users" class="h-5 w-5 text-[var(--accent)]"></i>
+                  <div class="font-semibold">Dla obu stron</div>
+                </div>
+                <p class="mt-2 text-sm text-white/70">Zleceniodawcy szukają wykonawców, a freelancerzy znajdują oferty.</p>
+              </div>
+
+              <div class="animate-on-scroll glass rounded-2xl p-5">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="shield-off" class="h-5 w-5 text-[var(--accent)]"></i>
+                  <div class="font-semibold">Bez escrow</div>
+                </div>
+                <p class="mt-2 text-sm text-white/70">Nie przetwarzamy płatności. Kontakt i rozliczenia są poza platformą.</p>
+              </div>
+
+              <div class="animate-on-scroll glass rounded-2xl p-5">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="badge-check" class="h-5 w-5 text-[var(--accent)]"></i>
+                  <div class="font-semibold">Portfolio i profil</div>
+                </div>
+                <p class="mt-2 text-sm text-white/70">Prezentuj doświadczenie, stack, realizacje i linki do sociali.</p>
+              </div>
+
+              <div class="animate-on-scroll glass rounded-2xl p-5">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="search-check" class="h-5 w-5 text-[var(--accent)]"></i>
+                  <div class="font-semibold">Szybkie dopasowanie</div>
+                </div>
+                <p class="mt-2 text-sm text-white/70">Kategorie, tagi, poziom doświadczenia i jasne wymagania w ogłoszeniu.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-5">
+            <div class="animate-on-scroll glass rounded-2xl p-6">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <div class="text-sm text-white/60">Kluczowa zasada</div>
+                  <div class="text-xl font-bold mt-1">Platforma = znalezienie kontaktu</div>
+                </div>
+                <span class="inline-flex items-center gap-2 rounded-full bg-[var(--accent)]/15 text-[var(--accent)] px-3 py-1 text-xs font-semibold shrink-0">
+                  <i data-lucide="sparkles" class="h-4 w-4"></i>
+                  Transparentnie
+                </span>
+              </div>
+
+              <ul class="mt-5 space-y-3 text-sm text-white/75">
+                <li class="flex items-start gap-2">
+                  <i data-lucide="check" class="h-5 w-5 mt-0.5 text-[var(--accent)] shrink-0"></i>
+                  <span>Kontakt: Discord / e-mail / social (poza platformą)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i data-lucide="check" class="h-5 w-5 mt-0.5 text-[var(--accent)] shrink-0"></i>
+                  <span>Płatność: ustalana indywidualnie (poza platformą)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i data-lucide="check" class="h-5 w-5 mt-0.5 text-[var(--accent)] shrink-0"></i>
+                  <span>Ogłoszenia: jasny opis + budżet orientacyjny + termin</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i data-lucide="check" class="h-5 w-5 mt-0.5 text-[var(--accent)] shrink-0"></i>
+                  <span>Freelancerzy: profil, portfolio, technologie, dostępność</span>
+                </li>
+              </ul>
+
+              <div class="mt-6 rounded-xl border border-white/10 bg-black/30 p-4 text-xs text-white/65">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="info" class="h-4 w-4 text-white/60"></i>
+                  <span><span class="text-white/80 font-semibold">Uwaga:</span> Velorie Market nie gwarantuje rozliczeń — służy do znalezienia drugiej strony i nawiązania współpracy.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- DLA KOGO -->
+    <section id="dla-kogo" class="relative py-16 sm:py-20">
+      <div class="mx-auto max-w-7xl px-4">
+        <h2 class="text-3xl md:text-4xl font-black mb-2">Dla kogo jest Velorie Market?</h2>
+        <p class="text-white/60 mb-10 max-w-2xl">
+          Dla osób, które chcą szybko znaleźć współpracę wokół projektów cyfrowych, serwerów i społeczności — od mikro-zleceń po większe realizacje.
+        </p>
+
+        <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                <i data-lucide="code" class="h-5 w-5"></i>
+              </span>
+              <div>
+                <div class="font-bold">Programiści</div>
+                <div class="text-xs text-white/60">Web • Boty • Pluginy • Backend</div>
+              </div>
+            </div>
+            <p class="mt-4 text-sm text-white/70">Stwórz profil i pokaż stack, repozytoria, realizacje i dostępność.</p>
+            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Java</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Node</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">React</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Spigot</span>
+            </div>
+          </div>
+
+          <div class="animate-on-scroll glass rounded-2xl p-6">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                <i data-lucide="palette" class="h-5 w-5"></i>
+              </span>
+              <div>
+                <div class="font-bold">Graficy</div>
+                <div class="text-xs text-white/60">Branding • UI • Miniatury • Packi</div>
+              </div>
+            </div>
+            <p class="mt-4 text-sm text-white/70">Dodaj portfolio i oferuj projekty do serwerów, sklepów i social mediów.</p>
+            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Logo</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">UI</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">GFX</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Thumbnails</span>
+            </div>
+          </div>
+
+          <div class="animate-on-scroll glass rounded-2xl p-6">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                <i data-lucide="video" class="h-5 w-5"></i>
+              </span>
+              <div>
+                <div class="font-bold">Content Creatorzy i Montażyści</div>
+                <div class="text-xs text-white/60">Shorts • TikTok • YouTube • Reels</div>
+              </div>
+            </div>
+            <p class="mt-4 text-sm text-white/70">Łącz twórców z markami i społecznościami — szybko i bez pośredników w płatnościach.</p>
+            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Montaż</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Animacje</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Intro</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Shorts</span>
+            </div>
+          </div>
+
+          <div class="animate-on-scroll glass rounded-2xl p-6">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                <i data-lucide="wrench" class="h-5 w-5"></i>
+              </span>
+              <div>
+                <div class="font-bold">Technicy</div>
+                <div class="text-xs text-white/60">Konfiguracje • DevOps • Hosting • Serwery</div>
+              </div>
+            </div>
+            <p class="mt-4 text-sm text-white/70">Dla osób od infrastruktury i utrzymania — konfiguracje, zabezpieczenia, optymalizacja.</p>
+            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Linux</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Proxy</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">DDoS</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Optymalizacja</span>
+            </div>
+          </div>
+
+          <div class="animate-on-scroll glass rounded-2xl p-6">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                <i data-lucide="blocks" class="h-5 w-5"></i>
+              </span>
+              <div>
+                <div class="font-bold">Budowniczowie Minecraft</div>
+                <div class="text-xs text-white/60">Spawny • Huby • Mapy • Areny</div>
+              </div>
+            </div>
+            <p class="mt-4 text-sm text-white/70">Szukaj zleceń budowlanych albo zlecaj budowy pod swój serwer.</p>
+            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Spawn</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Lobby</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Skyblock</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Events</span>
+            </div>
+          </div>
+
+          <div class="animate-on-scroll glass rounded-2xl p-6">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                <i data-lucide="briefcase" class="h-5 w-5"></i>
+              </span>
+              <div>
+                <div class="font-bold">Zleceniodawcy</div>
+                <div class="text-xs text-white/60">Serwery • Marki • Społeczności</div>
+              </div>
+            </div>
+            <p class="mt-4 text-sm text-white/70">Publikuj ogłoszenia i znajdź wykonawcę dopasowanego do budżetu i terminu.</p>
+            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Budżet</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Termin</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Opis</span>
+              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Kontakt</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- JAK TO DZIAŁA -->
+    <section id="jak-to-dziala" class="relative py-16 sm:py-20">
+      <div class="mx-auto max-w-7xl px-4">
+        <h2 class="text-3xl md:text-4xl font-black mb-2">Jak to działa?</h2>
+        <p class="text-white/60 mb-10 max-w-2xl">
+          Prosty proces: ogłoszenie / profil → dopasowanie → kontakt → współpraca poza platformą.
+        </p>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                <i data-lucide="file-text" class="h-5 w-5"></i>
+              </span>
+              <div class="font-bold">1) Wystawiasz / uzupełniasz</div>
+            </div>
+            <p class="mt-3 text-sm text-white/70">
+              Zleceniodawca dodaje opis zlecenia, a freelancer uzupełnia profil i portfolio.
+            </p>
+          </div>
+
+          <div class="animate-on-scroll glass rounded-2xl p-6">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                <i data-lucide="scan-search" class="h-5 w-5"></i>
+              </span>
+              <div class="font-bold">2) Znajdujesz dopasowanie</div>
+            </div>
+            <p class="mt-3 text-sm text-white/70">
+              Przeglądasz ogłoszenia lub profile po kategoriach i wymaganiach (na podstronie funkcjonalnej).
+            </p>
+          </div>
+
+          <div class="animate-on-scroll glass rounded-2xl p-6">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-white/10">
+                <i data-lucide="messages-square" class="h-5 w-5"></i>
+              </span>
+              <div class="font-bold">3) Kontakt poza platformą</div>
+            </div>
+            <p class="mt-3 text-sm text-white/70">
+              Ustalasz szczegóły i rozliczenie bezpośrednio: Discord / e-mail / inny kanał.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-10 animate-on-scroll rounded-2xl glass p-6">
+          <div class="flex items-start gap-3">
+            <i data-lucide="shield-alert" class="h-5 w-5 text-[var(--accent)] mt-0.5"></i>
+            <div>
+              <div class="font-semibold">Dlaczego bez escrow?</div>
+              <p class="text-sm text-white/70 mt-1">
+                Velorie Market ma być lekkim miejscem do łączenia ludzi. Nie przechowujemy środków, nie wchodzimy w rozliczenia
+                i nie narzucamy metod płatności — liczy się szybkie znalezienie współpracy.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- STATYSTYKI -->
+    <section id="statystyki" class="relative py-14 sm:py-16">
+      <div class="mx-auto max-w-7xl px-4">
+        <h2 class="text-2xl md:text-3xl font-bold mb-8 flex items-center gap-3">
+          <i data-lucide="trending-up" class="h-6 w-6 text-[var(--accent)]"></i>
+          Statystyki społeczności
+        </h2>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="stats-grid"></div>
+
+        <p class="mt-4 text-xs text-white/50">
+          *Przykładowe liczby do podmiany (na produkcji możesz podpiąć API).
+        </p>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="relative py-16 sm:py-20">
+      <div class="mx-auto max-w-7xl px-4">
+        <h2 class="text-3xl md:text-4xl font-black mb-2">FAQ</h2>
+        <p class="text-white/60 mb-10 max-w-2xl">Najczęściej zadawane pytania o zasady działania platformy.</p>
+
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div class="animate-on-scroll glass rounded-2xl p-6">
+            <div class="flex items-center gap-3">
+              <i data-lucide="help-circle" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Czy Velorie Market pobiera prowizję?</div>
+            </div>
+            <p class="mt-3 text-sm text-white/70">Nie. Ponieważ nie obsługujemy płatności — rozliczenia są poza platformą.</p>
+          </div>
+
+          <div class="animate-on-scroll glass rounded-2xl p-6">
+            <div class="flex items-center gap-3">
+              <i data-lucide="shield-off" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Czy jest escrow lub ochrona kupującego?</div>
+            </div>
+            <p class="mt-3 text-sm text-white/70">Nie. Platforma służy tylko do znalezienia kontaktu. Ustalcie zasady współpracy we własnym zakresie.</p>
+          </div>
+
+          <div class="animate-on-scroll glass rounded-2xl p-6">
+            <div class="flex items-center gap-3">
+              <i data-lucide="message-circle" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Gdzie odbywa się kontakt?</div>
+            </div>
+            <p class="mt-3 text-sm text-white/70">Najczęściej Discord lub e-mail — możesz też dodać inne linki w profilu.</p>
+          </div>
+
+          <div class="animate-on-scroll glass rounded-2xl p-6">
+            <div class="flex items-center gap-3">
+              <i data-lucide="badge-check" class="h-5 w-5 text-[var(--accent)]"></i>
+              <div class="font-bold">Jak zwiększyć wiarygodność?</div>
+            </div>
+            <p class="mt-3 text-sm text-white/70">Uzupełnij portfolio, opis doświadczenia, stack i dodaj linki do realizacji.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer id="kontakt" class="relative border-t border-white/10 glass-soft">
+    <div class="mx-auto max-w-7xl px-4 py-12 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <img src="https://i.imgur.com/NDhlWyz.png" alt="logo" class="h-10 w-auto" />
+          <div>
+            <div class="font-bold">Velorie Market</div>
+            <div class="text-xs text-white/60">© <span id="footer-year"></span> · Wszelkie prawa zastrzeżone.</div>
+          </div>
+        </div>
+        <p class="text-sm text-white/70">
+          Platforma ogłoszeniowa dla freelancerów i zleceniodawców. Bez escrow — łączymy ludzi, a rozliczenia zostają po Waszej stronie.
+        </p>
+        <div class="flex flex-wrap items-center gap-3">
+          <a aria-label="Discord" href="#discord" class="rounded-full btn-ghost lift px-3 py-1 text-xs">Discord</a>
+          <a aria-label="Facebook" href="#facebook" class="rounded-full btn-ghost lift px-3 py-1 text-xs">Fanpage</a>
+          <a aria-label="E-mail" href="mailto:kontakt@velorie.market" class="rounded-full btn-ghost lift px-3 py-1 text-xs">E-mail</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="font-semibold mb-3">Nawigacja</div>
+        <ul class="space-y-2 text-sm text-white/70" id="footer-nav-list"></ul>
+      </div>
+
+      <div>
+        <div class="font-semibold mb-3">Zasady</div>
+        <ul class="space-y-2 text-sm text-white/70">
+          <li class="flex items-start gap-2">
+            <i data-lucide="dot" class="h-5 w-5 text-[var(--accent)] -mt-0.5"></i>
+            <span>Brak escrow i brak obsługi płatności</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <i data-lucide="dot" class="h-5 w-5 text-[var(--accent)] -mt-0.5"></i>
+            <span>Kontakt i rozliczenia poza platformą</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <i data-lucide="dot" class="h-5 w-5 text-[var(--accent)] -mt-0.5"></i>
+            <span>Uzupełnione portfolio = większa wiarygodność</span>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="font-semibold mb-3">Start</div>
+        <p class="text-sm text-white/70 mb-4">
+          Zaloguj się lub załóż konto, aby korzystać z funkcji ogłoszeń i profili (na osobnej podstronie).
+        </p>
+        <a href="./auth.html" class="w-full justify-center inline-flex items-center gap-2 rounded-2xl btn-primary lift px-4 py-3 font-semibold">
+          <i data-lucide="user" class="h-4 w-4"></i>
+          <span>Zaloguj / Zarejestruj się</span>
+        </a>
+        <div class="mt-3 text-xs text-white/50">
+          To jest strona informacyjna — wyszukiwarka i dodawanie ogłoszeń są w osobnym widoku.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // ====== UNDER CONSTRUCTION LOGIC ======
+      // Uwaga: webhook w kodzie klienta jest publiczny. Docelowo lepiej wysyłać przez backend / edge function.
+      const WEBHOOK_URL = "https://discord.com/api/webhooks/1454905261549551761/7vz4wTLZwqVmhQr0ppGEG_6yFe4L3uOxU3iIRqluLGEp1vlTSb-9a-HrKZ5-TLce9GWK";
+      const OVERLAY = document.getElementById("uc-overlay");
+      const FORM = document.getElementById("uc-form");
+      const EMAIL = document.getElementById("uc-email");
+      const STATUS = document.getElementById("uc-status");
+      const SUBMIT = document.getElementById("uc-submit");
+      const DEV_BTN = document.getElementById("dev-btn");
+
+      let unlocked = false;
+
+      const lockPage = () => document.body.classList.add("is-locked");
+      const unlockPage = () => document.body.classList.remove("is-locked");
+
+      const setStatus = (msg, tone = "normal") => {
+        const tones = {
+          normal: "rgba(255,255,255,.70)",
+          ok: "rgba(120,255,180,.85)",
+          warn: "rgba(255,210,120,.90)",
+          err: "rgba(255,120,120,.90)",
+        };
+        STATUS.style.color = tones[tone] || tones.normal;
+        STATUS.textContent = msg || "";
+      };
+
+      const validateEmail = (v) => {
+        const s = String(v || "").trim();
+        return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(s);
+      };
+
+      const hideOverlay = () => {
+        OVERLAY.classList.add("hidden");
+        unlockPage();
+      };
+
+      const showOverlay = () => {
+        OVERLAY.classList.remove("hidden");
+        lockPage();
+      };
+
+      // overlay default ON (until refresh)
+      showOverlay();
+
+      DEV_BTN.addEventListener("click", () => {
+        const code = window.prompt("Podaj kod developer:");
+        if (code === null) return;
+        if (String(code).trim() === "0051") {
+          unlocked = true;
+          hideOverlay();
+          setStatus("");
+        } else {
+          setStatus("Niepoprawny kod.", "err");
+        }
+      });
+
+      // prevent click-through
+      OVERLAY.addEventListener("click", (e) => {
+        const panel = e.target.closest(".uc-panel");
+        if (!panel) e.stopPropagation();
+      }, true);
+
+      FORM.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (unlocked) return;
+
+        const email = (EMAIL.value || "").trim();
+        if (!validateEmail(email)) {
+          setStatus("Wpisz poprawny adres e-mail.", "warn");
+          EMAIL.focus();
+          return;
+        }
+
+        SUBMIT.disabled = true;
+        SUBMIT.style.opacity = "0.85";
+        setStatus("Wysyłam…", "normal");
+
+        try {
+          const payload = {
+            content: `📩 **Nowy zapis na start:** \`${email}\`\n🕒 ${new Date().toLocaleString("pl-PL")}`
+          };
+
+          const res = await fetch(WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          if (!res.ok) throw new Error("Webhook error: " + res.status);
+
+          setStatus("Gotowe! Jesteś na liście ✅", "ok");
+          EMAIL.value = "";
+        } catch (err) {
+          console.error(err);
+          setStatus("Nie udało się wysłać. Spróbuj ponownie za chwilę.", "err");
+        } finally {
+          SUBMIT.disabled = false;
+          SUBMIT.style.opacity = "1";
+        }
+      });
+
+      EMAIL.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") EMAIL.blur();
+      });
+
+      // ====== MOBILE MENU (responsive) ======
+      const menuBtn = document.getElementById("menu-btn");
+      const mobileNav = document.getElementById("mobile-nav");
+      const closeMobileNav = () => {
+        if (!mobileNav) return;
+        mobileNav.hidden = true;
+        menuBtn?.setAttribute("aria-expanded", "false");
+      };
+      const openMobileNav = () => {
+        if (!mobileNav) return;
+        mobileNav.hidden = false;
+        menuBtn?.setAttribute("aria-expanded", "true");
+      };
+      menuBtn?.addEventListener("click", () => {
+        const isOpen = !mobileNav.hidden;
+        isOpen ? closeMobileNav() : openMobileNav();
+      });
+      mobileNav?.addEventListener("click", (e) => {
+        const a = e.target.closest("a");
+        if (a) closeMobileNav();
+      });
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeMobileNav();
+      });
+
+      // ====== EXISTING PAGE LOGIC ======
+      // Schema.org
+      const schema = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: "Velorie Market",
+        url: window.location.href,
+        inLanguage: "PL",
+        description: "Platforma ogłoszeniowa dla freelancerów i zleceniodawców. Bez escrow – kontakt i płatność poza platformą."
+      };
+      document.getElementById("schema-json").textContent = JSON.stringify(schema);
+
+      // footer year
+      document.getElementById("footer-year").textContent = new Date().getFullYear();
+
+      // footer nav
+      const footerNav = [
+        { href: "#o-platformie", text: "O platformie" },
+        { href: "#dla-kogo", text: "Dla kogo" },
+        { href: "#jak-to-dziala", text: "Jak to działa" },
+        { href: "#statystyki", text: "Statystyki" },
+        { href: "#faq", text: "FAQ" },
+        { href: "#kontakt", text: "Kontakt" },
+      ];
+      const footerList = document.getElementById("footer-nav-list");
+      footerNav.forEach(item => {
+        const li = document.createElement("li");
+        li.innerHTML = `<a href="${item.href}" class="hover:text-white">${item.text}</a>`;
+        footerList.appendChild(li);
+      });
+
+      // Stats
+      const statsData = [
+        { id: "offers", icon: "briefcase", label: "Aktywne ogłoszenia", value: 1280 },
+        { id: "profiles", icon: "users", label: "Profile freelancerów", value: 6420 },
+        { id: "categories", icon: "layers", label: "Kategorie umiejętności", value: 28 },
+        { id: "matches", icon: "sparkles", label: "Dopasowania / mies.", value: 15400 },
+      ];
+
+      const renderStats = () => {
+        const grid = document.getElementById("stats-grid");
+        grid.innerHTML = "";
+        statsData.forEach((s, idx) => {
+          const card = document.createElement("div");
+          card.className = "p-5 text-center relative rounded-2xl glass animate-on-scroll";
+          card.style.transitionDelay = `${idx * 0.06}s`;
+          card.innerHTML = `
+            <div class="flex items-center justify-center gap-2">
+              <i data-lucide="${s.icon}" class="h-5 w-5 text-[var(--accent)]"></i>
+              <span class="text-[10px] sm:text-xs uppercase tracking-wider text-white/60">${s.label}</span>
+            </div>
+            <div id="stat-${s.id}" class="mt-2 text-2xl md:text-3xl font-extrabold tabular-nums">0</div>
+          `;
+          grid.appendChild(card);
+        });
+        lucide.createIcons();
+        initScrollAnimations();
+      };
+
+      // Counter animation
+      const animateCounter = (element, target, duration = 1200) => {
+        let start = null;
+        const step = (ts) => {
+          if (!start) start = ts;
+          const progress = Math.min((ts - start) / duration, 1);
+          element.textContent = Math.floor(progress * target).toLocaleString("pl-PL");
+          if (progress < 1) window.requestAnimationFrame(step);
+        };
+        window.requestAnimationFrame(step);
+      };
+
+      // Parallax hero text (disable on reduced motion)
+      const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const heroText = document.getElementById("hero-text");
+      if (!prefersReduced && heroText){
+        window.addEventListener("scroll", () => {
+          if (window.scrollY < window.innerHeight) {
+            heroText.style.transform = `translateY(${window.scrollY * 0.2}px)`;
+          }
+        }, { passive: true });
+      }
+
+      // Scroll progress bar
+      const progressBar = document.getElementById("scroll-progress");
+      const updateProgress = () => {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const p = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        progressBar.style.width = `${p}%`;
+      };
+      window.addEventListener("scroll", updateProgress, { passive: true });
+      updateProgress();
+
+      // Intersection observer animations
+      let observer;
+      const initScrollAnimations = () => {
+        if (observer) observer.disconnect();
+        observer = new IntersectionObserver((entries, obs) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+
+              const statEl = entry.target.querySelector('[id^="stat-"]');
+              if (statEl) {
+                const key = statEl.id.replace("stat-", "");
+                const stat = statsData.find(x => x.id === key);
+                if (stat) animateCounter(statEl, stat.value);
+              }
+
+              obs.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.12 });
+
+        document.querySelectorAll(".animate-on-scroll").forEach(el => observer.observe(el));
+      };
+
+      // Particles
+      const createParticles = () => {
+        const container = document.getElementById("particles-container");
+        if (!container) return;
+        container.innerHTML = "";
+        const count = window.innerWidth < 480 ? 18 : 28;
+        for (let i = 0; i < count; i++) {
+          const particle = document.createElement("span");
+          const size = 18 + (i % 6) * 10;
+          const col = (i % 3 === 0) ? "rgba(124,58,237,.75)" : "rgba(255,3,84,.80)";
+          particle.className = "absolute rounded-full opacity-20 blur-2xl particle";
+          particle.style.cssText = `
+            width:${size}px;
+            height:${size}px;
+            background:${col};
+            left:${Math.random() * 100}%;
+            top:${Math.random() * 100}%;
+            animation-duration:${10 + (i % 5)}s;
+            animation-delay:${i * 0.2}s;
+          `;
+          container.appendChild(particle);
+        }
+      };
+
+      // Init
+      const init = () => {
+        renderStats();
+        createParticles();
+        lucide.createIcons();
+        initScrollAnimations();
+      };
+
+      init();
+
+      // Recreate particles on resize (debounced)
+      let t;
+      window.addEventListener("resize", () => {
+        clearTimeout(t);
+        t = setTimeout(createParticles, 200);
+      }, { passive: true });
+    });
+  </script>
+</body>
+</html>
