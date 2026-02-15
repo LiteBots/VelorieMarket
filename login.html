@@ -308,94 +308,58 @@
     </div>
   </div>
 
-  <script>
+ <script>
     lucide.createIcons();
-    const API_URL = '/api'; 
 
-    const tabLogin = document.getElementById('tab-login');
-    const tabRegister = document.getElementById('tab-register');
-    const viewLogin = document.getElementById('view-login');
-    const viewRegister = document.getElementById('view-register');
+    // Funkcja przełączająca zakładki
+    const tl = document.getElementById('tab-login'), tr = document.getElementById('tab-register'), vl = document.getElementById('view-login'), vr = document.getElementById('view-register');
+    tl.onclick = () => { tl.classList.add('active'); tr.classList.remove('active'); vl.classList.add('active'); vr.classList.remove('active'); };
+    tr.onclick = () => { tr.classList.add('active'); tl.classList.remove('active'); vr.classList.add('active'); vl.classList.remove('active'); };
 
-    function switchTab(mode) {
-      if(mode === 'login') {
-        tabLogin.classList.add('active');
-        tabRegister.classList.remove('active');
-        viewLogin.classList.add('active');
-        viewRegister.classList.remove('active');
-      } else {
-        tabRegister.classList.add('active');
-        tabLogin.classList.remove('active');
-        viewRegister.classList.add('active');
-        viewLogin.classList.remove('active');
-      }
-    }
-
-    tabLogin.addEventListener('click', () => switchTab('login'));
-    tabRegister.addEventListener('click', () => switchTab('register'));
-
-    async function handleRegister(e) {
+    async function handleAuth(e, type) {
       e.preventDefault();
-      console.log("🚀 Start rejestracji...");
-      
-      const form = e.target;
-      const formData = new FormData(form);
+      console.log(`Próba: ${type}`); // Sprawdź w F12 czy to widzisz!
+
+      const btn = e.target.querySelector('button');
+      btn.disabled = true;
+
+      // Zbieranie danych
+      const formData = new FormData(e.target);
       const data = Object.fromEntries(formData.entries());
-      const pass2 = document.getElementById('reg-pass-2').value;
 
-      if(data.password !== pass2) {
-        alert("Hasła nie są identyczne!");
-        return;
+      // Walidacja haseł przy rejestracji
+      if (type === 'register') {
+          const p1 = document.getElementById('reg-pass').value;
+          const p2 = document.getElementById('reg-pass-confirm').value;
+          if (p1 !== p2) { alert("Hasła nie pasują!"); btn.disabled = false; return; }
       }
-
-      const submitBtn = form.querySelector('button[type="submit"]');
-      submitBtn.disabled = true;
-      const originalText = submitBtn.innerHTML;
-      submitBtn.innerHTML = "<span>Tworzenie...</span>";
 
       try {
-        const response = await fetch(`${API_URL}/register`, {
+        // Używamy pełnej ścieżki, aby uniknąć problemów z routingiem
+        const res = await fetch(`${window.location.origin}/api/${type}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
 
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Błąd");
+        const out = await res.json();
+        
+        if (!res.ok) throw new Error(out.error || "Błąd serwera");
 
-        alert("Konto utworzone pomyślnie!");
-        location.reload();
+        alert(type === 'login' ? "Zalogowano!" : "Konto utworzone!");
+        window.location.href = type === 'login' ? '/' : '/login';
+
       } catch (err) {
-        alert(err.message);
+        console.error("Błąd wysyłki:", err);
+        alert("Błąd: " + err.message);
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
-        lucide.createIcons();
+        btn.disabled = false;
       }
     }
 
-    async function handleLogin(e) {
-      e.preventDefault();
-      const form = e.target;
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
-
-      try {
-        const response = await fetch(`${API_URL}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Błąd logowania");
-
-        alert("Zalogowano!");
-        window.location.href = '/';
-      } catch (err) {
-        alert(err.message);
-      }
-    }
-  </script>
+    // Podpięcie pod formularze
+    document.getElementById('view-login').onsubmit = (e) => handleAuth(e, 'login');
+    document.getElementById('view-register').onsubmit = (e) => handleAuth(e, 'register');
+</script>
 </body>
 </html>
