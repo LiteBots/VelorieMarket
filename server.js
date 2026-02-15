@@ -19,11 +19,15 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
+            // Odblokowano skrypty CDN i inline
             scriptSrc: ["'self'", "'unsafe-inline'", "cdn.tailwindcss.com", "unpkg.com"],
+            // Odblokowano obrazki z zaufanych domen
             imgSrc: ["'self'", "data:", "i.imgur.com", "i.pravatar.cc", "https://*"],
+            // Odblokowano style i fonty Google
             styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
             fontSrc: ["'self'", "fonts.gstatic.com"],
-            connectSrc: ["'self'", "https://*", "http://*"] // Rozszerzono connectSrc, aby uniknąć blokowania API
+            // KLUCZOWE: Pozwalamy na fetch/XHR do naszego API ('self')
+            connectSrc: ["'self'", "https://*", "http://*"]
         }
     }
 }));
@@ -31,14 +35,14 @@ app.use(helmet({
 app.use(cors());
 app.use(express.json());
 
-// Serwowanie plików statycznych
+// Serwowanie plików statycznych z głównego katalogu
 app.use(express.static(__dirname));
 
-// Rate Limiting dla API
+// Ochrona przed Brute-Force
 const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 app.use('/api', apiLimiter);
 
-// === BAZA DANYCH ===
+// === POŁĄCZENIE Z BAZĄ DANYCH ===
 if (!process.env.MONGO_URL) {
     console.error("❌ FATAL: Brak zmiennej MONGO_URL w konfiguracji Railway!");
     process.exit(1); 
@@ -48,10 +52,10 @@ mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log('✅ Połączono z MongoDB'))
     .catch(err => console.error('❌ Błąd połączenia z MongoDB:', err));
 
-// === DISCORD ===
+// === INICJALIZACJA DISCORDA ===
 initDiscord(process.env.DISCORD_TOKEN, process.env.DISCORD_STATS_CHANNEL_ID);
 
-// === WALIDACJA ===
+// === SCHEMATY WALIDACJI ===
 const registerSchema = Joi.object({
     username: Joi.string().min(3).max(30).required(),
     email: Joi.string().email().required(),
@@ -66,54 +70,53 @@ const loginSchema = Joi.object({
 
 // === API ENDPOINTS ===
 
-// Rejestracja
+// Rejestracja użytkownika
 app.post('/api/register', async (req, res) => {
-    console.log(`📥 [API] Próba rejestracji: ${req.body.email}`);
+    console.log(`📥 [API] Próba rejestracji:`, req.body);
 
     try {
-        // 1. Walidacja Joi
+        // 1. Walidacja formatu danych
         const { error } = registerSchema.validate(req.body);
         if (error) {
-            console.log(`⚠️ [Walidacja] Błędne dane: ${error.details[0].message}`);
+            console.log(`⚠️ [Walidacja] Błąd: ${error.details[0].message}`);
             return res.status(400).json({ error: error.details[0].message });
         }
 
         const { username, email, password, role } = req.body;
 
-        // 2. Sprawdzenie czy użytkownik już istnieje
-        const userExists = await User.findOne({ email });
+        // 2. Czy email jest unikalny
+        const userExists = await User.findOne({ email: email.toLowerCase() });
         if (userExists) {
-            console.log(`⚠️ [Rejestracja] Email już zajęty: ${email}`);
+            console.log(`⚠️ [Rejestracja] Email zajęty: ${email}`);
             return res.status(409).json({ error: "Użytkownik o tym adresie email już istnieje." });
         }
 
-        // 3. Haszowanie hasła
+        // 3. Bezpieczne hasło
         const hashedPassword = await bcrypt.hash(password, 10);
         
-        // 4. Zapis do bazy
+        // 4. Próba zapisu do bazy
         const newUser = new User({ 
             username, 
-            email, 
+            email: email.toLowerCase(), 
             password: hashedPassword, 
             role 
         });
 
         await newUser.save();
-        console.log(`✅ [Baza] Nowy użytkownik zapisany: ${email}`);
+        console.log(`✅ [Baza] Nowy użytkownik zapisany pomyślnie!`);
 
-        // 5. Aktualizacja Discorda
-        // Wywołujemy funkcję i logujemy jej wywołanie
-        console.log(`📡 [Discord] Wysyłam żądanie aktualizacji statystyk...`);
+        // 5. Aktualizacja Discorda (asynchronicznie)
+        console.log(`📡 [Discord] Wywołuję aktualizację licznika...`);
         updateDiscordStats(); 
 
         res.status(201).json({ message: "Konto utworzone pomyślnie." });
     } catch (err) {
-        console.error("❌ [Serwer] Błąd podczas rejestracji:", err);
-        res.status(500).json({ error: "Wystąpił błąd serwera podczas tworzenia konta." });
+        console.error("❌ [Serwer] Błąd podczas zapisu w /api/register:", err);
+        res.status(500).json({ error: "Wystąpił błąd podczas tworzenia konta." });
     }
 });
 
-// Logowanie
+// Logowanie użytkownika
 app.post('/api/login', async (req, res) => {
     console.log(`📥 [API] Próba logowania: ${req.body.email}`);
 
@@ -121,30 +124,30 @@ app.post('/api/login', async (req, res) => {
         const { error } = loginSchema.validate(req.body);
         if (error) return res.status(400).json({ error: "Niepoprawny format danych." });
 
-        const user = await User.findOne({ email: req.body.email });
+        const user = await User.findOne({ email: req.body.email.toLowerCase() });
         if (!user) {
-            console.log(`⚠️ [Logowanie] Nie znaleziono użytkownika: ${req.body.email}`);
+            console.log(`⚠️ [Logowanie] Nie znaleziono: ${req.body.email}`);
             return res.status(401).json({ error: "Błędny email lub hasło." });
         }
 
         const validPass = await bcrypt.compare(req.body.password, user.password);
         if (!validPass) {
-            console.log(`⚠️ [Logowanie] Błędne hasło dla: ${req.body.email}`);
+            console.log(`⚠️ [Logowanie] Złe hasło dla: ${req.body.email}`);
             return res.status(401).json({ error: "Błędny email lub hasło." });
         }
 
-        console.log(`✅ [Logowanie] Użytkownik zalogowany: ${user.email}`);
+        console.log(`✅ [Logowanie] Sukces: ${user.email}`);
         res.json({ 
             message: "Zalogowano pomyślnie.", 
             user: { id: user._id, username: user.username, role: user.role } 
         });
     } catch (err) {
-        console.error("❌ [Serwer] Błąd podczas logowania:", err);
+        console.error("❌ [Serwer] Błąd podczas /api/login:", err);
         res.status(500).json({ error: "Błąd serwera." });
     }
 });
 
-// === ROUTING HTML ===
+// === ROUTING PLIKÓW HTML ===
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
@@ -154,10 +157,11 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
+// Wszystkie inne ścieżki kierują na stronę główną
 app.get('*', (req, res) => {
     res.redirect('/');
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 [System] Serwer Velorie Market uruchomiony na porcie ${PORT}`);
+    console.log(`🚀 [System] Serwer Velorie Market online na porcie ${PORT}`);
 });
