@@ -180,13 +180,13 @@
       </div>
 
       <div class="flex gap-8 border-b border-white/10 mb-8">
-        <button id="tab-login" type="button" class="tab-btn active pb-2 text-sm font-semibold uppercase tracking-wider">Logowanie</button>
-        <button id="tab-register" type="button" class="tab-btn pb-2 text-sm font-semibold uppercase tracking-wider">Rejestracja</button>
+        <button id="btn-tab-login" type="button" class="tab-btn active pb-2 text-sm font-semibold uppercase tracking-wider">Logowanie</button>
+        <button id="btn-tab-register" type="button" class="tab-btn pb-2 text-sm font-semibold uppercase tracking-wider">Rejestracja</button>
       </div>
 
       <div class="thin-scroll lg:max-h-[60vh] overflow-y-auto pr-2">
         
-        <form id="view-login" class="form-view active space-y-5" onsubmit="handleLogin(event)">
+        <form id="view-login" class="form-view active space-y-5" onsubmit="handleAuth(event, 'login')">
           <div class="v-input-group">
             <input type="email" name="email" placeholder="Adres email" class="v-input" required />
             <i data-lucide="mail" class="v-icon h-5 w-5"></i>
@@ -194,13 +194,6 @@
           <div class="v-input-group">
             <input type="password" name="password" placeholder="Hasło" class="v-input" required />
             <i data-lucide="lock" class="v-icon h-5 w-5"></i>
-          </div>
-          <div class="flex items-center justify-between text-xs">
-            <label class="flex items-center gap-2 cursor-pointer text-white/60 hover:text-white transition">
-              <input type="checkbox" class="rounded bg-white/10 border-white/20 text-[var(--accent)] focus:ring-0">
-              <span>Zapamiętaj mnie</span>
-            </label>
-            <a href="#" class="text-[var(--accent)] hover:underline">Nie pamiętasz hasła?</a>
           </div>
           <button type="submit" class="w-full py-4 rounded-xl btn-primary font-bold text-base flex items-center justify-center gap-2 shadow-lg">
             <span>Zaloguj się</span>
@@ -216,27 +209,25 @@
           </button>
         </form>
 
-        <form id="view-register" class="form-view space-y-5" onsubmit="handleRegister(event)">
+        <form id="view-register" class="form-view space-y-5" onsubmit="handleAuth(event, 'register')">
           <div class="grid grid-cols-2 gap-4">
             <label>
               <input type="radio" name="role" value="freelancer" class="role-card-input" checked>
               <div class="role-card p-4 flex flex-col items-center text-center gap-3 h-full justify-center">
-                <div class="absolute top-2 right-2 role-check text-[var(--accent)]"><i data-lucide="check-circle-2" class="h-5 w-5"></i></div>
-                <div class="p-3 rounded-full bg-white/5 text-[var(--accent)] shadow-inner"><i data-lucide="code-2" class="h-6 w-6"></i></div>
+                <div class="p-3 rounded-full bg-white/5 text-[var(--accent)]"><i data-lucide="code-2" class="h-6 w-6"></i></div>
                 <div class="font-bold text-sm">Freelancer</div>
               </div>
             </label>
             <label>
               <input type="radio" name="role" value="client" class="role-card-input">
               <div class="role-card p-4 flex flex-col items-center text-center gap-3 h-full justify-center">
-                <div class="absolute top-2 right-2 role-check text-[var(--accent)]"><i data-lucide="check-circle-2" class="h-5 w-5"></i></div>
-                <div class="p-3 rounded-full bg-white/5 text-[var(--accent2)] shadow-inner"><i data-lucide="briefcase" class="h-6 w-6"></i></div>
+                <div class="p-3 rounded-full bg-white/5 text-[var(--accent2)]"><i data-lucide="briefcase" class="h-6 w-6"></i></div>
                 <div class="font-bold text-sm">Firma</div>
               </div>
             </label>
           </div>
           <div class="v-input-group">
-            <input type="text" name="username" placeholder="Nazwa użytkownika / Firmy" class="v-input" required />
+            <input type="text" name="username" placeholder="Nazwa użytkownika" class="v-input" required />
             <i data-lucide="user" class="v-icon h-5 w-5"></i>
           </div>
           <div class="v-input-group">
@@ -245,24 +236,16 @@
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="v-input-group">
-              <input type="password" id="reg-pass" name="password" placeholder="Hasło (min. 6)" minlength="6" class="v-input" required />
+              <input type="password" id="reg-pass-1" name="password" placeholder="Hasło" class="v-input" required />
               <i data-lucide="key" class="v-icon h-5 w-5"></i>
             </div>
             <div class="v-input-group">
-              <input type="password" id="reg-pass-2" placeholder="Powtórz hasło" class="v-input" required />
+              <input type="password" id="reg-pass-2" placeholder="Powtórz" class="v-input" required />
               <i data-lucide="check" class="v-icon h-5 w-5"></i>
             </div>
           </div>
-          <div class="pt-2">
-            <button type="submit" class="w-full py-4 rounded-xl btn-primary font-bold text-base flex items-center justify-center gap-2 shadow-lg">
-              <span>Utwórz konto</span>
-              <i data-lucide="sparkles" class="h-5 w-5"></i>
-            </button>
-          </div>
+          <button type="submit" class="w-full py-4 rounded-xl btn-primary font-bold">Utwórz konto</button>
         </form>
-      </div>
-      <div class="mt-8 text-center text-xs text-white/30">
-        &copy; 2026 Velorie Market.
       </div>
     </div>
   </div>
@@ -273,93 +256,71 @@
     <div class="perspective-1000 relative z-10 scale-110">
       <div class="card-3d w-[420px] h-[560px] rounded-[32px] bg-black/40 border border-white/10 backdrop-blur-xl p-6 flex flex-col">
         <div class="flex items-center justify-between mb-6">
-          <div class="flex gap-2">
-            <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
-            <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
-            <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
-          </div>
+          <div class="flex gap-2"><div class="w-3 h-3 rounded-full bg-red-500/50"></div><div class="w-3 h-3 rounded-full bg-yellow-500/50"></div><div class="w-3 h-3 rounded-full bg-green-500/50"></div></div>
           <div class="px-3 py-1 rounded-full bg-white/5 text-[10px] text-white/50 font-mono">velorie.user_profile</div>
         </div>
         <div class="flex flex-col items-center mt-4">
-          <div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-[#ff0354] to-[#7c3aed] mb-4">
+          <div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-[#ff0354] to-[#7c3aed] mb-4 shadow-[0_0_30px_rgba(255,3,84,0.3)]">
             <img src="https://i.pravatar.cc/150?img=33" alt="Avatar" class="w-full h-full rounded-full object-cover border-2 border-[#0a1030]" />
           </div>
           <h3 class="text-xl font-bold">Alex Dev</h3>
-          <p class="text-[var(--accent)] text-xs font-semibold uppercase tracking-wide mt-1">Java Developer</p>
+          <p class="text-[var(--accent)] text-xs font-semibold uppercase mt-1">Java Developer</p>
         </div>
         <div class="grid grid-cols-3 gap-3 mt-8">
-            <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5">
-              <div class="text-lg font-bold">98%</div>
-              <div class="text-[10px] text-white/40">Oceny</div>
-            </div>
-            <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5">
-              <div class="text-lg font-bold">42</div>
-              <div class="text-[10px] text-white/40">Zlecenia</div>
-            </div>
-            <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5">
-              <div class="text-lg font-bold">2h</div>
-              <div class="text-[10px] text-white/40">Odp.</div>
-            </div>
+          <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5"><div class="text-lg font-bold">98%</div><div class="text-[10px] text-white/40">Oceny</div></div>
+          <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5"><div class="text-lg font-bold">42</div><div class="text-[10px] text-white/40">Zlecenia</div></div>
+          <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5"><div class="text-lg font-bold">2h</div><div class="text-[10px] text-white/40">Odp.</div></div>
         </div>
-        <div class="mt-auto pt-6">
-          <div class="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-center text-sm text-white/60">Skontaktuj się</div>
-        </div>
+        <div class="mt-auto pt-6"><div class="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-center text-sm text-white/60">Skontaktuj się</div></div>
       </div>
     </div>
   </div>
 
- <script>
+  <script>
     lucide.createIcons();
+    const API_URL = '/api';
 
-    // Funkcja przełączająca zakładki
-    const tl = document.getElementById('tab-login'), tr = document.getElementById('tab-register'), vl = document.getElementById('view-login'), vr = document.getElementById('view-register');
-    tl.onclick = () => { tl.classList.add('active'); tr.classList.remove('active'); vl.classList.add('active'); vr.classList.remove('active'); };
-    tr.onclick = () => { tr.classList.add('active'); tl.classList.remove('active'); vr.classList.add('active'); vl.classList.remove('active'); };
+    // Obsługa zakładek
+    const btnL = document.getElementById('btn-tab-login'), btnR = document.getElementById('btn-tab-register'), viewL = document.getElementById('view-login'), viewR = document.getElementById('view-register');
+    btnL.onclick = () => { btnL.classList.add('active'); btnR.classList.remove('active'); viewL.classList.add('active'); viewR.classList.remove('active'); };
+    btnR.onclick = () => { btnR.classList.add('active'); btnL.classList.remove('active'); viewR.classList.add('active'); viewL.classList.remove('active'); };
 
     async function handleAuth(e, type) {
       e.preventDefault();
-      console.log(`Próba: ${type}`); // Sprawdź w F12 czy to widzisz!
-
-      const btn = e.target.querySelector('button');
-      btn.disabled = true;
-
-      // Zbieranie danych
-      const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData.entries());
-
-      // Walidacja haseł przy rejestracji
+      const btn = e.target.querySelector('button[type="submit"]');
+      
       if (type === 'register') {
-          const p1 = document.getElementById('reg-pass').value;
-          const p2 = document.getElementById('reg-pass-confirm').value;
-          if (p1 !== p2) { alert("Hasła nie pasują!"); btn.disabled = false; return; }
+        const p1 = document.getElementById('reg-pass-1').value;
+        const p2 = document.getElementById('reg-pass-2').value;
+        if (p1 !== p2) { alert("Hasła nie są identyczne!"); return; }
       }
 
+      btn.disabled = true;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = "<span>Przetwarzanie...</span>";
+
+      const data = Object.fromEntries(new FormData(e.target));
+
       try {
-        // Używamy pełnej ścieżki, aby uniknąć problemów z routingiem
-        const res = await fetch(`${window.location.origin}/api/${type}`, {
+        const res = await fetch(`${API_URL}/${type}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
 
-        const out = await res.json();
-        
-        if (!res.ok) throw new Error(out.error || "Błąd serwera");
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || "Błąd serwera");
 
-        alert(type === 'login' ? "Zalogowano!" : "Konto utworzone!");
-        window.location.href = type === 'login' ? '/' : '/login';
-
+        alert(type === 'login' ? "Witaj ponownie!" : "Konto utworzone!");
+        window.location.href = '/';
       } catch (err) {
-        console.error("Błąd wysyłki:", err);
-        alert("Błąd: " + err.message);
+        alert(err.message);
       } finally {
         btn.disabled = false;
+        btn.innerHTML = originalText;
+        lucide.createIcons();
       }
     }
-
-    // Podpięcie pod formularze
-    document.getElementById('view-login').onsubmit = (e) => handleAuth(e, 'login');
-    document.getElementById('view-register').onsubmit = (e) => handleAuth(e, 'register');
-</script>
+  </script>
 </body>
 </html>
