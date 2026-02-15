@@ -46,7 +46,7 @@
       background: var(--input-bg);
       border: 1px solid var(--input-border);
       border-radius: 12px;
-      padding: 16px 16px 16px 48px; /* miejsce na ikonę */
+      padding: 16px 16px 16px 48px;
       color: white;
       font-size: 15px;
       outline: none;
@@ -94,7 +94,7 @@
       transform: translateY(-1px);
     }
 
-    /* Karty wyboru konta (Radio) */
+    /* Karty wyboru konta */
     .role-card-input { display: none; }
     .role-card {
       cursor: pointer;
@@ -104,24 +104,18 @@
       transition: all 0.2s ease;
       position: relative; overflow: hidden;
     }
-    .role-card:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.2); }
-    
     .role-card-input:checked + .role-card {
       border-color: var(--accent);
       background: linear-gradient(180deg, rgba(255,3,84,0.1), rgba(0,0,0,0));
-      box-shadow: 0 0 20px rgba(255,3,84,0.15) inset;
     }
-    .role-check {
-      opacity: 0; transform: scale(0.5); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
+    .role-check { opacity: 0; transform: scale(0.5); transition: all 0.3s; }
     .role-card-input:checked + .role-card .role-check { opacity: 1; transform: scale(1); }
 
-    /* Prawy panel (Showcase) */
+    /* Showcase */
     .showcase-bg {
       background-image: 
         radial-gradient(at 0% 0%, rgba(124,58,237,0.15) 0px, transparent 50%),
         radial-gradient(at 100% 100%, rgba(255,3,84,0.15) 0px, transparent 50%);
-      background-size: cover;
     }
     .grid-pattern {
       background-image: 
@@ -130,15 +124,12 @@
       background-size: 40px 40px;
     }
 
-    /* Animacja karty 3D */
+    /* 3D Card */
     .perspective-1000 { perspective: 1000px; }
     .card-3d {
       transform-style: preserve-3d;
       transform: rotateY(-10deg) rotateX(5deg);
       animation: float-3d 6s ease-in-out infinite;
-      box-shadow: 
-        -20px 20px 60px rgba(0,0,0,0.5),
-        0 0 0 1px rgba(255,255,255,0.1);
     }
     @keyframes float-3d {
       0%, 100% { transform: rotateY(-10deg) rotateX(5deg) translateY(0); }
@@ -154,12 +145,10 @@
     }
     .tab-btn.active::after { width: 100%; }
 
-    /* Animacje formularzy */
     .form-view { display: none; opacity: 0; transform: translateY(10px); animation: fadeUp 0.4s forwards; }
     .form-view.active { display: block; }
     @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
 
-    /* Scrollbar */
     .thin-scroll::-webkit-scrollbar { width: 4px; }
     .thin-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
   </style>
@@ -168,11 +157,9 @@
 <body class="min-h-screen flex items-stretch">
 
   <div class="w-full lg:w-[45%] flex flex-col justify-center items-center relative z-10 bg-[#00010f] border-r border-white/5 shadow-2xl">
-    
     <div class="aurora-bg"></div>
 
     <div class="w-full max-w-md px-8 py-10 relative flex flex-col h-full lg:h-auto justify-center">
-      
       <div class="mb-10 text-center lg:text-left">
         <a href="/" class="inline-flex items-center gap-3 mb-8 group hover:opacity-80 transition">
           <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="h-10 w-auto drop-shadow-[0_0_15px_rgba(255,3,84,0.5)]" />
@@ -190,17 +177,14 @@
       <div class="thin-scroll lg:max-h-[60vh] overflow-y-auto pr-2">
         
         <form id="view-login" class="form-view active space-y-5" onsubmit="handleLogin(event)">
-          
           <div class="v-input-group">
-            <input type="email" placeholder="Adres email" class="v-input" required />
+            <input type="email" name="email" placeholder="Adres email" class="v-input" required />
             <i data-lucide="mail" class="v-icon h-5 w-5"></i>
           </div>
-
           <div class="v-input-group">
-            <input type="password" placeholder="Hasło" class="v-input" required />
+            <input type="password" name="password" placeholder="Hasło" class="v-input" required />
             <i data-lucide="lock" class="v-icon h-5 w-5"></i>
           </div>
-
           <div class="flex items-center justify-between text-xs">
             <label class="flex items-center gap-2 cursor-pointer text-white/60 hover:text-white transition">
               <input type="checkbox" class="rounded bg-white/10 border-white/20 text-[var(--accent)] focus:ring-0">
@@ -208,17 +192,14 @@
             </label>
             <a href="#" class="text-[var(--accent)] hover:underline">Nie pamiętasz hasła?</a>
           </div>
-
-          <button class="w-full py-4 rounded-xl btn-primary font-bold text-base flex items-center justify-center gap-2 shadow-lg">
+          <button type="submit" class="w-full py-4 rounded-xl btn-primary font-bold text-base flex items-center justify-center gap-2 shadow-lg">
             <span>Zaloguj się</span>
             <i data-lucide="arrow-right" class="h-5 w-5"></i>
           </button>
-
           <div class="relative py-2">
             <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
             <div class="relative flex justify-center"><span class="bg-[#00010f] px-4 text-xs text-white/40 uppercase">lub</span></div>
           </div>
-
           <button type="button" class="w-full py-3.5 rounded-xl btn-discord font-medium text-sm flex items-center justify-center gap-3">
             <img src="https://i.imgur.com/h3hjStL.png" alt="Discord" class="h-6 w-auto object-contain" />
             <span>Zaloguj przez Discord</span>
@@ -226,17 +207,13 @@
         </form>
 
         <form id="view-register" class="form-view space-y-5" onsubmit="handleRegister(event)">
-          
           <div class="grid grid-cols-2 gap-4">
             <label>
               <input type="radio" name="role" value="freelancer" class="role-card-input" checked>
               <div class="role-card p-4 flex flex-col items-center text-center gap-3 h-full justify-center">
                 <div class="absolute top-2 right-2 role-check text-[var(--accent)]"><i data-lucide="check-circle-2" class="h-5 w-5"></i></div>
                 <div class="p-3 rounded-full bg-white/5 text-[var(--accent)] shadow-inner"><i data-lucide="code-2" class="h-6 w-6"></i></div>
-                <div>
-                  <div class="font-bold text-sm">Freelancer</div>
-                  <div class="text-[11px] text-white/40 mt-1">Realizuję zlecenia</div>
-                </div>
+                <div class="font-bold text-sm">Freelancer</div>
               </div>
             </label>
             <label>
@@ -244,32 +221,21 @@
               <div class="role-card p-4 flex flex-col items-center text-center gap-3 h-full justify-center">
                 <div class="absolute top-2 right-2 role-check text-[var(--accent)]"><i data-lucide="check-circle-2" class="h-5 w-5"></i></div>
                 <div class="p-3 rounded-full bg-white/5 text-[var(--accent2)] shadow-inner"><i data-lucide="briefcase" class="h-6 w-6"></i></div>
-                <div>
-                  <div class="font-bold text-sm">Firma</div>
-                  <div class="text-[11px] text-white/40 mt-1">Zlecam projekty</div>
-                </div>
+                <div class="font-bold text-sm">Firma</div>
               </div>
             </label>
           </div>
-
           <div class="v-input-group">
-            <input type="text" placeholder="Nazwa użytkownika / Firmy" class="v-input" required />
+            <input type="text" name="username" placeholder="Nazwa użytkownika / Firmy" class="v-input" required />
             <i data-lucide="user" class="v-icon h-5 w-5"></i>
           </div>
-
           <div class="v-input-group">
-            <input type="email" placeholder="Adres email" class="v-input" required />
+            <input type="email" name="email" placeholder="Adres email" class="v-input" required />
             <i data-lucide="at-sign" class="v-icon h-5 w-5"></i>
           </div>
-
-          <div class="v-input-group">
-            <input type="text" placeholder="Imię i Nazwisko (opcjonalne)" class="v-input" />
-            <i data-lucide="smile" class="v-icon h-5 w-5"></i>
-          </div>
-
           <div class="grid grid-cols-2 gap-4">
             <div class="v-input-group">
-              <input type="password" id="reg-pass" placeholder="Hasło (min. 6)" minlength="6" class="v-input" required />
+              <input type="password" id="reg-pass" name="password" placeholder="Hasło (min. 6)" minlength="6" class="v-input" required />
               <i data-lucide="key" class="v-icon h-5 w-5"></i>
             </div>
             <div class="v-input-group">
@@ -277,95 +243,63 @@
               <i data-lucide="check" class="v-icon h-5 w-5"></i>
             </div>
           </div>
-
           <div class="pt-2">
-            <button class="w-full py-4 rounded-xl btn-primary font-bold text-base flex items-center justify-center gap-2 shadow-lg">
+            <button type="submit" class="w-full py-4 rounded-xl btn-primary font-bold text-base flex items-center justify-center gap-2 shadow-lg">
               <span>Utwórz konto</span>
               <i data-lucide="sparkles" class="h-5 w-5"></i>
             </button>
           </div>
-
-          <p class="text-center text-xs text-white/40 mt-4">
-            Rejestrując się akceptujesz <a href="#" class="underline hover:text-white">Regulamin</a>.
-          </p>
         </form>
-
       </div>
-      
       <div class="mt-8 text-center text-xs text-white/30">
-        &copy; 2026 Velorie Market. Protected by reCAPTCHA.
+        &copy; 2026 Velorie Market.
       </div>
-
     </div>
   </div>
 
   <div class="hidden lg:flex flex-1 relative items-center justify-center overflow-hidden bg-[#0a1030]">
-    
     <div class="absolute inset-0 showcase-bg"></div>
     <div class="absolute inset-0 grid-pattern opacity-20"></div>
-    
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--accent)] rounded-full blur-[120px] opacity-20 animate-pulse"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--accent2)] rounded-full blur-[120px] opacity-20 animate-pulse" style="animation-delay: 2s"></div>
-
     <div class="perspective-1000 relative z-10 scale-110">
       <div class="card-3d w-[420px] h-[560px] rounded-[32px] bg-black/40 border border-white/10 backdrop-blur-xl p-6 flex flex-col">
-        
         <div class="flex items-center justify-between mb-6">
           <div class="flex gap-2">
             <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
             <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
             <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
           </div>
-          <div class="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[10px] text-white/50 font-mono">velorie.user_profile</div>
+          <div class="px-3 py-1 rounded-full bg-white/5 text-[10px] text-white/50 font-mono">velorie.user_profile</div>
         </div>
-
         <div class="flex flex-col items-center mt-4">
-          <div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-[#ff0354] to-[#7c3aed] mb-4 shadow-[0_0_30px_rgba(255,3,84,0.3)]">
+          <div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-[#ff0354] to-[#7c3aed] mb-4">
             <img src="https://i.pravatar.cc/150?img=33" alt="Avatar" class="w-full h-full rounded-full object-cover border-2 border-[#0a1030]" />
           </div>
           <h3 class="text-xl font-bold">Alex Dev</h3>
-          <p class="text-[var(--accent)] text-xs font-semibold uppercase tracking-wide mt-1">Java Developer & Config</p>
+          <p class="text-[var(--accent)] text-xs font-semibold uppercase tracking-wide mt-1">Java Developer</p>
         </div>
-
         <div class="grid grid-cols-3 gap-3 mt-8">
-          <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5">
-            <div class="text-lg font-bold">98%</div>
-            <div class="text-[10px] text-white/40">Oceny</div>
-          </div>
-          <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5">
-            <div class="text-lg font-bold">42</div>
-            <div class="text-[10px] text-white/40">Zlecenia</div>
-          </div>
-          <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5">
-            <div class="text-lg font-bold">2h</div>
-            <div class="text-[10px] text-white/40">Odp.</div>
-          </div>
+            <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5">
+              <div class="text-lg font-bold">98%</div>
+              <div class="text-[10px] text-white/40">Oceny</div>
+            </div>
+            <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5">
+              <div class="text-lg font-bold">42</div>
+              <div class="text-[10px] text-white/40">Zlecenia</div>
+            </div>
+            <div class="p-3 rounded-xl bg-white/5 text-center border border-white/5">
+              <div class="text-lg font-bold">2h</div>
+              <div class="text-[10px] text-white/40">Odp.</div>
+            </div>
         </div>
-
-        <div class="mt-8 space-y-3">
-          <div class="h-2 w-1/3 bg-white/10 rounded-full"></div>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 rounded-lg bg-[#7c3aed]/20 text-[#7c3aed] text-xs border border-[#7c3aed]/20">Java</span>
-            <span class="px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs border border-blue-500/20">Spigot API</span>
-            <span class="px-3 py-1 rounded-lg bg-orange-500/20 text-orange-400 text-xs border border-orange-500/20">SQL</span>
-          </div>
-        </div>
-
         <div class="mt-auto pt-6">
-          <div class="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-center text-sm text-white/60">
-            Skontaktuj się
-          </div>
+          <div class="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-center text-sm text-white/60">Skontaktuj się</div>
         </div>
-
       </div>
     </div>
   </div>
 
   <script>
     lucide.createIcons();
-
-    // === KONFIGURACJA API ===
-    // Dla Railway używamy relatywnej ścieżki (frontend i backend to to samo)
     const API_URL = '/api'; 
 
     const tabLogin = document.getElementById('tab-login');
@@ -373,124 +307,86 @@
     const viewLogin = document.getElementById('view-login');
     const viewRegister = document.getElementById('view-register');
 
-    // === LOGIKA ZAKŁADEK (NAPRAWIONA) ===
-    if(tabLogin && tabRegister) {
-      tabLogin.addEventListener('click', function() { switchTab('login'); });
-      tabRegister.addEventListener('click', function() { switchTab('register'); });
-    }
-
     function switchTab(mode) {
       if(mode === 'login') {
         tabLogin.classList.add('active');
         tabRegister.classList.remove('active');
-        
         viewLogin.classList.add('active');
         viewRegister.classList.remove('active');
       } else {
         tabRegister.classList.add('active');
         tabLogin.classList.remove('active');
-        
         viewRegister.classList.add('active');
         viewLogin.classList.remove('active');
       }
     }
 
-    // === LOGIKA REJESTRACJI (Połączona z backendem) ===
+    tabLogin.addEventListener('click', () => switchTab('login'));
+    tabRegister.addEventListener('click', () => switchTab('register'));
+
     async function handleRegister(e) {
       e.preventDefault();
+      console.log("🚀 Rozpoczynam wysyłkę formularza rejestracji...");
       
       const form = e.target;
-      const submitBtn = form.querySelector('button');
-      const originalBtnContent = submitBtn.innerHTML; 
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      const pass2 = document.getElementById('reg-pass-2').value;
 
-      const email = form.querySelector('input[type="email"]').value;
-      const username = form.querySelector('input[placeholder="Nazwa użytkownika / Firmy"]').value;
-      
-      let role = 'freelancer';
-      const roleInput = document.querySelector('input[name="role"]:checked');
-      if (roleInput) role = roleInput.value;
-
-      const p1 = document.getElementById('reg-pass').value;
-      const p2 = document.getElementById('reg-pass-2').value;
-
-      if(p1 !== p2) {
+      if(data.password !== pass2) {
         alert("Hasła nie są identyczne!");
         return;
       }
-      if(p1.length < 6) {
-        alert("Hasło musi mieć minimum 6 znaków!");
-        return;
-      }
 
+      const submitBtn = form.querySelector('button[type="submit"]');
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span>Tworzenie konta...</span>';
+      submitBtn.innerText = "Tworzenie...";
 
       try {
+        console.log("📡 Wysyłam dane do:", `${API_URL}/register`, data);
         const response = await fetch(`${API_URL}/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, username, password: p1, role })
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
         });
 
-        const data = await response.json();
+        const result = await response.json();
+        console.log("📥 Odpowiedź serwera:", result);
 
-        if (!response.ok) {
-            throw new Error(data.error || 'Wystąpił błąd rejestracji');
-        }
+        if (!response.ok) throw new Error(result.error || "Błąd serwera");
 
-        alert("Konto utworzone pomyślnie! Możesz się zalogować.");
-        form.reset(); 
-        switchTab('login'); 
-        
-        const loginEmail = viewLogin.querySelector('input[type="email"]');
-        if(loginEmail) loginEmail.value = email;
-
+        alert("Konto utworzone pomyślnie!");
+        location.reload();
       } catch (err) {
-        alert(err.message);
+        console.error("❌ Błąd fetch:", err);
+        alert("Błąd: " + err.message);
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnContent;
-        lucide.createIcons(); 
+        submitBtn.innerText = "Utwórz konto";
       }
     }
 
-    // === LOGIKA LOGOWANIA (Połączona z backendem) ===
     async function handleLogin(e) {
-        e.preventDefault();
-        
-        const form = e.target;
-        const submitBtn = form.querySelector('button');
-        const originalBtnContent = submitBtn.innerHTML;
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
 
-        const email = form.querySelector('input[type="email"]').value;
-        const password = form.querySelector('input[type="password"]').value;
+      try {
+        const response = await fetch(`${API_URL}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
 
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span>Logowanie...</span>';
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Błąd logowania");
 
-        try {
-            const response = await fetch(`${API_URL}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Błąd logowania');
-            }
-
-            // Sukces - Przekierowanie
-            window.location.href = '/'; 
-
-        } catch (err) {
-            alert(err.message);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnContent;
-            lucide.createIcons();
-        }
+        alert("Zalogowano!");
+        window.location.href = '/';
+      } catch (err) {
+        alert(err.message);
+      }
     }
   </script>
 </body>
