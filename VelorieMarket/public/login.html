@@ -22,6 +22,9 @@
       --discord: #5865F2;
       --input-bg: rgba(0, 0, 0, 0.3);
       --input-border: rgba(255, 255, 255, 0.08);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
     }
 
     body {
@@ -64,6 +67,58 @@
       transition: color 0.2s;
     }
     .v-input:focus ~ .v-icon { color: var(--accent); }
+
+    /* Pasek siły hasła */
+    .password-strength-container {
+        height: 4px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 2px;
+        margin-top: 8px;
+        overflow: hidden;
+        display: none; /* Domyślnie ukryty, pokazuje się przy wpisywaniu */
+    }
+    .password-strength-bar {
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    /* Powiadomienia (Toasty) */
+    #toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .toast {
+        background: rgba(10, 16, 48, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-left: 4px solid var(--accent);
+        color: white;
+        padding: 16px 20px;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 300px;
+        transform: translateX(100%);
+        opacity: 0;
+        animation: slideIn 0.4s forwards;
+    }
+    .toast.success { border-left-color: var(--success); }
+    .toast.error { border-left-color: var(--error); }
+    
+    @keyframes slideIn {
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes fadeOut {
+        to { transform: translateX(100%); opacity: 0; }
+    }
 
     /* Przyciski */
     .btn-primary {
@@ -166,6 +221,8 @@
 
 <body class="min-h-screen flex items-stretch">
 
+  <div id="toast-container"></div>
+
   <div class="w-full lg:w-[45%] flex flex-col justify-center items-center relative z-10 bg-[#00010f] border-r border-white/5 shadow-2xl">
     <div class="aurora-bg"></div>
 
@@ -234,16 +291,24 @@
             <input type="email" name="email" placeholder="Adres email" class="v-input" required />
             <i data-lucide="at-sign" class="v-icon h-5 w-5"></i>
           </div>
+          
           <div class="grid grid-cols-2 gap-4">
-            <div class="v-input-group">
-              <input type="password" id="reg-pass-1" name="password" placeholder="Hasło" class="v-input" required />
+            <div class="v-input-group col-span-2">
+              <input type="password" id="reg-pass-1" name="password" placeholder="Hasło (min. 6 znaków, 1 znak specjalny)" class="v-input" required />
               <i data-lucide="key" class="v-icon h-5 w-5"></i>
+              
+              <div class="password-strength-container" id="strength-container">
+                  <div class="password-strength-bar" id="strength-bar"></div>
+              </div>
+              <p id="strength-text" class="text-xs text-white/40 mt-1 pl-1"></p>
             </div>
-            <div class="v-input-group">
-              <input type="password" id="reg-pass-2" placeholder="Powtórz" class="v-input" required />
+            
+            <div class="v-input-group col-span-2">
+              <input type="password" id="reg-pass-2" placeholder="Powtórz hasło" class="v-input" required />
               <i data-lucide="check" class="v-icon h-5 w-5"></i>
             </div>
           </div>
+          
           <button type="submit" class="w-full py-4 rounded-xl btn-primary font-bold">Utwórz konto</button>
         </form>
       </div>
@@ -279,31 +344,121 @@
   <script>
     lucide.createIcons();
 
-    
-    // =========================================================
     const API_URL = '/api';
-    
-   
 
+    // === SYSTEM POWIADOMIEŃ (TOAST) ===
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        
+        // Klasy CSS dla różnych typów
+        let typeClass = '';
+        let iconName = 'info';
+        
+        if (type === 'success') {
+            typeClass = 'success';
+            iconName = 'check-circle';
+        } else if (type === 'error') {
+            typeClass = 'error';
+            iconName = 'alert-octagon';
+        }
+
+        toast.className = `toast ${typeClass}`;
+        toast.innerHTML = `
+            <i data-lucide="${iconName}" class="w-6 h-6"></i>
+            <span class="font-medium text-sm">${message}</span>
+        `;
+
+        container.appendChild(toast);
+        lucide.createIcons(); // Odśwież ikony w nowym elemencie
+
+        // Usuwanie po 5 sekundach
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.4s forwards';
+            setTimeout(() => {
+                toast.remove();
+            }, 400);
+        }, 5000);
+    }
+
+    // === PASEK SIŁY HASŁA ===
+    const passInput = document.getElementById('reg-pass-1');
+    const strengthContainer = document.getElementById('strength-container');
+    const strengthBar = document.getElementById('strength-bar');
+    const strengthText = document.getElementById('strength-text');
+
+    if (passInput) {
+        passInput.addEventListener('input', function() {
+            const val = this.value;
+            if(val.length > 0) {
+                strengthContainer.style.display = 'block';
+            } else {
+                strengthContainer.style.display = 'none';
+                strengthText.innerText = '';
+                return;
+            }
+
+            let strength = 0;
+            // Warunki siły
+            if (val.length >= 6) strength++;
+            if (val.length >= 10) strength++;
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(val)) strength++;
+            if (/[0-9]/.test(val)) strength++;
+
+            // Kolory paska
+            if (strength <= 1) {
+                strengthBar.style.width = '30%';
+                strengthBar.style.backgroundColor = 'var(--error)';
+                strengthText.innerText = 'Słabe hasło';
+                strengthText.style.color = 'var(--error)';
+            } else if (strength <= 3) {
+                strengthBar.style.width = '60%';
+                strengthBar.style.backgroundColor = 'var(--warning)';
+                strengthText.innerText = 'Średnie hasło';
+                strengthText.style.color = 'var(--warning)';
+            } else {
+                strengthBar.style.width = '100%';
+                strengthBar.style.backgroundColor = 'var(--success)';
+                strengthText.innerText = 'Silne hasło';
+                strengthText.style.color = 'var(--success)';
+            }
+        });
+    }
 
     // Obsługa zakładek
     const btnL = document.getElementById('btn-tab-login'), btnR = document.getElementById('btn-tab-register'), viewL = document.getElementById('view-login'), viewR = document.getElementById('view-register');
     btnL.onclick = () => { btnL.classList.add('active'); btnR.classList.remove('active'); viewL.classList.add('active'); viewR.classList.remove('active'); };
     btnR.onclick = () => { btnR.classList.add('active'); btnL.classList.remove('active'); viewR.classList.add('active'); viewL.classList.remove('active'); };
 
+    // Obsługa wysyłania
     async function handleAuth(e, type) {
       e.preventDefault();
       
-      // DIAGNOSTYKA: Pokaż w konsoli, że przycisk działa
-      console.log(`🟢 [Frontend] Próba wysyłki formularza: ${type}`);
-      console.log(`🌍 [Frontend] Wysyłam do: ${API_URL}/${type}`);
-
       const btn = e.target.querySelector('button[type="submit"]');
       
+      // === WALIDACJA REJESTRACJI ===
       if (type === 'register') {
         const p1 = document.getElementById('reg-pass-1').value;
         const p2 = document.getElementById('reg-pass-2').value;
-        if (p1 !== p2) { alert("Hasła nie są identyczne!"); return; }
+
+        // Sprawdzenie długości
+        if (p1.length < 6) {
+            showToast("Hasło musi mieć minimum 6 znaków!", 'error');
+            return;
+        }
+
+        // Sprawdzenie znaku specjalnego
+        const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+        if (!specialCharRegex.test(p1)) {
+            showToast("Hasło musi zawierać znak specjalny (np. ! @ # $)", 'error');
+            return;
+        }
+
+        // Sprawdzenie zgodności
+        if (p1 !== p2) { 
+            showToast("Hasła nie są identyczne!", 'error'); 
+            return; 
+        }
       }
 
       btn.disabled = true;
@@ -313,23 +468,36 @@
       const data = Object.fromEntries(new FormData(e.target));
 
       try {
-        const res = await fetch(`${API_URL}/${type}`, { // używa zaktualizowanego URL
+        const res = await fetch(`${API_URL}/${type}`, { 
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
 
-        console.log(`🔵 [Frontend] Status odpowiedzi: ${res.status}`);
-
         const result = await res.json();
-        if (!res.ok) throw new Error(result.error || "Błąd serwera");
+        
+        if (!res.ok) {
+            // Jeśli błąd (np. user istnieje)
+            throw new Error(result.error || "Wystąpił błąd serwera");
+        }
 
-        alert(type === 'login' ? "Witaj ponownie!" : "Konto utworzone!");
-        // Opcjonalnie: Przekierowanie
-        // window.location.href = '/dashboard.html'; 
+        // SUKCES
+        if (type === 'login') {
+            showToast("Zalogowano pomyślnie! Przekierowywanie...", 'success');
+            setTimeout(() => {
+                window.location.href = result.redirectUrl || '/dashboard';
+            }, 1500);
+        } else {
+            showToast("Konto utworzone pomyślnie! Możesz się zalogować.", 'success');
+            // Przełącz na logowanie po sukcesie
+            setTimeout(() => {
+                btnL.click();
+            }, 2000);
+        }
+
       } catch (err) {
         console.error("🔴 [Frontend] Błąd:", err);
-        alert(`Wystąpił błąd: ${err.message}`);
+        showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalText;
