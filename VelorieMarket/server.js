@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const path = require('path');
 const bcrypt = require('bcryptjs');
-require('dotenv').config();
+require('dotenv').config(); // Ładowanie zmiennych środowiskowych z pliku .env
 
 // === IMPORTY WŁASNE ===
 // Importujemy model użytkownika oraz logikę bota z osobnego pliku
@@ -16,17 +16,33 @@ const PORT = process.env.PORT || 3000;
 // === MIDDLEWARE ===
 app.use(bodyParser.json());
 // Udostępniamy folder 'public' dla plików statycznych (CSS, obrazy, skrypty JS)
-// To sprawia, że frontend widzi style.css itp.
 app.use(express.static(path.join(__dirname, 'public')));
 
-// === 1. POŁĄCZENIE Z BAZĄ DANYCH ===
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ [MongoDB] Połączono z bazą'))
-  .catch(err => console.error('❌ [MongoDB] Błąd połączenia:', err));
+// === 1. POŁĄCZENIE Z BAZĄ DANYCH (Z DIAGNOSTYKĄ) ===
+const mongoUri = process.env.MONGO_URI;
+
+if (!mongoUri) {
+  console.error('❌ [BŁĄD KRYTYCZNY] Brak zmiennej MONGO_URI! Sprawdź plik .env lub konfigurację kontenera.');
+} else {
+  // Wyświetlamy tylko początek adresu dla celów debugowania (bezpieczeństwo)
+  console.log(`🔍 [DEBUG] Próba połączenia z: ${mongoUri.substring(0, 20)}...`);
+  
+  mongoose.connect(mongoUri)
+    .then(() => console.log('✅ [MongoDB] Połączono z bazą'))
+    .catch(err => {
+        console.error('❌ [MongoDB] Błąd połączenia:', err);
+        // Opcjonalnie: process.exit(1); // Zatrzymaj serwer, jeśli baza nie działa
+    });
+}
 
 // === 2. START BOTA DISCORD ===
 // Uruchamiamy bota (logika jest w pliku discordBot.js)
-initDiscordBot(); 
+// Warto to robić tylko jeśli mamy połączenie z bazą, ale na razie zostawiamy tak jak prosiłeś
+try {
+    initDiscordBot(); 
+} catch (error) {
+    console.error('❌ [Discord] Błąd inicjalizacji bota:', error.message);
+}
 
 // === 3. ROUTING STRON (FRONTEND) ===
 
@@ -36,7 +52,6 @@ app.get('/', (req, res) => {
 });
 
 // Strona Logowania -> https://www.velorie.pl/login
-// To jest ta część, o którą prosiłeś: mapujemy URL "/login" na plik "login.html"
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
