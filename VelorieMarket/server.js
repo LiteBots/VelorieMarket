@@ -91,7 +91,7 @@ app.post('/api/register', async (req, res) => {
     console.log(`✅ [Rejestracja] Nowy użytkownik: ${username}`);
 
     // 🔥 Aktualizacja Discorda (z pliku discordBot.js)
-   // updateDiscordStats(); 
+     updateDiscordStats(); 
 
     res.status(201).json({ message: 'Konto utworzone pomyślnie!' });
 
