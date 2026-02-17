@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Portfel vPLN – Velorie Market</title>
+  <meta name="theme-color" content="#0a1030" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --accent: #ff0354;
+      --accent2: #7c3aed;
+      --bg1: #00010f;
+      --bg2: #0a1030;
+      --stroke: rgba(255, 255, 255, .12);
+      --gold: #e2b714;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.18), transparent 60%),
+        radial-gradient(900px 600px at 85% 15%, rgba(255,3,84,.16), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+      color: rgba(255,255,255,0.9);
+      overflow-x: hidden;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    /* Background animations */
+    .grid-bg { position: fixed; inset: 0; pointer-events: none; opacity: .22; z-index: -2; background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 52px 52px; mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.95) 0%, rgba(0,0,0,.20) 55%, transparent 75%); animation: gridFloat 12s ease-in-out infinite; }
+    @keyframes gridFloat { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(0,-10px,0) scale(1.02); } }
+    .aurora { position: fixed; inset: -20%; pointer-events: none; filter: blur(46px) saturate(125%); opacity: .90; z-index: -3; }
+    .blob { position: absolute; width: clamp(320px, 40vw, 560px); height: clamp(320px, 40vw, 560px); border-radius: 999px; background: radial-gradient(circle at 30% 30%, rgba(255,3,84,.35), transparent 60%), radial-gradient(circle at 70% 70%, rgba(124,58,237,.35), transparent 60%); animation: blob 14s ease-in-out infinite; mix-blend-mode: screen; }
+    .blob.b1 { left: 8%; top: 8%; }
+    .blob.b2 { width: clamp(360px, 48vw, 680px); height: clamp(360px, 48vw, 680px); left: 62%; top: 18%; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.38), transparent 60%), radial-gradient(circle at 70% 70%, rgba(255,3,84,.28), transparent 60%); animation-duration: 18s; animation-delay: -3s; }
+    @keyframes blob { 0%,100% { transform: translate(0,0) scale(1); } 30% { transform: translate(40px, 18px) scale(1.08); } 60% { transform: translate(-28px, 34px) scale(0.98); } }
+    .noise { position: fixed; inset: 0; pointer-events: none; opacity: .09; z-index: -1; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"); mix-blend-mode: overlay; }
+
+    /* UI Elements */
+    .glass { background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05)); border: 1px solid var(--stroke); box-shadow: 0 18px 60px rgba(0,0,0,.50), inset 0 1px 0 rgba(255,255,255,.10); backdrop-filter: blur(18px); }
+    .glass-soft { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); backdrop-filter: blur(14px); }
+    .lift { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .lift:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,.6); }
+
+    .btn-primary { background: linear-gradient(135deg, rgba(255,3,84,1), rgba(124,58,237,1)); box-shadow: 0 12px 26px rgba(255,3,84,.18), 0 10px 32px rgba(124,58,237,.16); transition: all 0.2s; }
+    .btn-primary:hover { filter: brightness(1.15); box-shadow: 0 14px 30px rgba(255,3,84,.3); transform: translateY(-1px); }
+    .btn-ghost { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); transition: all 0.2s; }
+    .btn-ghost:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.2); }
+
+    .v-input { width: 100%; border-radius: 12px; padding: 10px 14px; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.14); color: white; outline: none; transition: all 0.2s; }
+    .v-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,3,84,.15); background: rgba(0,0,0,.6); }
+    
+    .brand-logo { height: 36px; width: auto; max-width: 140px; object-fit: contain; filter: drop-shadow(0 10px 22px rgba(255,3,84,.25)); }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,3,84, 0.6); border-radius: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    .glow-card { position: relative; }
+    .glow-card::before {
+      content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+    }
+
+    /* Style dla kart wyboru (kwoty/metody) - oparte na type-card z oryginału */
+    .selection-card { transition: all 0.3s; border: 1px solid var(--stroke); position: relative; overflow: hidden; }
+    .selection-card:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.08); }
+    .selection-card.active { border-color: var(--accent); background: rgba(255,3,84,0.08); box-shadow: 0 0 0 1px var(--accent), 0 10px 30px rgba(255,3,84,0.15); }
+    .selection-card .check-icon { opacity: 0; transition: all 0.3s; transform: scale(0.5); }
+    .selection-card.active .check-icon { opacity: 1; transform: scale(1); }
+    
+    /* Specyficzne style dla złotego akcentu */
+    .text-gold { color: var(--gold); }
+    .bg-gold-soft { background: rgba(226, 183, 20, 0.1); }
+    .border-gold-soft { border-color: rgba(226, 183, 20, 0.3); }
+    .btn-gold { background: linear-gradient(135deg, var(--gold), #c79a0b); color: black; box-shadow: 0 12px 26px rgba(226, 183, 20, 0.18); transition: all 0.2s; }
+    .btn-gold:hover { filter: brightness(1.1); box-shadow: 0 14px 30px rgba(226, 183, 20, 0.3); transform: translateY(-1px); }
+
+  </style>
+</head>
+<body class="selection:bg-[#ff0354]/40 selection:text-white">
+
+  <div class="aurora" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div></div>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="sticky top-0 z-40 glass-soft border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-3 shrink-0 lift group">
+        <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo group-hover:scale-105 transition-transform" />
+        <div class="hidden sm:block leading-tight min-w-0">
+          <div class="text-base sm:text-lg font-bold tracking-tight truncate">Velorie Market</div>
+          <div class="text-[11px] text-white/60 truncate">Platforma ogłoszeniowa</div>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div title="Twój Portfel" class="flex items-center gap-2 rounded-xl glass-soft px-3 py-1.5 text-sm font-bold text-gold border border-gold-soft bg-gold-soft cursor-default">
+          <i data-lucide="coins" class="h-4 w-4"></i>
+          <span>150.00 <span class="text-[11px] opacity-70">vPLN</span></span>
+        </div>
+
+        <a href="index.html#add-listing" class="hidden sm:inline-flex items-center gap-2 rounded-xl btn-primary lift px-4 py-2 text-sm font-semibold">
+          <i data-lucide="plus" class="h-4 w-4"></i>
+          <span>Dodaj ogłoszenie</span>
+        </a>
+
+        <button class="relative hidden sm:inline-flex items-center justify-center h-10 w-10 rounded-xl glass lift hover:text-[var(--accent)] transition text-white/70">
+          <i data-lucide="bell" class="h-5 w-5"></i>
+          <span class="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-[var(--accent)] shadow-[0_0_8px_rgba(255,3,84,0.8)]"></span>
+        </button>
+
+        <a href="index.html#dashboard" class="relative inline-flex items-center justify-center h-10 w-10 rounded-xl glass lift border border-[var(--accent)]/50">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="h-full w-full rounded-xl p-0.5 object-cover" />
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-8 relative z-10 min-h-[80vh] space-y-8">
+
+    <div class="flex items-center gap-3">
+        <a href="index.html" class="btn-ghost p-2 rounded-xl lift group">
+          <i data-lucide="arrow-left" class="h-5 w-5 group-hover:-translate-x-1 transition-transform"></i>
+        </a>
+        <div>
+          <h1 class="text-3xl font-black tracking-tight">Portfel vPLN</h1>
+          <p class="text-white/50 text-sm mt-1">Zarządzaj swoimi środkami i doładuj konto błyskawicznie.</p>
+        </div>
+      </div>
+
+    <div class="glass rounded-3xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden border-gold-soft">
+        <div class="absolute -right-20 -top-20 w-72 h-72 bg-[#e2b714]/10 rounded-full blur-[60px] pointer-events-none mix-blend-screen"></div>
+        
+        <div class="relative z-10 text-center md:text-left">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-3 flex items-center justify-center md:justify-start gap-2">
+                <i data-lucide="wallet" class="h-4 w-4"></i> Aktualne dostępne środki
+            </h2>
+            <div class="flex items-baseline justify-center md:justify-start gap-2 text-gold">
+                <span id="current-balance" class="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight drop-shadow-lg">150.00</span>
+                <span class="text-2xl sm:text-3xl font-bold text-gold/70">vPLN</span>
+            </div>
+            <p class="text-white/40 text-xs mt-2">Środki są gotowe do użycia na promocowanie ogłoszeń lub zakupy w sklepie.</p>
+        </div>
+        <div class="shrink-0 relative z-10 hidden md:block">
+           <div class="w-32 h-32 rounded-full bg-gold-soft border border-gold-soft flex items-center justify-center shadow-[0_0_40px_rgba(226,183,20,0.15)]">
+             <i data-lucide="coins" class="h-16 w-16 text-gold"></i>
+           </div>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+
+        <div class="lg:col-span-8 space-y-8">
+            
+            <section>
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2"><span class="bg-white/10 w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span> Wybierz kwotę doładowania</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6" id="amount-selector">
+                    <button onclick="selectAmount(50, this)" class="selection-card glass rounded-2xl p-5 cursor-pointer flex flex-col items-center justify-center gap-1 lift group active">
+                        <div class="absolute top-2 right-2 text-[var(--accent)] check-icon"><i data-lucide="check-circle-2" class="h-5 w-5 fill-[var(--accent)]/20"></i></div>
+                        <span class="text-3xl font-black group-hover:scale-110 transition-transform">50</span>
+                        <span class="text-xs font-bold text-white/60">vPLN</span>
+                    </button>
+                    <button onclick="selectAmount(100, this)" class="selection-card glass rounded-2xl p-5 cursor-pointer flex flex-col items-center justify-center gap-1 lift group">
+                        <div class="absolute top-2 right-2 text-[var(--accent)] check-icon"><i data-lucide="check-circle-2" class="h-5 w-5 fill-[var(--accent)]/20"></i></div>
+                        <span class="text-3xl font-black group-hover:scale-110 transition-transform">100</span>
+                        <span class="text-xs font-bold text-white/60">vPLN</span>
+                        <span class="absolute bottom-1.5 px-2 py-0.5 bg-[var(--accent)] text-[10px] font-bold rounded-full uppercase">Popularne</span>
+                    </button>
+                    <button onclick="selectAmount(250, this)" class="selection-card glass rounded-2xl p-5 cursor-pointer flex flex-col items-center justify-center gap-1 lift group">
+                        <div class="absolute top-2 right-2 text-[var(--accent)] check-icon"><i data-lucide="check-circle-2" class="h-5 w-5 fill-[var(--accent)]/20"></i></div>
+                        <span class="text-3xl font-black group-hover:scale-110 transition-transform">250</span>
+                        <span class="text-xs font-bold text-white/60">vPLN</span>
+                    </button>
+                    <button onclick="selectAmount(500, this)" class="selection-card glass rounded-2xl p-5 cursor-pointer flex flex-col items-center justify-center gap-1 lift group">
+                        <div class="absolute top-2 right-2 text-[var(--accent)] check-icon"><i data-lucide="check-circle-2" class="h-5 w-5 fill-[var(--accent)]/20"></i></div>
+                        <span class="text-3xl font-black group-hover:scale-110 transition-transform">500</span>
+                        <span class="text-xs font-bold text-white/60">vPLN</span>
+                        <span class="absolute bottom-1.5 px-2 py-0.5 bg-gold-soft text-gold border border-gold-soft text-[10px] font-bold rounded-full uppercase">+ Bonus</span>
+                    </button>
+                </div>
+
+                <div class="glass-soft rounded-2xl p-5 border border-white/5 relative overflow-hidden transition-all focus-within:border-[var(--accent)] focus-within:bg-white/5">
+                    <label for="custom-amount" class="block text-xs font-semibold uppercase text-white/70 mb-2">Lub wpisz własną kwotę (min. 10 vPLN)</label>
+                    <div class="relative">
+                        <input type="number" id="custom-amount" min="10" class="v-input pl-5 pr-20 py-4 font-black text-2xl bg-black/20 border-white/5 focus:border-[var(--accent)]/50" placeholder="np. 75" oninput="selectCustomAmount(this.value)" />
+                        <div class="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                            <span class="text-xl font-bold text-white/40">vPLN</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2"><span class="bg-white/10 w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span> Wybierz metodę płatności</h3>
+                <div class="grid sm:grid-cols-3 gap-4" id="method-selector">
+                    <button onclick="selectMethod('blik', this)" class="selection-card glass rounded-2xl p-4 cursor-pointer flex items-center gap-4 lift active">
+                        <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white">
+                            <i data-lucide="smartphone-nfc" class="h-6 w-6"></i>
+                        </div>
+                        <div class="text-left">
+                            <div class="font-bold">BLIK</div>
+                            <div class="text-xs text-white/50">Szybka płatność kodem</div>
+                        </div>
+                        <div class="absolute top-1/2 -translate-y-1/2 right-4 text-[var(--accent)] check-icon"><i data-lucide="check-circle-2" class="h-6 w-6 fill-[var(--accent)]/20"></i></div>
+                    </button>
+
+                    <button onclick="selectMethod('card', this)" class="selection-card glass rounded-2xl p-4 cursor-pointer flex items-center gap-4 lift">
+                         <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white">
+                             <i data-lucide="credit-card" class="h-6 w-6"></i>
+                         </div>
+                         <div class="text-left">
+                             <div class="font-bold">Karta</div>
+                             <div class="text-xs text-white/50">Visa / Mastercard</div>
+                         </div>
+                         <div class="absolute top-1/2 -translate-y-1/2 right-4 text-[var(--accent)] check-icon"><i data-lucide="check-circle-2" class="h-6 w-6 fill-[var(--accent)]/20"></i></div>
+                     </button>
+
+                     <button onclick="selectMethod('paypal', this)" class="selection-card glass rounded-2xl p-4 cursor-pointer flex items-center gap-4 lift">
+                        <div class="w-12 h-12 rounded-xl bg-[#003087]/20 flex items-center justify-center text-[#003087]">
+                            <i data-lucide="landmark" class="h-6 w-6"></i> 
+                        </div>
+                        <div class="text-left">
+                            <div class="font-bold">Przelew</div>
+                            <div class="text-xs text-white/50">Tradycyjny online</div>
+                        </div>
+                        <div class="absolute top-1/2 -translate-y-1/2 right-4 text-[var(--accent)] check-icon"><i data-lucide="check-circle-2" class="h-6 w-6 fill-[var(--accent)]/20"></i></div>
+                    </button>
+                </div>
+            </section>
+
+        </div>
+
+        <div class="lg:col-span-4 relative">
+            <div class="glass rounded-3xl p-6 md:p-8 sticky top-24 glow-card">
+                <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+                    <i data-lucide="receipt" class="h-5 w-5 text-white/50"></i> Podsumowanie
+                </h3>
+
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-white/60">Kwota doładowania:</span>
+                        <span class="font-bold"><span id="summary-amount">50</span> vPLN</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-white/60">Prowizja operatora:</span>
+                        <span class="font-bold text-green-400">0.00 PLN (Promocja!)</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-white/60">Metoda płatności:</span>
+                        <span class="font-bold flex items-center gap-1"><i data-lucide="smartphone-nfc" class="h-3 w-3" id="summary-method-icon"></i> <span id="summary-method-name">BLIK</span></span>
+                    </div>
+                </div>
+
+                <div class="border-t border-white/10 pt-6 mb-6 flex flex-col gap-1">
+                    <span class="text-sm text-white/60">Całkowity koszt:</span>
+                    <div class="flex items-end gap-2">
+                        <span class="text-4xl font-black tracking-tight" id="total-to-pay">50.00</span>
+                        <span class="text-xl font-bold text-white/60 mb-1">PLN</span>
+                    </div>
+                </div>
+                
+                <button id="pay-button" class="btn-gold w-full py-4 rounded-xl text-lg font-bold lift flex items-center justify-center gap-3 shadow-lg relative overflow-hidden group">
+                    <span class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></span>
+                    <i data-lucide="lock" class="h-5 w-5 relative z-10"></i> <span class="relative z-10">Zapłać teraz</span>
+                </button>
+
+                <p class="text-center text-xs text-white/40 mt-4 flex items-center justify-center gap-1.5">
+                    <i data-lucide="shield-check" class="h-4 w-4 text-green-400/70"></i> Płatności są szyfrowane i bezpieczne.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // Prosta logika do obsługi interfejsu wyboru
+    let currentAmount = 50;
+    let currentMethod = 'blik';
+    const methodNames = { 'blik': 'BLIK', 'card': 'Karta Płatnicza', 'paypal': 'Przelew Online' };
+    const methodIcons = { 'blik': 'smartphone-nfc', 'card': 'credit-card', 'paypal': 'landmark' };
+
+    function selectAmount(amount, element) {
+        currentAmount = amount;
+        // Reset wizualny inputa własnej kwoty
+        document.getElementById('custom-amount').value = '';
+        
+        // Aktualizacja klas active
+        document.querySelectorAll('#amount-selector .selection-card').forEach(el => el.classList.remove('active'));
+        if(element) element.classList.add('active');
+        
+        updateSummary();
+    }
+
+    function selectCustomAmount(value) {
+        currentAmount = value ? parseFloat(value) : 0;
+        // Reset klas active z gotowych przycisków
+        document.querySelectorAll('#amount-selector .selection-card').forEach(el => el.classList.remove('active'));
+        updateSummary();
+    }
+
+    function selectMethod(method, element) {
+        currentMethod = method;
+        document.querySelectorAll('#method-selector .selection-card').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        updateSummary();
+    }
+
+    function updateSummary() {
+        const displayAmount = currentAmount > 0 ? currentAmount : 0;
+        document.getElementById('summary-amount').innerText = displayAmount;
+        // Zakładamy przelicznik 1:1 PLN do vPLN
+        document.getElementById('total-to-pay').innerText = (displayAmount).toFixed(2);
+        
+        document.getElementById('summary-method-name').innerText = methodNames[currentMethod];
+        // Aktualizacja ikony w podsumowaniu (wymaga ponownego wywołania lucide)
+        document.getElementById('summary-method-icon').setAttribute('data-lucide', methodIcons[currentMethod]);
+        lucide.createIcons();
+
+        // Blokada przycisku jeśli kwota jest za mała
+        const payBtn = document.getElementById('pay-button');
+        if(displayAmount < 10 && document.getElementById('custom-amount').value !== '') {
+             payBtn.classList.add('opacity-50', 'cursor-not-allowed');
+             payBtn.innerHTML = '<span class="relative z-10">Minimum 10 vPLN</span>';
+        } else {
+             payBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+             payBtn.innerHTML = '<i data-lucide="lock" class="h-5 w-5 relative z-10"></i> <span class="relative z-10">Zapłać teraz</span>';
+        }
+    }
+
+    // Init
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      updateSummary();
+    });
+  </script>
+</body>
+</html>
