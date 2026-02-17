@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Admin Panel – Velorie Market</title>
+  <meta name="theme-color" content="#0a1030" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --accent: #ff0354;
+      --accent2: #7c3aed;
+      --bg1: #00010f;
+      --bg2: #0a1030;
+      --stroke: rgba(255, 255, 255, .12);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.18), transparent 60%),
+        radial-gradient(900px 600px at 85% 15%, rgba(255,3,84,.16), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+      color: rgba(255,255,255,0.9);
+      overflow-x: hidden;
+    }
+
+    /* Background animations */
+    .grid-bg { position: fixed; inset: 0; pointer-events: none; opacity: .22; z-index: -2; background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 52px 52px; mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.95) 0%, rgba(0,0,0,.20) 55%, transparent 75%); animation: gridFloat 12s ease-in-out infinite; }
+    @keyframes gridFloat { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(0,-10px,0) scale(1.02); } }
+    .aurora { position: fixed; inset: -20%; pointer-events: none; filter: blur(46px) saturate(125%); opacity: .90; z-index: -3; }
+    .blob { position: absolute; width: clamp(320px, 40vw, 560px); height: clamp(320px, 40vw, 560px); border-radius: 999px; background: radial-gradient(circle at 30% 30%, rgba(255,3,84,.35), transparent 60%), radial-gradient(circle at 70% 70%, rgba(124,58,237,.35), transparent 60%); animation: blob 14s ease-in-out infinite; mix-blend-mode: screen; }
+    .blob.b1 { left: 8%; top: 8%; }
+    .blob.b2 { width: clamp(360px, 48vw, 680px); height: clamp(360px, 48vw, 680px); left: 62%; top: 18%; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.38), transparent 60%), radial-gradient(circle at 70% 70%, rgba(255,3,84,.28), transparent 60%); animation-duration: 18s; animation-delay: -3s; }
+    @keyframes blob { 0%,100% { transform: translate(0,0) scale(1); } 30% { transform: translate(40px, 18px) scale(1.08); } 60% { transform: translate(-28px, 34px) scale(0.98); } }
+    .noise { position: fixed; inset: 0; pointer-events: none; opacity: .09; z-index: -1; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"); mix-blend-mode: overlay; }
+
+    /* UI Elements */
+    .glass { background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05)); border: 1px solid var(--stroke); box-shadow: 0 18px 60px rgba(0,0,0,.50), inset 0 1px 0 rgba(255,255,255,.10); backdrop-filter: blur(18px); }
+    .glass-soft { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); backdrop-filter: blur(14px); }
+    .lift { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .lift:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,.6); }
+
+    .btn-primary { background: linear-gradient(135deg, rgba(255,3,84,1), rgba(124,58,237,1)); box-shadow: 0 12px 26px rgba(255,3,84,.18), 0 10px 32px rgba(124,58,237,.16); transition: all 0.2s; }
+    .btn-primary:hover { filter: brightness(1.15); box-shadow: 0 14px 30px rgba(255,3,84,.3); transform: translateY(-1px); }
+    .btn-ghost { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); transition: all 0.2s; }
+    .btn-ghost:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.2); }
+    .btn-danger { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); color: #f87171; transition: all 0.2s; }
+    .btn-danger:hover { background: rgba(239,68,68,.2); box-shadow: 0 0 15px rgba(239,68,68,.2); }
+
+    .v-input { width: 100%; border-radius: 12px; padding: 10px 14px; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.14); color: white; outline: none; transition: all 0.2s; }
+    .v-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,3,84,.15); background: rgba(0,0,0,.6); }
+    
+    .brand-logo { height: 32px; width: auto; max-width: 140px; object-fit: contain; filter: drop-shadow(0 10px 22px rgba(255,3,84,.25)); }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,3,84, 0.6); border-radius: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    .glow-card { position: relative; }
+    .glow-card::before {
+      content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+    }
+    
+    /* Ukrywanie widoków panelu */
+    .admin-view-hidden { display: none !important; }
+  </style>
+</head>
+<body class="selection:bg-[#ff0354]/40 selection:text-white flex flex-col md:flex-row min-h-screen">
+
+  <div class="aurora" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div></div>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
+
+  <aside class="w-full md:w-64 glass-soft border-r border-white/10 flex flex-col z-40 sticky top-0 h-auto md:h-screen shrink-0">
+    <div class="p-5 border-b border-white/10 flex items-center gap-3">
+      <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo" />
+      <div>
+        <div class="text-lg font-bold tracking-tight leading-none">Admin</div>
+        <div class="text-[10px] uppercase tracking-widest text-[var(--accent)] font-semibold mt-1">Główny Panel</div>
+      </div>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto p-4 flex flex-col gap-1.5">
+      <div class="text-[10px] uppercase font-bold text-white/40 tracking-wider mb-2 mt-2 px-2">Główne statystyki</div>
+      
+      <button onclick="switchAdminTab('dashboard')" id="nav-dashboard" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium bg-[var(--accent)]/10 text-[var(--accent)] glow-card">
+        <i data-lucide="layout-dashboard" class="h-4 w-4"></i> Statystyki
+      </button>
+
+      <div class="text-[10px] uppercase font-bold text-white/40 tracking-wider mb-2 mt-6 px-2">Zarządzanie</div>
+
+      <button onclick="switchAdminTab('pasek')" id="nav-pasek" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
+        <i data-lucide="megaphone" class="h-4 w-4"></i> Pasek informacyjny
+      </button>
+
+      <button onclick="switchAdminTab('blokada')" id="nav-blokada" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
+        <i data-lucide="shield-alert" class="h-4 w-4"></i> Blokada płatności
+      </button>
+
+      <div class="text-[10px] uppercase font-bold text-white/40 tracking-wider mb-2 mt-6 px-2">Baza danych</div>
+
+      <button onclick="switchAdminTab('uzytkownicy')" id="nav-uzytkownicy" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
+        <i data-lucide="users" class="h-4 w-4"></i> Użytkownicy
+      </button>
+
+      <button onclick="switchAdminTab('finanse')" id="nav-finanse" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
+        <i data-lucide="banknote" class="h-4 w-4"></i> Finanse
+      </button>
+
+      <button onclick="switchAdminTab('ogloszenia')" id="nav-ogloszenia" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
+        <i data-lucide="layers" class="h-4 w-4"></i> Ogłoszenia
+      </button>
+    </nav>
+
+    <div class="p-4 border-t border-white/10">
+      <div class="flex items-center gap-3 px-2">
+        <div class="h-10 w-10 rounded-full bg-gradient-to-tr from-[var(--accent)] to-[var(--accent2)] p-0.5">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" class="h-full w-full rounded-full bg-[#0a1030] object-cover" />
+        </div>
+        <div>
+          <div class="text-sm font-bold text-white">SuperAdmin</div>
+          <div class="text-[11px] text-white/50">Zarządca systemu</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="flex-1 p-4 md:p-8 relative z-10 w-full overflow-hidden">
+
+    <div id="view-dashboard" class="space-y-8">
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Przegląd Systemu</h1>
+        <p class="text-white/50 text-sm mt-1">Bieżące statystyki i podsumowanie aktywności na platformie Velorie.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        
+        <div class="glass rounded-3xl p-6 relative overflow-hidden lift">
+          <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/20 rounded-full blur-2xl"></div>
+          <div class="flex justify-between items-start mb-4 relative z-10">
+            <div class="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
+              <i data-lucide="users" class="h-6 w-6"></i>
+            </div>
+            <span class="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-md">+12% dzisiaj</span>
+          </div>
+          <div class="relative z-10">
+            <div class="text-3xl font-black text-white mb-1">4,281</div>
+            <div class="text-sm font-medium text-white/50 uppercase tracking-wider">Liczba Użytkowników</div>
+          </div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 relative overflow-hidden lift">
+          <div class="absolute -right-6 -top-6 w-24 h-24 bg-[var(--accent2)]/20 rounded-full blur-2xl"></div>
+          <div class="flex justify-between items-start mb-4 relative z-10">
+            <div class="p-3 rounded-2xl bg-[var(--accent2)]/10 border border-[var(--accent2)]/20 text-[var(--accent2)]">
+              <i data-lucide="user-check" class="h-6 w-6"></i>
+            </div>
+          </div>
+          <div class="relative z-10">
+            <div class="text-3xl font-black text-white mb-1">1,842</div>
+            <div class="text-sm font-medium text-white/50 uppercase tracking-wider">Ogłoszenia (Freelancer)</div>
+          </div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 relative overflow-hidden lift">
+          <div class="absolute -right-6 -top-6 w-24 h-24 bg-[var(--accent)]/20 rounded-full blur-2xl"></div>
+          <div class="flex justify-between items-start mb-4 relative z-10">
+            <div class="p-3 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[var(--accent)]">
+              <i data-lucide="briefcase" class="h-6 w-6"></i>
+            </div>
+            <span class="text-xs font-bold text-[var(--accent)] bg-[var(--accent)]/10 px-2 py-1 rounded-md border border-[var(--accent)]/20">Nowe zlecenia!</span>
+          </div>
+          <div class="relative z-10">
+            <div class="text-3xl font-black text-white mb-1">853</div>
+            <div class="text-sm font-medium text-white/50 uppercase tracking-wider">Ogłoszenia (Zlecenia)</div>
+          </div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 relative overflow-hidden lift border-l-4 border-[#e2b714]">
+          <div class="absolute -right-6 -top-6 w-24 h-24 bg-[#e2b714]/20 rounded-full blur-2xl"></div>
+          <div class="flex justify-between items-start mb-4 relative z-10">
+            <div class="p-3 rounded-2xl bg-[#e2b714]/10 border border-[#e2b714]/20 text-[#e2b714]">
+              <i data-lucide="wallet" class="h-6 w-6"></i>
+            </div>
+            <span class="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-md">+5.2% (M/M)</span>
+          </div>
+          <div class="relative z-10">
+            <div class="text-3xl font-black text-[#e2b714] mb-1">142,500 <span class="text-lg text-[#e2b714]/70">vPLN</span></div>
+            <div class="text-sm font-medium text-white/50 uppercase tracking-wider">Przychód ogółem</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-6 mt-8">
+        <div class="glass rounded-3xl p-6">
+          <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i data-lucide="activity" class="h-5 w-5 text-[var(--accent)]"></i> Ostatnie aktywności</h3>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between text-sm pb-3 border-b border-white/5">
+              <span class="text-white/70">Nowy użytkownik: <strong>DevKuba</strong></span>
+              <span class="text-white/40">2 min temu</span>
+            </div>
+            <div class="flex items-center justify-between text-sm pb-3 border-b border-white/5">
+              <span class="text-white/70">Kupno VIP: <strong>Ogłoszenie #1024</strong></span>
+              <span class="text-white/40">15 min temu</span>
+            </div>
+            <div class="flex items-center justify-between text-sm pb-3 border-b border-white/5">
+              <span class="text-white/70">Nowe zlecenie w kat. <strong>Web Dev</strong></span>
+              <span class="text-white/40">1 godz temu</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-pasek" class="admin-view-hidden space-y-6 max-w-4xl">
+      <div>
+        <h2 class="text-3xl font-black tracking-tight">Pasek Informacyjny</h2>
+        <p class="text-white/50 text-sm mt-1">Zarządzaj globalnym komunikatem wyświetlanym wszystkim użytkownikom platformy na samej górze strony.</p>
+      </div>
+
+      <div class="glass rounded-3xl p-6 sm:p-8 space-y-6 border-l-4 border-blue-500">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Treść Komunikatu</label>
+          <input type="text" class="v-input" placeholder="Wpisz treść globalnego alertu..." value="Promocja weekendowa! Wszystkie wyróżnienia VIP 50% taniej z kodem WEEKEND." />
+        </div>
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Kolor tła powiadomienia</label>
+            <select class="v-input"><option>Niebieski (Informacja)</option><option>Czerwony (Ostrzeżenie)</option><option>Zielony (Sukces)</option></select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Link w przycisku (Opcjonalnie)</label>
+            <input type="text" class="v-input" placeholder="https://" value="/sklep" />
+          </div>
+        </div>
+        
+        <div class="border-t border-white/10 pt-6 flex items-center justify-between">
+          <label class="flex items-center cursor-pointer gap-3">
+            <div class="relative">
+              <input type="checkbox" class="sr-only" checked>
+              <div class="block bg-white/10 w-10 h-6 rounded-full border border-white/20"></div>
+              <div class="dot absolute left-1 top-1 bg-[var(--accent)] w-4 h-4 rounded-full transition transform translate-x-4 shadow-[0_0_10px_rgba(255,3,84,0.8)]"></div>
+            </div>
+            <span class="text-sm font-bold">Pasek aktywny</span>
+          </label>
+          <button class="btn-primary lift px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2">
+            Zapisz i publikuj <i data-lucide="send" class="h-4 w-4"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-blokada" class="admin-view-hidden space-y-6 max-w-4xl">
+      <div>
+        <h2 class="text-3xl font-black tracking-tight text-red-400">Bezpieczeństwo i Płatności</h2>
+        <p class="text-white/50 text-sm mt-1">Główny przełącznik bramki płatności dla całego serwisu.</p>
+      </div>
+
+      <div class="glass rounded-3xl p-8 border border-red-500/30 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-red-500/5 pointer-events-none"></div>
+        <i data-lucide="shield-alert" class="h-16 w-16 text-red-400 mx-auto mb-4 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]"></i>
+        <h3 class="text-2xl font-bold mb-2">Zarządzanie Bramką (vPLN)</h3>
+        <p class="text-white/60 text-sm max-w-lg mx-auto mb-8">Użyj tego przycisku tylko w przypadku awarii systemu, wykrycia oszustw lub planowanych prac serwisowych. Zablokuje to możliwość doładowywania portfeli i kupowania pakietów.</p>
+        
+        <div class="inline-block glass-soft p-2 rounded-2xl">
+          <button class="btn-danger lift px-8 py-4 rounded-xl text-base font-bold flex items-center gap-3">
+            <i data-lucide="lock" class="h-5 w-5"></i>
+            ZABLOKUJ WSZYSTKIE PŁATNOŚCI
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-uzytkownicy" class="admin-view-hidden">
+      <h2 class="text-3xl font-black tracking-tight mb-6">Lista Użytkowników</h2>
+      <div class="glass p-12 text-center rounded-3xl border-dashed">
+        <i data-lucide="users" class="w-12 h-12 text-white/30 mx-auto mb-3"></i>
+        <h3 class="font-bold text-xl text-white/70">Tabela Użytkowników</h3>
+        <p class="text-sm text-white/40 mt-1">Tutaj pojawi się lista użytkowników z opcją bana i edycji salda.</p>
+      </div>
+    </div>
+
+    <div id="view-finanse" class="admin-view-hidden">
+      <h2 class="text-3xl font-black tracking-tight mb-6">Raporty Finansowe</h2>
+      <div class="glass p-12 text-center rounded-3xl border-dashed">
+        <i data-lucide="bar-chart-3" class="w-12 h-12 text-white/30 mx-auto mb-3"></i>
+        <h3 class="font-bold text-xl text-white/70">Wykresy i transakcje</h3>
+        <p class="text-sm text-white/40 mt-1">Historia wszystkich zakupów vPLN i wykupionych abonamentów.</p>
+      </div>
+    </div>
+
+    <div id="view-ogloszenia" class="admin-view-hidden">
+      <h2 class="text-3xl font-black tracking-tight mb-6">Moderacja Ogłoszeń</h2>
+      <div class="glass p-12 text-center rounded-3xl border-dashed">
+        <i data-lucide="layers" class="w-12 h-12 text-white/30 mx-auto mb-3"></i>
+        <h3 class="font-bold text-xl text-white/70">Wszystkie wpisy na platformie</h3>
+        <p class="text-sm text-white/40 mt-1">Panel do weryfikacji, usuwania i podbijania ogłoszeń.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    function switchAdminTab(tabName) {
+      // 1. Zresetowanie wyglądu wszystkich przycisków w bocznym menu
+      const navButtons = document.querySelectorAll('button[id^="nav-"]');
+      navButtons.forEach(btn => {
+        btn.classList.remove('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
+        btn.classList.add('text-white/70', 'hover:bg-white/5');
+      });
+
+      // 2. Aktywacja klikniętego przycisku
+      const activeBtn = document.getElementById(`nav-${tabName}`);
+      if(activeBtn) {
+        activeBtn.classList.remove('text-white/70', 'hover:bg-white/5');
+        activeBtn.classList.add('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
+      }
+
+      // 3. Ukrycie wszystkich widoków
+      const views = ['dashboard', 'pasek', 'blokada', 'uzytkownicy', 'finanse', 'ogloszenia'];
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        if(el) el.classList.add('admin-view-hidden');
+      });
+
+      // 4. Pokazanie właściwego widoku
+      const activeView = document.getElementById(`view-${tabName}`);
+      if(activeView) {
+        activeView.classList.remove('admin-view-hidden');
+      }
+
+      // Scroll do góry (szczególnie przydatne na mobile)
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
