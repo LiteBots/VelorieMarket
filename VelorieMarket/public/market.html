@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Aplikacja – Velorie Market</title>
+  <meta name="theme-color" content="#0a1030" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --accent: #ff0354;
+      --accent2: #7c3aed;
+      --bg1: #00010f;
+      --bg2: #0a1030;
+      --stroke: rgba(255, 255, 255, .12);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.18), transparent 60%),
+        radial-gradient(900px 600px at 85% 15%, rgba(255,3,84,.16), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+      color: rgba(255,255,255,0.9);
+      overflow-x: hidden;
+    }
+
+    /* Background animations */
+    .grid-bg { position: fixed; inset: 0; pointer-events: none; opacity: .22; z-index: -2; background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 52px 52px; mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.95) 0%, rgba(0,0,0,.20) 55%, transparent 75%); animation: gridFloat 12s ease-in-out infinite; }
+    @keyframes gridFloat { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(0,-10px,0) scale(1.02); } }
+    .aurora { position: fixed; inset: -20%; pointer-events: none; filter: blur(46px) saturate(125%); opacity: .90; z-index: -3; }
+    .blob { position: absolute; width: clamp(320px, 40vw, 560px); height: clamp(320px, 40vw, 560px); border-radius: 999px; background: radial-gradient(circle at 30% 30%, rgba(255,3,84,.35), transparent 60%), radial-gradient(circle at 70% 70%, rgba(124,58,237,.35), transparent 60%); animation: blob 14s ease-in-out infinite; mix-blend-mode: screen; }
+    .blob.b1 { left: 8%; top: 8%; }
+    .blob.b2 { width: clamp(360px, 48vw, 680px); height: clamp(360px, 48vw, 680px); left: 62%; top: 18%; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.38), transparent 60%), radial-gradient(circle at 70% 70%, rgba(255,3,84,.28), transparent 60%); animation-duration: 18s; animation-delay: -3s; }
+    @keyframes blob { 0%,100% { transform: translate(0,0) scale(1); } 30% { transform: translate(40px, 18px) scale(1.08); } 60% { transform: translate(-28px, 34px) scale(0.98); } }
+    .noise { position: fixed; inset: 0; pointer-events: none; opacity: .09; z-index: -1; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"); mix-blend-mode: overlay; }
+
+    /* UI Elements */
+    .glass { background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05)); border: 1px solid var(--stroke); box-shadow: 0 18px 60px rgba(0,0,0,.50), inset 0 1px 0 rgba(255,255,255,.10); backdrop-filter: blur(18px); }
+    .glass-soft { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); backdrop-filter: blur(14px); }
+    .lift { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .lift:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,.6); }
+
+    .btn-primary { background: linear-gradient(135deg, rgba(255,3,84,1), rgba(124,58,237,1)); box-shadow: 0 12px 26px rgba(255,3,84,.18), 0 10px 32px rgba(124,58,237,.16); transition: all 0.2s; }
+    .btn-primary:hover { filter: brightness(1.15); box-shadow: 0 14px 30px rgba(255,3,84,.3); transform: translateY(-1px); }
+    .btn-ghost { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); transition: all 0.2s; }
+    .btn-ghost:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.2); }
+
+    .v-input { width: 100%; border-radius: 12px; padding: 10px 14px; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.14); color: white; outline: none; transition: all 0.2s; }
+    .v-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,3,84,.15); background: rgba(0,0,0,.6); }
+    
+    .brand-logo { height: 36px; width: auto; max-width: 140px; object-fit: contain; filter: drop-shadow(0 10px 22px rgba(255,3,84,.25)); }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,3,84, 0.6); border-radius: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    .view-hidden { display: none !important; }
+    .tab-active { border-bottom: 2px solid var(--accent); color: white; }
+    .tab-inactive { color: rgba(255,255,255,0.5); border-bottom: 2px solid transparent; }
+    .tab-inactive:hover { color: rgba(255,255,255,0.9); }
+
+    .glow-card { position: relative; }
+    .glow-card::before {
+      content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+    }
+    
+    /* Typ opcji ogłoszenia */
+    .type-card { transition: all 0.3s; }
+    .type-card.active { border-color: var(--accent); background: rgba(255,3,84,0.05); box-shadow: 0 0 0 1px var(--accent), 0 10px 30px rgba(255,3,84,0.15); }
+    .type-card.active .icon-container { background: var(--accent); color: white; }
+  </style>
+</head>
+<body class="selection:bg-[#ff0354]/40 selection:text-white">
+
+  <div class="aurora" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div></div>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="sticky top-0 z-40 glass-soft border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
+      <a href="#" onclick="switchMainView('market')" class="flex items-center gap-3 shrink-0 lift group">
+        <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo group-hover:scale-105 transition-transform" />
+        <div class="hidden sm:block leading-tight min-w-0">
+          <div class="text-base sm:text-lg font-bold tracking-tight truncate">Velorie Market</div>
+          <div class="text-[11px] text-white/60 truncate">Platforma ogłoszeniowa</div>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        
+        <a href="wallet.html" title="Twój Portfel" class="flex items-center gap-2 rounded-xl glass-soft px-3 py-1.5 text-sm font-bold text-[#e2b714] border border-[#e2b714]/30 hover:bg-[#e2b714]/10 transition lift">
+          <i data-lucide="coins" class="h-4 w-4"></i>
+          <span>150.00 <span class="text-[11px] text-[#e2b714]/70">vPLN</span></span>
+        </a>
+
+        <button onclick="switchMainView('add-listing')" class="hidden sm:inline-flex items-center gap-2 rounded-xl btn-primary lift px-4 py-2 text-sm font-semibold">
+          <i data-lucide="plus" class="h-4 w-4"></i>
+          <span>Zleć pracę / Dodaj profil</span>
+        </button>
+
+        <button class="relative hidden sm:inline-flex items-center justify-center h-10 w-10 rounded-xl glass lift hover:text-[var(--accent)] transition text-white/70">
+          <i data-lucide="bell" class="h-5 w-5"></i>
+          <span class="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-[var(--accent)] shadow-[0_0_8px_rgba(255,3,84,0.8)]"></span>
+        </button>
+
+        <button onclick="switchMainView('dashboard'); switchDashTab('profil')" class="relative inline-flex items-center justify-center h-10 w-10 rounded-xl glass lift border border-[var(--accent)]/50">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="h-full w-full rounded-xl p-0.5 object-cover" />
+          <div class="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-green-500 border-2 border-[#0a1030]"></div>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-8 relative z-10 min-h-[80vh]">
+
+    <div id="view-market" class="space-y-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Eksploruj Rynek</h1>
+          <p class="text-white/60 text-sm mt-1 max-w-xl">Znajdź idealnego wykonawcę do swojego projektu lub przejrzyj tablicę ogłoszeń i zdobądź nowe zlecenia bez pośredników.</p>
+        </div>
+        
+        <div class="flex gap-6 border-b border-white/10 text-sm font-semibold pb-[1px] overflow-x-auto whitespace-nowrap">
+          <button onclick="switchMarketTab('zlecenia')" id="tab-zlecenia" class="tab-active pb-2 px-1 transition-colors flex items-center gap-2">
+            <i data-lucide="briefcase" class="h-4 w-4"></i> Szukam zlecenia
+          </button>
+          <button onclick="switchMarketTab('freelancerzy')" id="tab-freelancerzy" class="tab-inactive pb-2 px-1 transition-colors flex items-center gap-2">
+            <i data-lucide="users" class="h-4 w-4"></i> Szukam freelancera
+          </button>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl p-5 border-l-4 border-[var(--accent2)]">
+        <div class="flex items-center justify-between mb-4">
+          <div class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="h-4 w-4 text-[var(--accent2)]"></i> Zaawansowane filtry
+          </div>
+          <button class="text-xs text-white/50 hover:text-white flex items-center gap-1 transition">
+            <i data-lucide="rotate-ccw" class="h-3 w-3"></i> Resetuj
+          </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="lg:col-span-2 relative">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40"></i>
+            <input type="text" placeholder="Wpisz słowo kluczowe, tag, technologię..." class="v-input pl-10 text-sm" />
+          </div>
+          <div><select class="v-input text-sm text-white/80"><option>Wszystkie kategorie</option></select></div>
+          <div><select class="v-input text-sm text-white/80"><option>Dowolny Budżet</option></select></div>
+          <div><select class="v-input text-sm text-white/80 bg-[var(--accent)]/10 border-[var(--accent)]/30 text-[var(--accent)]"><option>Sortuj: Najwięcej podbić 🔥</option></select></div>
+        </div>
+      </div>
+
+      <div id="market-list" class="grid lg:grid-cols-2 xl:grid-cols-3 gap-6 pt-2"></div>
+    </div>
+
+
+    <div id="view-add-listing" class="view-hidden max-w-4xl mx-auto space-y-8">
+      
+      <div class="flex items-center gap-3">
+        <button onclick="switchMainView('market')" class="btn-ghost p-2 rounded-xl lift group">
+          <i data-lucide="arrow-left" class="h-5 w-5 group-hover:-translate-x-1 transition-transform"></i>
+        </button>
+        <div>
+          <h1 class="text-3xl font-black tracking-tight">Kreator Ogłoszenia</h1>
+          <p class="text-white/50 text-sm mt-1">Sprecyzuj czego potrzebujesz i pojaw się na rynku głównym Velorie.</p>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-4">1. Kim jesteś i czego szukasz?</h2>
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div id="type-btn-zlecenie" onclick="selectListingType('zlecenie')" class="type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 active">
+            <div class="icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors">
+              <i data-lucide="briefcase" class="h-6 w-6"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold mb-1 text-white">Zleceniodawca</h3>
+              <p class="text-xs text-white/50 leading-relaxed">Mam projekt do zrobienia, ustalam budżet i szukam wykonawcy.</p>
+            </div>
+          </div>
+
+          <div id="type-btn-profil" onclick="selectListingType('profil')" class="type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 border-white/10 hover:border-white/20 hover:bg-white/5">
+            <div class="icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors">
+              <i data-lucide="user-check" class="h-6 w-6"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold mb-1 text-white">Freelancer</h3>
+              <p class="text-xs text-white/50 leading-relaxed">Chcę wystawić profil ze swoimi umiejętnościami i przyjmować zlecenia.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <form id="form-zlecenie" class="glass rounded-3xl p-6 sm:p-8 space-y-6" onsubmit="submitListing(event)">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-4 border-b border-white/10 pb-2">2. Szczegóły Twojego projektu</h2>
+        <div class="space-y-5">
+          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Krótki, chwytliwy tytuł <span class="text-[var(--accent)]">*</span></label><input type="text" class="v-input font-medium" required /></div>
+          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Opis zlecenia <span class="text-[var(--accent)]">*</span></label><textarea class="v-input min-h-[140px]" required></textarea></div>
+        </div>
+        <div class="border-t border-white/10 pt-6 flex justify-end gap-3">
+          <button type="button" onclick="switchMainView('market')" class="btn-ghost lift px-6 py-3 rounded-xl text-sm font-bold">Anuluj</button>
+          <button type="submit" class="btn-primary lift px-8 py-3 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-[var(--accent)]/20">Opublikuj zlecenie <i data-lucide="check-circle" class="h-4 w-4"></i></button>
+        </div>
+      </form>
+
+      <form id="form-profil" class="glass rounded-3xl p-6 sm:p-8 space-y-6 hidden" onsubmit="submitListing(event)">
+         <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-4 border-b border-white/10 pb-2">2. Twoja wizytówka profesjonalisty</h2>
+         <div class="space-y-5">
+           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Twój Tytuł / Rola <span class="text-[var(--accent)]">*</span></label><input type="text" class="v-input" required /></div>
+           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Bio / Opis doświadczenia <span class="text-[var(--accent)]">*</span></label><textarea class="v-input min-h-[140px]" required></textarea></div>
+         </div>
+         <div class="border-t border-white/10 pt-6 flex justify-end gap-3">
+           <button type="button" onclick="switchMainView('market')" class="btn-ghost lift px-6 py-3 rounded-xl text-sm font-bold">Anuluj</button>
+           <button type="submit" class="bg-gradient-to-r from-[var(--accent2)] to-[#5b21b6] hover:brightness-110 shadow-lg shadow-[var(--accent2)]/20 transition-all lift px-8 py-3 rounded-xl text-sm font-bold text-white flex items-center gap-2 border border-white/10">Wystaw profil <i data-lucide="sparkles" class="h-4 w-4"></i></button>
+         </div>
+      </form>
+
+    </div>
+
+
+    <div id="view-dashboard" class="view-hidden">
+      <div class="flex items-center gap-3 mb-8">
+        <button onclick="switchMainView('market')" class="btn-ghost p-2 rounded-xl lift group">
+          <i data-lucide="arrow-left" class="h-5 w-5 group-hover:-translate-x-1 transition-transform"></i>
+        </button>
+        <h1 class="text-3xl font-black tracking-tight">Panel Użytkownika</h1>
+      </div>
+
+      <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <div class="lg:col-span-3 glass rounded-2xl p-3 flex flex-col gap-1 sticky top-24">
+          <div class="p-4 flex items-center gap-3 border-b border-white/10 mb-2">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="h-12 w-12 rounded-full border border-white/20 bg-black/50" />
+            <div>
+              <div class="font-bold flex items-center gap-1 text-sm">DevKuba <i data-lucide="badge-check" class="h-4 w-4 text-blue-400" title="Zweryfikowany użytkownik"></i></div>
+              <div class="text-[11px] text-white/50">Plan: Zweryfikowany</div>
+            </div>
+          </div>
+          
+          <button onclick="switchDashTab('profil')" id="dash-btn-profil" class="text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-sm font-medium text-white/70"><i data-lucide="user-cog" class="h-4 w-4"></i> Ustawienia konta</button>
+          
+          <button onclick="switchDashTab('sklep')" id="dash-btn-sklep" class="text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-sm font-medium text-white/70"><i data-lucide="shopping-cart" class="h-4 w-4"></i> Sklep & Subskrypcje</button>
+          
+          <button onclick="switchDashTab('moje-ogloszenia')" id="dash-btn-moje-ogloszenia" class="text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-sm font-medium text-white/70"><i data-lucide="layers" class="h-4 w-4"></i> Moje ogłoszenia</button>
+        </div>
+
+        <div class="lg:col-span-9">
+          
+          <div id="dash-profil" class="space-y-6 hidden">
+            <div class="flex justify-between items-center mb-2">
+              <div>
+                <h2 class="text-2xl font-bold">Ustawienia Konta</h2>
+                <p class="text-sm text-white/50">Zarządzaj swoimi danymi i preferencjami.</p>
+              </div>
+              <a href="wallet.html" class="btn-primary lift px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 border border-[#e2b714]/50 shadow-[0_0_15px_rgba(226,183,20,0.3)] bg-gradient-to-br from-[#e2b714] to-[#c79a0b] text-black">
+                <i data-lucide="wallet" class="h-4 w-4"></i> Doładuj vPLN
+              </a>
+            </div>
+
+            <div class="glass rounded-3xl p-6 sm:p-8 space-y-6">
+              <div class="grid sm:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Nazwa użytkownika</label>
+                  <input type="text" class="v-input" value="DevKuba" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Adres E-mail</label>
+                  <input type="email" class="v-input" value="kuba@example.com" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Discord ID (Opcjonalnie)</label>
+                  <input type="text" class="v-input" placeholder="np. devkuba#1234" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Link do Portfolio / GitHub</label>
+                  <input type="url" class="v-input" placeholder="https://" />
+                </div>
+              </div>
+              <div class="flex justify-end pt-4 border-t border-white/10">
+                <button class="btn-ghost lift px-6 py-2.5 rounded-xl text-sm font-bold">Zapisz zmiany</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="dash-sklep" class="space-y-6 hidden">
+            <div>
+              <h2 class="text-2xl font-bold">Sklep Velorie</h2>
+              <p class="text-sm text-white/50">Rozszerz możliwości swojego konta i wyróżnij się na rynku.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="glass rounded-3xl p-6 border border-blue-500/30 relative overflow-hidden lift group">
+                <div class="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl transition duration-500 group-hover:bg-blue-500/40"></div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="p-2 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                    <i data-lucide="badge-check" class="h-8 w-8 text-blue-400"></i>
+                  </div>
+                  <h3 class="text-xl font-bold">Weryfikacja Konta</h3>
+                </div>
+                <p class="text-sm text-white/60 mb-6 min-h-[48px]">Zdobądź oficjalny znaczek zweryfikowanego użytkownika obok nicku, buduj zaufanie klientów i pozycjonuj swoje ogłoszenia wyżej.</p>
+                <div class="flex items-end gap-2 mb-6">
+                  <span class="text-4xl font-black text-white">19,99</span>
+                  <span class="text-[#e2b714] font-bold text-sm mb-1.5 flex items-center gap-1"><i data-lucide="coins" class="h-3 w-3"></i> vPLN / mies.</span>
+                </div>
+                <button class="w-full py-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 font-bold transition flex items-center justify-center gap-2 lift">
+                  Kup Subskrypcję <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                </button>
+              </div>
+
+              <div class="glass rounded-3xl p-6 border border-[var(--accent)]/30 relative overflow-hidden lift group">
+                <div class="absolute -right-6 -top-6 w-32 h-32 bg-[var(--accent)]/20 rounded-full blur-3xl transition duration-500 group-hover:bg-[var(--accent)]/40"></div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="p-2 bg-[var(--accent)]/10 rounded-xl border border-[var(--accent)]/20">
+                    <i data-lucide="rocket" class="h-8 w-8 text-[var(--accent)]"></i>
+                  </div>
+                  <h3 class="text-xl font-bold">Wyróżnienie VIP</h3>
+                </div>
+                <p class="text-sm text-white/60 mb-6 min-h-[48px]">Podbij swoje ogłoszenie na samą górę listy wyników wyszukiwania na okres 7 dni. Zdobądź nawet do 3x więcej zleceń.</p>
+                <div class="flex items-end gap-2 mb-6">
+                  <span class="text-4xl font-black text-white">9,99</span>
+                  <span class="text-[#e2b714] font-bold text-sm mb-1.5 flex items-center gap-1"><i data-lucide="coins" class="h-3 w-3"></i> vPLN / sztuka</span>
+                </div>
+                <button class="w-full py-3 rounded-xl bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 border border-[var(--accent)]/30 text-[var(--accent)] font-bold transition flex items-center justify-center gap-2 lift">
+                  Kup Pakiet <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="dash-moje-ogloszenia" class="space-y-6 hidden">
+            <div class="flex justify-between items-center mb-2">
+              <div>
+                <h2 class="text-2xl font-bold">Zarządzaj Ogłoszeniami</h2>
+                <p class="text-sm text-white/50">Twoje zlecenia i profile w jednym miejscu.</p>
+              </div>
+              <button onclick="switchMainView('add-listing')" class="btn-primary lift px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2">
+                <i data-lucide="plus" class="h-4 w-4"></i> Dodaj nowe
+              </button>
+            </div>
+            
+            <div id="success-alert" class="hidden bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-3 rounded-xl text-sm font-semibold flex items-center justify-between mb-4">
+              <span class="flex items-center gap-2"><i data-lucide="check-circle" class="h-5 w-5"></i> Ogłoszenie zostało pomyślnie dodane!</span>
+              <button onclick="this.parentElement.classList.add('hidden')"><i data-lucide="x" class="h-4 w-4 opacity-50 hover:opacity-100"></i></button>
+            </div>
+
+            <div class="glass rounded-3xl p-6 border-l-4 border-[var(--accent)] lift relative">
+              <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex-1">
+                  <div class="flex flex-wrap items-center gap-2 text-xs text-white/60 mb-2">
+                    <span class="px-2.5 py-1 rounded-md bg-[var(--accent)]/10 text-[var(--accent)] font-bold border border-[var(--accent)]/20">Wizytówka Freelancera</span>
+                    <span>Wygasa za: 28 dni</span>
+                  </div>
+                  <h3 class="font-bold text-xl mb-1">Fullstack Developer (React + Node.js)</h3>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                  <button class="btn-ghost lift p-2.5 rounded-xl text-white hover:text-white/80"><i data-lucide="edit-3" class="h-4 w-4"></i></button>
+                  <button class="btn-ghost lift p-2.5 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/20"><i data-lucide="trash-2" class="h-4 w-4"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Rynek render
+    function renderJobs() { document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="briefcase" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Zlecenia załadowane</h3></div>`; lucide.createIcons(); }
+    function renderFreelancers() { document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="users" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Profile freelancerów załadowane</h3></div>`; lucide.createIcons(); }
+
+    // Nawigacja główna
+    function switchMainView(viewId) {
+      document.getElementById('view-market').classList.add('view-hidden');
+      document.getElementById('view-dashboard').classList.add('view-hidden');
+      document.getElementById('view-add-listing').classList.add('view-hidden');
+      
+      document.getElementById(`view-${viewId}`).classList.remove('view-hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Zakładki na Rynku
+    function switchMarketTab(tab) {
+      document.getElementById('tab-zlecenia').className = 'tab-inactive pb-2 px-1 transition-colors flex items-center gap-2';
+      document.getElementById('tab-freelancerzy').className = 'tab-inactive pb-2 px-1 transition-colors flex items-center gap-2';
+      document.getElementById(`tab-${tab}`).className = 'tab-active pb-2 px-1 transition-colors flex items-center gap-2';
+      
+      if(tab === 'zlecenia') renderJobs();
+      if(tab === 'freelancerzy') renderFreelancers();
+    }
+
+    // Zakładki w Dashboardzie (Zaktualizowane by wspierać Profil i Sklep)
+    function switchDashTab(tab) {
+      // 1. Reset i zmiana wyglądu przycisków
+      const btns = document.querySelectorAll('[id^="dash-btn-"]');
+      btns.forEach(btn => {
+        btn.classList.remove('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
+        btn.classList.add('hover:bg-white/5', 'text-white/70');
+      });
+      const activeBtn = document.getElementById(`dash-btn-${tab}`);
+      if(activeBtn) {
+        activeBtn.classList.remove('hover:bg-white/5', 'text-white/70');
+        activeBtn.classList.add('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
+      }
+
+      // 2. Ukrywanie i pokazywanie odpowiednich widoków
+      const views = ['profil', 'sklep', 'moje-ogloszenia'];
+      views.forEach(v => {
+        const el = document.getElementById(`dash-${v}`);
+        if(el) el.classList.add('hidden');
+      });
+
+      const activeView = document.getElementById(`dash-${tab}`);
+      if(activeView) activeView.classList.remove('hidden');
+    }
+
+    // Wybór w kreatorze ogłoszenia
+    function selectListingType(type) {
+      const btnZlecenie = document.getElementById('type-btn-zlecenie');
+      const btnProfil = document.getElementById('type-btn-profil');
+      const formZlecenie = document.getElementById('form-zlecenie');
+      const formProfil = document.getElementById('form-profil');
+
+      btnZlecenie.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 border-white/10 hover:border-white/20 hover:bg-white/5";
+      btnZlecenie.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors";
+      
+      btnProfil.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 border-white/10 hover:border-white/20 hover:bg-white/5";
+      btnProfil.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors";
+
+      formZlecenie.classList.add('hidden');
+      formProfil.classList.add('hidden');
+
+      if(type === 'zlecenie') {
+        btnZlecenie.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 active";
+        btnZlecenie.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-[var(--accent)] flex items-center justify-center text-white transition-colors shadow-lg shadow-[var(--accent)]/20";
+        formZlecenie.classList.remove('hidden');
+      } else {
+        btnProfil.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 active border-[var(--accent2)] bg-[var(--accent2)]/5 shadow-[0_0_0_1px_var(--accent2),_0_10px_30px_rgba(124,58,237,0.15)]";
+        btnProfil.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-[var(--accent2)] flex items-center justify-center text-white transition-colors shadow-lg shadow-[var(--accent2)]/20";
+        formProfil.classList.remove('hidden');
+      }
+    }
+
+    // Dodanie ogłoszenia
+    function submitListing(e) {
+      e.preventDefault();
+      switchMainView('dashboard');
+      switchDashTab('moje-ogloszenia');
+      
+      const alertBox = document.getElementById('success-alert');
+      alertBox.classList.remove('hidden');
+      e.target.reset();
+      
+      setTimeout(() => alertBox.classList.add('hidden'), 5000);
+    }
+
+    // Init
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      renderJobs();
+      switchDashTab('profil'); // Domyślnie ładujemy tab z ustawieniami profilu na wypadek wejścia w panel
+      document.getElementById('tab-zlecenia').className = 'tab-active pb-2 px-1 transition-colors flex items-center gap-2';
+      selectListingType('zlecenie');
+    });
+  </script>
+</body>
+</html>
