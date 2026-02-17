@@ -340,7 +340,6 @@
 </head>
 
 <body class="min-h-screen text-white/90 selection:bg-[#ff0354]/40 selection:text-white">
-  <!-- UNDER CONSTRUCTION OVERLAY -->
   <div id="uc-overlay" aria-modal="true" role="dialog">
     <div class="uc-backdrop" aria-hidden="true"></div>
 
@@ -390,7 +389,6 @@
     </div>
   </div>
 
-  <!-- Developer button -->
   <button id="dev-btn" type="button" class="lift">
     <span class="inline-flex items-center gap-2">
       <i data-lucide="terminal" class="h-4 w-4"></i>
@@ -407,7 +405,6 @@
 
   <div id="scroll-progress" aria-hidden="true"></div>
 
-  <!-- HEADER -->
   <header class="sticky top-0 z-40 glass-soft">
     <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-3">
       <a href="#hero" class="flex items-center gap-3 min-w-0">
@@ -418,12 +415,11 @@
         </div>
       </a>
 
-      <!-- desktop nav -->
       <nav class="hidden lg:flex items-center gap-1 text-sm text-white/70">
         <a href="#o-platformie" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">O platformie</a>
         <a href="#dla-kogo" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">Dla kogo</a>
         <a href="#jak-to-dziala" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">Jak to działa</a>
-        <a href="#statystyki" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">Statystyki</a>
+        <a href="#spolecznosc" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">Społeczność</a>
         <a href="#faq" class="rounded-xl px-3 py-2 hover:bg-white/5 hover:text-white transition">FAQ</a>
       </nav>
 
@@ -438,7 +434,6 @@
           <span>Zaloguj / Zarejestruj się</span>
         </a>
 
-        <!-- mobile menu button -->
         <button id="menu-btn" type="button"
           class="inline-flex lg:hidden items-center justify-center rounded-xl btn-ghost lift px-3 py-2"
           aria-label="Otwórz menu" aria-expanded="false" aria-controls="mobile-nav">
@@ -447,13 +442,12 @@
       </div>
     </div>
 
-    <!-- mobile nav -->
     <div id="mobile-nav" hidden class="lg:hidden border-t border-white/10">
       <div class="mx-auto max-w-7xl px-4 py-3 grid gap-2 text-sm text-white/80">
         <a href="#o-platformie" class="rounded-xl px-3 py-2 hover:bg-white/5">O platformie</a>
         <a href="#dla-kogo" class="rounded-xl px-3 py-2 hover:bg-white/5">Dla kogo</a>
         <a href="#jak-to-dziala" class="rounded-xl px-3 py-2 hover:bg-white/5">Jak to działa</a>
-        <a href="#statystyki" class="rounded-xl px-3 py-2 hover:bg-white/5">Statystyki</a>
+        <a href="#spolecznosc" class="rounded-xl px-3 py-2 hover:bg-white/5">Społeczność</a>
         <a href="#faq" class="rounded-xl px-3 py-2 hover:bg-white/5">FAQ</a>
         <div class="pt-2 flex flex-col gap-2">
           <a href="#kontakt" class="inline-flex items-center justify-center gap-2 rounded-2xl btn-ghost lift px-4 py-3 font-semibold">
@@ -468,7 +462,6 @@
   </header>
 
   <main class="relative z-10">
-    <!-- HERO -->
     <section id="hero" class="relative overflow-hidden">
       <div id="particles-container" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden"></div>
 
@@ -499,24 +492,8 @@
               <span>Jak to działa</span>
             </a>
           </div>
-
-          <div class="flex flex-wrap items-center gap-3 text-xs text-white/60">
-            <span class="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1">
-              <i data-lucide="shield" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
-              Brak escrow — nie przetwarzamy płatności
-            </span>
-            <span class="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1">
-              <i data-lucide="message-circle" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
-              Kontakt: Discord / e-mail / social
-            </span>
-            <span class="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1">
-              <i data-lucide="badge-check" class="h-3.5 w-3.5 text-[var(--accent)]"></i>
-              Profile + ogłoszenia + portfolio
-            </span>
           </div>
-        </div>
 
-        <!-- Mockup -->
         <div class="animate-on-scroll perspective-container">
           <div id="market-mockup" class="relative mx-auto w-full max-w-xl lg:max-w-2xl">
             <div class="absolute -inset-4 -z-10 rounded-[2rem] bg-[conic-gradient(from_180deg_at_50%_50%,rgba(255,3,84,0.35),transparent,rgba(124,58,237,0.35),transparent)] blur-2xl"></div>
@@ -613,7 +590,6 @@
       </div>
     </section>
 
-    <!-- O PLATFORMIE -->
     <section id="o-platformie" class="relative py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-4">
         <div class="grid lg:grid-cols-12 gap-8 items-start">
@@ -704,7 +680,6 @@
       </div>
     </section>
 
-    <!-- DLA KOGO -->
     <section id="dla-kogo" class="relative py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-4">
         <h2 class="text-3xl md:text-4xl font-black mb-2">Dla kogo jest Velorie Market?</h2>
@@ -724,12 +699,6 @@
               </div>
             </div>
             <p class="mt-4 text-sm text-white/70">Stwórz profil i pokaż stack, repozytoria, realizacje i dostępność.</p>
-            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Java</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Node</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">React</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Spigot</span>
-            </div>
           </div>
 
           <div class="animate-on-scroll glass rounded-2xl p-6">
@@ -743,12 +712,6 @@
               </div>
             </div>
             <p class="mt-4 text-sm text-white/70">Dodaj portfolio i oferuj projekty do serwerów, sklepów i social mediów.</p>
-            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Logo</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">UI</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">GFX</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Thumbnails</span>
-            </div>
           </div>
 
           <div class="animate-on-scroll glass rounded-2xl p-6">
@@ -762,12 +725,6 @@
               </div>
             </div>
             <p class="mt-4 text-sm text-white/70">Łącz twórców z markami i społecznościami — szybko i bez pośredników w płatnościach.</p>
-            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Montaż</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Animacje</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Intro</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Shorts</span>
-            </div>
           </div>
 
           <div class="animate-on-scroll glass rounded-2xl p-6">
@@ -781,12 +738,6 @@
               </div>
             </div>
             <p class="mt-4 text-sm text-white/70">Dla osób od infrastruktury i utrzymania — konfiguracje, zabezpieczenia, optymalizacja.</p>
-            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Linux</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Proxy</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">DDoS</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Optymalizacja</span>
-            </div>
           </div>
 
           <div class="animate-on-scroll glass rounded-2xl p-6">
@@ -800,12 +751,6 @@
               </div>
             </div>
             <p class="mt-4 text-sm text-white/70">Szukaj zleceń budowlanych albo zlecaj budowy pod swój serwer.</p>
-            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Spawn</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Lobby</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Skyblock</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Events</span>
-            </div>
           </div>
 
           <div class="animate-on-scroll glass rounded-2xl p-6">
@@ -819,18 +764,11 @@
               </div>
             </div>
             <p class="mt-4 text-sm text-white/70">Publikuj ogłoszenia i znajdź wykonawcę dopasowanego do budżetu i terminu.</p>
-            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-white/70">
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Budżet</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Termin</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Opis</span>
-              <span class="rounded-full border border-white/10 bg-black/30 px-2.5 py-1">Kontakt</span>
-            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- JAK TO DZIAŁA -->
     <section id="jak-to-dziala" class="relative py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-4">
         <h2 class="text-3xl md:text-4xl font-black mb-2">Jak to działa?</h2>
@@ -892,23 +830,37 @@
       </div>
     </section>
 
-    <!-- STATYSTYKI -->
-    <section id="statystyki" class="relative py-14 sm:py-16">
+    <section id="spolecznosc" class="relative py-14 sm:py-16">
       <div class="mx-auto max-w-7xl px-4">
-        <h2 class="text-2xl md:text-3xl font-bold mb-8 flex items-center gap-3">
-          <i data-lucide="trending-up" class="h-6 w-6 text-[var(--accent)]"></i>
-          Statystyki społeczności
-        </h2>
+        <div class="relative overflow-hidden rounded-3xl border border-[var(--accent)]/20 bg-gradient-to-br from-[var(--accent)]/10 to-[var(--accent2)]/10 px-6 py-10 md:px-12 md:py-12 shadow-2xl animate-on-scroll glass">
+          <div class="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[var(--accent2)]/20 blur-3xl pointer-events-none"></div>
+          <div class="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-[var(--accent)]/20 blur-3xl pointer-events-none"></div>
+ 
+          <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+            
+            <div class="flex flex-col md:flex-row items-center gap-6">
+              <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie logo" class="h-20 w-auto brand-logo drop-shadow-[0_0_15px_rgba(255,3,84,0.4)]">
+              <div>
+                <h2 class="text-3xl font-black tracking-tight md:text-4xl">Velorie Market</h2>
+                <p class="mt-3 text-lg text-white/80 max-w-xl">
+                  Dołącz do społeczności. Znajdź pomoc, wymieniaj się doświadczeniami i bądź na bieżąco z nowościami.
+                </p>
+              </div>
+            </div>
+ 
+            <div class="shrink-0">
+              <a href="https://discord.gg/velorie" target="_blank" rel="noopener noreferrer" class="group inline-flex items-center gap-3 rounded-2xl btn-primary lift px-8 py-4 text-base font-bold text-white">
+                <i data-lucide="message-square" class="h-5 w-5 fill-current"></i>
+                <span>Dołącz na Discord</span>
+                <i data-lucide="arrow-right" class="h-4 w-4 transition-transform group-hover:translate-x-1"></i>
+              </a>
+            </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="stats-grid"></div>
-
-        <p class="mt-4 text-xs text-white/50">
-          *Przykładowe liczby do podmiany (na produkcji możesz podpiąć API).
-        </p>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- FAQ -->
     <section id="faq" class="relative py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-4">
         <h2 class="text-3xl md:text-4xl font-black mb-2">FAQ</h2>
@@ -951,7 +903,6 @@
     </section>
   </main>
 
-  <!-- FOOTER -->
   <footer id="kontakt" class="relative border-t border-white/10 glass-soft">
     <div class="mx-auto max-w-7xl px-4 py-12 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
       <div class="space-y-4">
@@ -966,7 +917,7 @@
           Platforma ogłoszeniowa dla freelancerów i zleceniodawców. Bez escrow — łączymy ludzi, a rozliczenia zostają po Waszej stronie.
         </p>
         <div class="flex flex-wrap items-center gap-3">
-          <a aria-label="Discord" href="#discord" class="rounded-full btn-ghost lift px-3 py-1 text-xs">Discord</a>
+          <a aria-label="Discord" href="https://discord.gg/velorie" class="rounded-full btn-ghost lift px-3 py-1 text-xs">Discord</a>
           <a aria-label="Facebook" href="#facebook" class="rounded-full btn-ghost lift px-3 py-1 text-xs">Fanpage</a>
           <a aria-label="E-mail" href="mailto:kontakt@velorie.market" class="rounded-full btn-ghost lift px-3 py-1 text-xs">E-mail</a>
         </div>
@@ -1163,7 +1114,7 @@
         { href: "#o-platformie", text: "O platformie" },
         { href: "#dla-kogo", text: "Dla kogo" },
         { href: "#jak-to-dziala", text: "Jak to działa" },
-        { href: "#statystyki", text: "Statystyki" },
+        { href: "#spolecznosc", text: "Społeczność" }, 
         { href: "#faq", text: "FAQ" },
         { href: "#kontakt", text: "Kontakt" },
       ];
@@ -1173,46 +1124,6 @@
         li.innerHTML = `<a href="${item.href}" class="hover:text-white">${item.text}</a>`;
         footerList.appendChild(li);
       });
-
-      // Stats
-      const statsData = [
-        { id: "offers", icon: "briefcase", label: "Aktywne ogłoszenia", value: 1280 },
-        { id: "profiles", icon: "users", label: "Profile freelancerów", value: 6420 },
-        { id: "categories", icon: "layers", label: "Kategorie umiejętności", value: 28 },
-        { id: "matches", icon: "sparkles", label: "Dopasowania / mies.", value: 15400 },
-      ];
-
-      const renderStats = () => {
-        const grid = document.getElementById("stats-grid");
-        grid.innerHTML = "";
-        statsData.forEach((s, idx) => {
-          const card = document.createElement("div");
-          card.className = "p-5 text-center relative rounded-2xl glass animate-on-scroll";
-          card.style.transitionDelay = `${idx * 0.06}s`;
-          card.innerHTML = `
-            <div class="flex items-center justify-center gap-2">
-              <i data-lucide="${s.icon}" class="h-5 w-5 text-[var(--accent)]"></i>
-              <span class="text-[10px] sm:text-xs uppercase tracking-wider text-white/60">${s.label}</span>
-            </div>
-            <div id="stat-${s.id}" class="mt-2 text-2xl md:text-3xl font-extrabold tabular-nums">0</div>
-          `;
-          grid.appendChild(card);
-        });
-        lucide.createIcons();
-        initScrollAnimations();
-      };
-
-      // Counter animation
-      const animateCounter = (element, target, duration = 1200) => {
-        let start = null;
-        const step = (ts) => {
-          if (!start) start = ts;
-          const progress = Math.min((ts - start) / duration, 1);
-          element.textContent = Math.floor(progress * target).toLocaleString("pl-PL");
-          if (progress < 1) window.requestAnimationFrame(step);
-        };
-        window.requestAnimationFrame(step);
-      };
 
       // Parallax hero text (disable on reduced motion)
       const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1244,14 +1155,6 @@
           entries.forEach(entry => {
             if (entry.isIntersecting) {
               entry.target.classList.add("is-visible");
-
-              const statEl = entry.target.querySelector('[id^="stat-"]');
-              if (statEl) {
-                const key = statEl.id.replace("stat-", "");
-                const stat = statsData.find(x => x.id === key);
-                if (stat) animateCounter(statEl, stat.value);
-              }
-
               obs.unobserve(entry.target);
             }
           });
@@ -1286,7 +1189,6 @@
 
       // Init
       const init = () => {
-        renderStats();
         createParticles();
         lucide.createIcons();
         initScrollAnimations();
