@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Kreator Portfolio PRO – Velorie Market</title>
+  <meta name="theme-color" content="#0a1030" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --accent: #ff0354;
+      --accent2: #7c3aed;
+      --bg1: #00010f;
+      --bg2: #0a1030;
+      --stroke: rgba(255, 255, 255, .12);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.18), transparent 60%),
+        radial-gradient(900px 600px at 85% 15%, rgba(255,3,84,.16), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+      color: rgba(255,255,255,0.9);
+      overflow-x: hidden;
+    }
+
+    /* Background animations (zachowane z platformy) */
+    .grid-bg { position: fixed; inset: 0; pointer-events: none; opacity: .22; z-index: -2; background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 52px 52px; mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.95) 0%, rgba(0,0,0,.20) 55%, transparent 75%); animation: gridFloat 12s ease-in-out infinite; }
+    @keyframes gridFloat { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(0,-10px,0) scale(1.02); } }
+    .aurora { position: fixed; inset: -20%; pointer-events: none; filter: blur(46px) saturate(125%); opacity: .90; z-index: -3; }
+    .blob { position: absolute; width: clamp(320px, 40vw, 560px); height: clamp(320px, 40vw, 560px); border-radius: 999px; background: radial-gradient(circle at 30% 30%, rgba(255,3,84,.35), transparent 60%), radial-gradient(circle at 70% 70%, rgba(124,58,237,.35), transparent 60%); animation: blob 14s ease-in-out infinite; mix-blend-mode: screen; }
+    .blob.b1 { left: 8%; top: 8%; }
+    .blob.b2 { width: clamp(360px, 48vw, 680px); height: clamp(360px, 48vw, 680px); left: 62%; top: 18%; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.38), transparent 60%), radial-gradient(circle at 70% 70%, rgba(255,3,84,.28), transparent 60%); animation-duration: 18s; animation-delay: -3s; }
+    @keyframes blob { 0%,100% { transform: translate(0,0) scale(1); } 30% { transform: translate(40px, 18px) scale(1.08); } 60% { transform: translate(-28px, 34px) scale(0.98); } }
+    .noise { position: fixed; inset: 0; pointer-events: none; opacity: .09; z-index: -1; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"); mix-blend-mode: overlay; }
+
+    /* UI Elements */
+    .glass { background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05)); border: 1px solid var(--stroke); box-shadow: 0 18px 60px rgba(0,0,0,.50), inset 0 1px 0 rgba(255,255,255,.10); backdrop-filter: blur(18px); }
+    .glass-soft { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); backdrop-filter: blur(14px); }
+    .lift { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .lift:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,.6); }
+
+    .btn-primary { background: linear-gradient(135deg, rgba(255,3,84,1), rgba(124,58,237,1)); box-shadow: 0 12px 26px rgba(255,3,84,.18), 0 10px 32px rgba(124,58,237,.16); transition: all 0.2s; }
+    .btn-primary:hover { filter: brightness(1.15); box-shadow: 0 14px 30px rgba(255,3,84,.3); transform: translateY(-1px); }
+    .btn-gold { background: linear-gradient(135deg, #e2b714, #c79a0b); box-shadow: 0 12px 26px rgba(226,183,20,.18); color: #000; transition: all 0.2s; }
+    .btn-gold:hover { filter: brightness(1.15); box-shadow: 0 14px 30px rgba(226,183,20,.3); transform: translateY(-1px); }
+    
+    .brand-logo { height: 36px; width: auto; max-width: 140px; object-fit: contain; filter: drop-shadow(0 10px 22px rgba(255,3,84,.25)); }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb { background: rgba(124,58,237, 0.6); border-radius: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    .glow-border { position: relative; }
+    .glow-border::before {
+      content: ''; position: absolute; inset: -2px; border-radius: inherit; padding: 2px;
+      background: linear-gradient(135deg, var(--accent2), var(--accent), #e2b714);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+      animation: borderRotate 4s linear infinite;
+    }
+  </style>
+</head>
+<body class="selection:bg-[#7c3aed]/40 selection:text-white">
+
+  <div class="aurora" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div></div>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="sticky top-0 z-40 glass-soft border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-3 shrink-0 lift group">
+        <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo group-hover:scale-105 transition-transform" />
+        <div class="hidden sm:block leading-tight min-w-0">
+          <div class="text-base sm:text-lg font-bold tracking-tight truncate">Velorie Market</div>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <a href="wallet.html" title="Twój Portfel" class="flex items-center gap-2 rounded-xl glass-soft px-3 py-1.5 text-sm font-bold text-[#e2b714] border border-[#e2b714]/30 hover:bg-[#e2b714]/10 transition lift">
+          <i data-lucide="coins" class="h-4 w-4"></i>
+          <span>150.00 <span class="text-[11px] text-[#e2b714]/70">vPLN</span></span>
+        </a>
+        <button class="relative inline-flex items-center justify-center h-10 w-10 rounded-xl glass lift border border-[var(--accent)]/50">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="h-full w-full rounded-xl p-0.5 object-cover" />
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-5xl px-4 py-12 relative z-10">
+
+    <div class="text-center max-w-3xl mx-auto mb-16 mt-8">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--accent2)]/10 text-[var(--accent2)] text-sm font-bold border border-[var(--accent2)]/20 mb-6 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
+        <i data-lucide="sparkles" class="h-4 w-4"></i> Narzędzie Premium
+      </div>
+      <h1 class="text-5xl sm:text-6xl font-black tracking-tight mb-6 leading-tight">
+        Zbuduj markę, która <br class="hidden sm:block" />
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent2)] to-[var(--accent)]">sprzedaje za Ciebie.</span>
+      </h1>
+      <p class="text-white/60 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+        Przestań wysyłać klientom suche linki. Stwórz oszałamiające portfolio, podepnij własną domenę i pokaż swoje projekty w najwyższej jakości.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 mb-16">
+      
+      <div class="glass rounded-3xl p-8 lift group">
+        <div class="w-14 h-14 rounded-2xl bg-[var(--accent2)]/10 border border-[var(--accent2)]/20 flex items-center justify-center text-[var(--accent2)] mb-6 group-hover:scale-110 transition-transform">
+          <i data-lucide="globe" class="h-7 w-7"></i>
+        </div>
+        <h3 class="text-2xl font-bold mb-3">Własna Domena</h3>
+        <p class="text-white/60 text-sm leading-relaxed">
+          Zapomnij o długich linkach z platformy. Podepnij swoją własną domenę (np. <span class="text-white font-mono bg-white/10 px-1 rounded">twojenazwisko.pl</span>) lub skorzystaj z darmowej subdomeny Velorie. Zbuduj w 100% profesjonalny wizerunek.
+        </p>
+      </div>
+
+      <div class="glass rounded-3xl p-8 lift group">
+        <div class="w-14 h-14 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center text-[var(--accent)] mb-6 group-hover:scale-110 transition-transform">
+          <i data-lucide="image" class="h-7 w-7"></i>
+        </div>
+        <h3 class="text-2xl font-bold mb-3">Bogate Galerie Projektów</h3>
+        <p class="text-white/60 text-sm leading-relaxed">
+          Dodawaj zdjęcia w wysokiej rozdzielczości, opisy case-study, użyte technologie i tagi. Pokaż krok po kroku, jak rozwiązujesz problemy swoich klientów. Nielimitowana przestrzeń na Twój talent.
+        </p>
+      </div>
+
+      <div class="glass rounded-3xl p-8 lift group">
+        <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 transition-transform">
+          <i data-lucide="link" class="h-7 w-7"></i>
+        </div>
+        <h3 class="text-2xl font-bold mb-3">Wszystkie Linki w Jednym Miejscu</h3>
+        <p class="text-white/60 text-sm leading-relaxed">
+          Zintegruj swojego GitHuba, Dribbble, LinkedIn czy social media. Stwórz spersonalizowane drzewo linków (link-in-bio), które ułatwi kontakt z Tobą na każdej platformie.
+        </p>
+      </div>
+
+      <div class="glass rounded-3xl p-8 lift group">
+        <div class="w-14 h-14 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mb-6 group-hover:scale-110 transition-transform">
+          <i data-lucide="bar-chart-3" class="h-7 w-7"></i>
+        </div>
+        <h3 class="text-2xl font-bold mb-3">Statystyki Odwiedzin (Wkrótce)</h3>
+        <p class="text-white/60 text-sm leading-relaxed">
+          Śledź, kto ogląda Twoje prace. Sprawdzaj, które z Twoich projektów generują największe zainteresowanie i z jakich źródeł trafiają do Ciebie klienci.
+        </p>
+      </div>
+
+    </div>
+
+    <div id="paywall" class="max-w-2xl mx-auto text-center mt-20 scroll-mt-24">
+      <h2 class="text-3xl font-black mb-8">Gotowy przenieść swój wizerunek wyżej?</h2>
+      
+      <div class="glass rounded-[2.5rem] p-8 sm:p-12 glow-border relative overflow-hidden bg-black/40 backdrop-blur-2xl">
+        <div class="absolute -top-24 -right-24 w-64 h-64 bg-[var(--accent2)]/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-[#e2b714]/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10">
+          <div class="inline-block px-4 py-1 rounded-full bg-white/5 border border-white/10 text-white/80 text-sm font-bold uppercase tracking-widest mb-6">
+            Licencja Dożywotnia
+          </div>
+          
+          <div class="flex items-end justify-center gap-3 mb-8">
+            <span class="text-6xl font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">99.00</span>
+            <span class="text-[#e2b714] font-bold text-xl mb-2 flex items-center gap-1">
+              <i data-lucide="coins" class="h-5 w-5"></i> vPLN
+            </span>
+          </div>
+
+          <ul class="text-left max-w-xs mx-auto space-y-4 mb-10">
+            <li class="flex items-center gap-3 text-white/80"><i data-lucide="check" class="h-5 w-5 text-green-400 shrink-0"></i> Kreator Drag & Drop</li>
+            <li class="flex items-center gap-3 text-white/80"><i data-lucide="check" class="h-5 w-5 text-green-400 shrink-0"></i> Podpięcie własnej domeny</li>
+            <li class="flex items-center gap-3 text-white/80"><i data-lucide="check" class="h-5 w-5 text-green-400 shrink-0"></i> Brak reklam i loga Velorie</li>
+            <li class="flex items-center gap-3 text-white/80"><i data-lucide="check" class="h-5 w-5 text-green-400 shrink-0"></i> Nielimitowane projekty</li>
+          </ul>
+
+          <button onclick="handlePurchase()" class="btn-gold w-full sm:w-auto px-10 py-4 rounded-2xl text-lg font-black flex items-center justify-center gap-3 mx-auto">
+            <i data-lucide="unlock" class="h-5 w-5"></i> Odblokuj Kreator Portfolio
+          </button>
+          <p class="text-xs text-white/40 mt-4">Opłata jednorazowa. Środki zostaną pobrane z Twojego portfela.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="success-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+    <div class="glass rounded-3xl p-8 max-w-sm w-full text-center relative transform scale-95 opacity-0 transition-all duration-300" id="modal-content">
+      <div class="w-16 h-16 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center mx-auto mb-4 border border-green-500/30">
+        <i data-lucide="check-circle" class="h-8 w-8"></i>
+      </div>
+      <h3 class="text-2xl font-bold mb-2">Portfolio Odblokowane!</h3>
+      <p class="text-white/60 text-sm mb-6">Pobrano 99.00 vPLN. Możesz teraz przejść do konfiguracji swojej wizytówki i podpięcia domeny.</p>
+      <button onclick="closeModal()" class="btn-primary w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+        Przejdź do edytora <i data-lucide="arrow-right" class="h-4 w-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Inicjalizacja ikon
+    lucide.createIcons();
+
+    // Prosta obsługa zakupu (Mockup)
+    function handlePurchase() {
+      const modal = document.getElementById('success-modal');
+      const modalContent = document.getElementById('modal-content');
+      
+      // Pokazujemy tło modala
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      
+      // Animacja wejścia zawartości modala
+      setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+      }, 10);
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('success-modal');
+      const modalContent = document.getElementById('modal-content');
+      
+      // Animacja wyjścia
+      modalContent.classList.remove('scale-100', 'opacity-100');
+      modalContent.classList.add('scale-95', 'opacity-0');
+      
+      setTimeout(() => {
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+        // Tutaj w prawdziwej aplikacji byłoby przekierowanie np. window.location.href = 'portfolio-editor.html'
+      }, 300);
+    }
+  </script>
+</body>
+</html>
