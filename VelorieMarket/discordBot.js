@@ -1,54 +1,67 @@
 const { Client, GatewayIntentBits } = require('discord.js');
-const User = require('./models/User'); // Importujemy model, by liczyć userów
+const User = require('./models/User'); // Import modelu User, aby liczyć osoby
 require('dotenv').config();
 
-// Konfiguracja Klienta Discord
 const client = new Client({ 
-  intents: [GatewayIntentBits.Guilds] 
+    intents: [GatewayIntentBits.Guilds] 
 });
 
-// Funkcja główna: Aktualizacja licznika
+// === KONFIGURACJA ===
+// Wklej tutaj ID kanału, którego nazwę chcesz zmieniać.
+// Kliknij Prawym na kanał w Discordzie -> "Kopiuj ID kanału" (musisz mieć włączony tryb dewelopera)
+const CHANNEL_ID = 'TU_WKLEJ_SWOJE_ID_KANALU'; // np. '120938120938120938'
+
+// === FUNKCJA AKTUALIZUJĄCA ===
 const updateDiscordStats = async () => {
-  try {
-    const guildId = process.env.DISCORD_GUILD_ID;
-    const channelId = process.env.DISCORD_CHANNEL_ID;
+    try {
+        // Jeśli bot nie jest połączony, nie robimy nic
+        if (!client.isReady()) return;
 
-    if (!client.isReady()) return;
-    if (!guildId || !channelId) {
-        console.warn('⚠️ Brak konfiguracji ID Discorda w .env');
-        return;
+        // 1. Pobieramy liczbę użytkowników z bazy MongoDB
+        const userCount = await User.countDocuments();
+
+        // 2. Pobieramy kanał z Discorda
+        const channel = await client.channels.fetch(CHANNEL_ID);
+        
+        if (channel) {
+            // Nowa nazwa kanału
+            const newName = `🚀〢Zarejestrowani: ${userCount}`;
+
+            // Sprawdzamy, czy nazwa faktycznie jest inna (żeby nie marnować limitów API)
+            if (channel.name !== newName) {
+                await channel.setName(newName);
+                console.log(`🤖 [Discord] Zmieniono nazwę kanału na: "${newName}"`);
+            }
+        }
+    } catch (err) {
+        // Obsługa błędów specyficznych dla Discorda
+        if (err.code === 50013) {
+            console.error('❌ [Discord] Brak uprawnień! Bot musi mieć uprawnienie "Manage Channels" (Zarządzanie kanałami).');
+        } else if (err.status === 429) {
+            console.warn('⏳ [Discord] Rate Limit (zbyt częste zmiany). Czekam na odnowienie limitu...');
+        } else {
+            console.error('❌ [Discord] Błąd aktualizacji:', err.message);
+        }
     }
-
-    const guild = await client.guilds.fetch(guildId);
-    const channel = await guild.channels.fetch(channelId);
-
-    const userCount = await User.countDocuments();
-    const newName = `🚀〢Użytkownicy: ${userCount}`;
-
-    if (channel.name !== newName) {
-        await channel.setName(newName);
-        console.log(`🤖 [Discord] Zmieniono nazwę kanału na: "${newName}"`);
-    }
-
-  } catch (error) {
-    console.error('❌ [Discord] Błąd aktualizacji:', error.message);
-  }
 };
 
-// Inicjalizacja bota
+// === INICJALIZACJA BOTA ===
 const initDiscordBot = () => {
-  if (!process.env.DISCORD_TOKEN) {
-    console.warn('⚠️ Brak DISCORD_TOKEN. Bot wyłączony.');
-    return;
-  }
+    // Logowanie bota
+    client.login(process.env.DISCORD_TOKEN);
 
-  client.once('clientReady', () => {
-    console.log(`🤖 [Discord] Zalogowano jako ${client.user.tag}`);
-    updateDiscordStats(); // Pierwsze odświeżenie po starcie
-  });
+    client.once('ready', () => {
+        console.log(`🤖 [Discord] Zalogowano pomyślnie jako ${client.user.tag}`);
+        
+        // 1. Pierwsza aktualizacja natychmiast po starcie serwera
+        updateDiscordStats();
 
-  client.login(process.env.DISCORD_TOKEN);
+        // 2. Automatyczna pętla aktualizacji co 10 minut (600 000 ms)
+        // Discord pozwala na zmianę nazwy kanału tylko 2 razy na 10 minut.
+        setInterval(() => {
+            updateDiscordStats();
+        }, 600000); 
+    });
 };
 
-// Eksportujemy funkcję inicjującą oraz funkcję do wywoływania update'u ręcznie (przy rejestracji)
 module.exports = { initDiscordBot, updateDiscordStats };
