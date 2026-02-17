@@ -19,7 +19,8 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // === 1. POŁĄCZENIE Z BAZĄ DANYCH (Z DIAGNOSTYKĄ) ===
-const mongoUri = process.env.MONGO_URI;
+// Wklej tu swój link z pliku .env
+const mongoUri = "mongodb://mongo:eEDpdgLcAnqZdjWlxNsaNYisLzJGIKmA@mongodb.railway.internal:27017";
 
 if (!mongoUri) {
   console.error('❌ [BŁĄD KRYTYCZNY] Brak zmiennej MONGO_URI! Sprawdź plik .env lub konfigurację kontenera.');
