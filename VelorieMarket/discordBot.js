@@ -23,7 +23,7 @@ const updateDiscordStats = async () => {
     const channel = await guild.channels.fetch(channelId);
 
     const userCount = await User.countDocuments();
-    const newName = `👥 Użytkownicy: ${userCount}`;
+    const newName = `🚀〢Użytkownicy: ${userCount}`;
 
     if (channel.name !== newName) {
         await channel.setName(newName);
