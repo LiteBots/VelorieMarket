@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Kreator Portfolio PRO – Velorie Market</title>
+  <title>Kreator Portfolio – Velorie Market</title>
   <meta name="theme-color" content="#0a1030" />
-  <link rel="icon" type="image/png" href="favicon.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -29,14 +28,9 @@
       overflow-x: hidden;
     }
 
-    /* Background animations (zachowane z platformy) */
+    /* Background animations */
     .grid-bg { position: fixed; inset: 0; pointer-events: none; opacity: .22; z-index: -2; background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 52px 52px; mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.95) 0%, rgba(0,0,0,.20) 55%, transparent 75%); animation: gridFloat 12s ease-in-out infinite; }
     @keyframes gridFloat { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(0,-10px,0) scale(1.02); } }
-    .aurora { position: fixed; inset: -20%; pointer-events: none; filter: blur(46px) saturate(125%); opacity: .90; z-index: -3; }
-    .blob { position: absolute; width: clamp(320px, 40vw, 560px); height: clamp(320px, 40vw, 560px); border-radius: 999px; background: radial-gradient(circle at 30% 30%, rgba(255,3,84,.35), transparent 60%), radial-gradient(circle at 70% 70%, rgba(124,58,237,.35), transparent 60%); animation: blob 14s ease-in-out infinite; mix-blend-mode: screen; }
-    .blob.b1 { left: 8%; top: 8%; }
-    .blob.b2 { width: clamp(360px, 48vw, 680px); height: clamp(360px, 48vw, 680px); left: 62%; top: 18%; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.38), transparent 60%), radial-gradient(circle at 70% 70%, rgba(255,3,84,.28), transparent 60%); animation-duration: 18s; animation-delay: -3s; }
-    @keyframes blob { 0%,100% { transform: translate(0,0) scale(1); } 30% { transform: translate(40px, 18px) scale(1.08); } 60% { transform: translate(-28px, 34px) scale(0.98); } }
     .noise { position: fixed; inset: 0; pointer-events: none; opacity: .09; z-index: -1; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"); mix-blend-mode: overlay; }
 
     /* UI Elements */
@@ -45,196 +39,315 @@
     .lift { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
     .lift:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,.6); }
 
-    .btn-primary { background: linear-gradient(135deg, rgba(255,3,84,1), rgba(124,58,237,1)); box-shadow: 0 12px 26px rgba(255,3,84,.18), 0 10px 32px rgba(124,58,237,.16); transition: all 0.2s; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); box-shadow: 0 12px 26px rgba(255,3,84,.18), 0 10px 32px rgba(124,58,237,.16); transition: all 0.2s; }
     .btn-primary:hover { filter: brightness(1.15); box-shadow: 0 14px 30px rgba(255,3,84,.3); transform: translateY(-1px); }
-    .btn-gold { background: linear-gradient(135deg, #e2b714, #c79a0b); box-shadow: 0 12px 26px rgba(226,183,20,.18); color: #000; transition: all 0.2s; }
-    .btn-gold:hover { filter: brightness(1.15); box-shadow: 0 14px 30px rgba(226,183,20,.3); transform: translateY(-1px); }
-    
-    .brand-logo { height: 36px; width: auto; max-width: 140px; object-fit: contain; filter: drop-shadow(0 10px 22px rgba(255,3,84,.25)); }
+    .btn-ghost { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); transition: all 0.2s; }
+    .btn-ghost:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.2); }
+
+    .v-input { width: 100%; border-radius: 12px; padding: 10px 14px; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.14); color: white; outline: none; transition: all 0.2s; }
+    .v-input:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(124,58,237,.15); background: rgba(0,0,0,.6); }
 
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-thumb { background: rgba(124,58,237, 0.6); border-radius: 10px; }
     ::-webkit-scrollbar-track { background: transparent; }
 
-    .glow-border { position: relative; }
-    .glow-border::before {
-      content: ''; position: absolute; inset: -2px; border-radius: inherit; padding: 2px;
-      background: linear-gradient(135deg, var(--accent2), var(--accent), #e2b714);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
-      animation: borderRotate 4s linear infinite;
-    }
+    /* Kreator specyficzne */
+    .tab-btn { padding: 12px 16px; border-bottom: 2px solid transparent; color: rgba(255,255,255,0.5); font-weight: 600; font-size: 0.875rem; transition: all 0.2s; }
+    .tab-btn.active { color: white; border-bottom-color: var(--accent2); background: linear-gradient(0deg, rgba(124,58,237,0.1) 0%, transparent 100%); }
+    .tab-btn:hover:not(.active) { color: white; }
+    
+    .view-hidden { display: none !important; }
+    
+    /* Phone Preview Frame */
+    .preview-frame { border: 8px solid #111; border-radius: 2.5rem; overflow: hidden; background: #050505; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 2px rgba(255,255,255,0.1); }
+    .preview-frame::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 40%; height: 24px; background: #111; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; z-index: 20; }
   </style>
 </head>
-<body class="selection:bg-[#7c3aed]/40 selection:text-white">
+<body class="selection:bg-[#7c3aed]/40 selection:text-white h-screen flex flex-col overflow-hidden">
 
-  <div class="aurora" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div></div>
   <div class="grid-bg" aria-hidden="true"></div>
   <div class="noise" aria-hidden="true"></div>
 
-  <header class="sticky top-0 z-40 glass-soft border-b border-white/10">
-    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
-      <a href="index.html" class="flex items-center gap-3 shrink-0 lift group">
-        <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo group-hover:scale-105 transition-transform" />
-        <div class="hidden sm:block leading-tight min-w-0">
-          <div class="text-base sm:text-lg font-bold tracking-tight truncate">Velorie Market</div>
-        </div>
-      </a>
-
-      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-        <a href="wallet.html" title="Twój Portfel" class="flex items-center gap-2 rounded-xl glass-soft px-3 py-1.5 text-sm font-bold text-[#e2b714] border border-[#e2b714]/30 hover:bg-[#e2b714]/10 transition lift">
-          <i data-lucide="coins" class="h-4 w-4"></i>
-          <span>150.00 <span class="text-[11px] text-[#e2b714]/70">vPLN</span></span>
+  <header class="shrink-0 glass-soft border-b border-white/10 relative z-40">
+    <div class="mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <a href="dashboard.html" class="btn-ghost p-2 rounded-xl lift group" title="Wróć do panelu">
+          <i data-lucide="arrow-left" class="h-5 w-5 group-hover:-translate-x-1 transition-transform"></i>
         </a>
-        <button class="relative inline-flex items-center justify-center h-10 w-10 rounded-xl glass lift border border-[var(--accent)]/50">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="h-full w-full rounded-xl p-0.5 object-cover" />
+        <div>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight">Edytor Portfolio</h1>
+          <div class="text-[11px] text-white/50 flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Zapisano automatycznie
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button class="btn-ghost px-4 py-2 rounded-xl text-sm font-semibold hidden sm:block">Podgląd w nowym oknie</button>
+        <button class="btn-primary px-5 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-[var(--accent2)]/20">
+          Publikuj <i data-lucide="globe" class="h-4 w-4"></i>
         </button>
       </div>
     </div>
   </header>
 
-  <main class="mx-auto max-w-5xl px-4 py-12 relative z-10">
-
-    <div class="text-center max-w-3xl mx-auto mb-16 mt-8">
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--accent2)]/10 text-[var(--accent2)] text-sm font-bold border border-[var(--accent2)]/20 mb-6 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
-        <i data-lucide="sparkles" class="h-4 w-4"></i> Narzędzie Premium
+  <main class="flex-1 overflow-hidden relative z-10 flex flex-col lg:flex-row">
+    
+    <div class="w-full lg:w-[45%] xl:w-[40%] flex flex-col bg-black/40 border-r border-white/10 backdrop-blur-xl h-full">
+      <div class="flex overflow-x-auto border-b border-white/10 shrink-0 hide-scrollbar px-2">
+        <button onclick="switchTab('dane')" id="tab-dane" class="tab-btn active flex items-center gap-2 whitespace-nowrap"><i data-lucide="user" class="h-4 w-4"></i> Dane Główne</button>
+        <button onclick="switchTab('projekty')" id="tab-projekty" class="tab-btn flex items-center gap-2 whitespace-nowrap"><i data-lucide="layout-grid" class="h-4 w-4"></i> Projekty</button>
+        <button onclick="switchTab('linki')" id="tab-linki" class="tab-btn flex items-center gap-2 whitespace-nowrap"><i data-lucide="link" class="h-4 w-4"></i> Linki</button>
+        <button onclick="switchTab('domena')" id="tab-domena" class="tab-btn flex items-center gap-2 whitespace-nowrap"><i data-lucide="globe" class="h-4 w-4"></i> Domena</button>
       </div>
-      <h1 class="text-5xl sm:text-6xl font-black tracking-tight mb-6 leading-tight">
-        Zbuduj markę, która <br class="hidden sm:block" />
-        <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent2)] to-[var(--accent)]">sprzedaje za Ciebie.</span>
-      </h1>
-      <p class="text-white/60 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-        Przestań wysyłać klientom suche linki. Stwórz oszałamiające portfolio, podepnij własną domenę i pokaż swoje projekty w najwyższej jakości.
-      </p>
-    </div>
 
-    <div class="grid md:grid-cols-2 gap-6 mb-16">
-      
-      <div class="glass rounded-3xl p-8 lift group">
-        <div class="w-14 h-14 rounded-2xl bg-[var(--accent2)]/10 border border-[var(--accent2)]/20 flex items-center justify-center text-[var(--accent2)] mb-6 group-hover:scale-110 transition-transform">
-          <i data-lucide="globe" class="h-7 w-7"></i>
+      <div class="flex-1 overflow-y-auto p-6 space-y-8">
+        
+        <div id="view-dane" class="space-y-6">
+          <div class="flex items-center gap-4">
+            <div class="h-20 w-20 rounded-full border-2 border-dashed border-white/30 flex items-center justify-center bg-white/5 text-white/50 hover:bg-white/10 hover:border-[var(--accent2)] transition cursor-pointer relative overflow-hidden group">
+              <i data-lucide="camera" class="h-6 w-6"></i>
+              <img id="avatar-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="absolute inset-0 w-full h-full object-cover" />
+              <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                <i data-lucide="upload" class="h-5 w-5 text-white"></i>
+              </div>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm mb-1">Zdjęcie profilowe</h3>
+              <p class="text-xs text-white/50">Zalecane proporcje 1:1, max 2MB.</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Imię i Nazwisko / Pseudonim</label>
+            <input type="text" id="input-name" oninput="updatePreview()" class="v-input" value="DevKuba" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Nagłówek (Specjalizacja)</label>
+            <input type="text" id="input-headline" oninput="updatePreview()" class="v-input" value="Fullstack Developer & UI Designer" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Krótkie Bio</label>
+            <textarea id="input-bio" oninput="updatePreview()" class="v-input min-h-[100px]">Tworzę nowoczesne aplikacje webowe. Kocham czysty kod i minimalistyczny design. Otwarty na zlecenia freelance.</textarea>
+          </div>
         </div>
-        <h3 class="text-2xl font-bold mb-3">Własna Domena</h3>
-        <p class="text-white/60 text-sm leading-relaxed">
-          Zapomnij o długich linkach z platformy. Podepnij swoją własną domenę (np. <span class="text-white font-mono bg-white/10 px-1 rounded">twojenazwisko.pl</span>) lub skorzystaj z darmowej subdomeny Velorie. Zbuduj w 100% profesjonalny wizerunek.
-        </p>
-      </div>
 
-      <div class="glass rounded-3xl p-8 lift group">
-        <div class="w-14 h-14 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center text-[var(--accent)] mb-6 group-hover:scale-110 transition-transform">
-          <i data-lucide="image" class="h-7 w-7"></i>
-        </div>
-        <h3 class="text-2xl font-bold mb-3">Bogate Galerie Projektów</h3>
-        <p class="text-white/60 text-sm leading-relaxed">
-          Dodawaj zdjęcia w wysokiej rozdzielczości, opisy case-study, użyte technologie i tagi. Pokaż krok po kroku, jak rozwiązujesz problemy swoich klientów. Nielimitowana przestrzeń na Twój talent.
-        </p>
-      </div>
-
-      <div class="glass rounded-3xl p-8 lift group">
-        <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 transition-transform">
-          <i data-lucide="link" class="h-7 w-7"></i>
-        </div>
-        <h3 class="text-2xl font-bold mb-3">Wszystkie Linki w Jednym Miejscu</h3>
-        <p class="text-white/60 text-sm leading-relaxed">
-          Zintegruj swojego GitHuba, Dribbble, LinkedIn czy social media. Stwórz spersonalizowane drzewo linków (link-in-bio), które ułatwi kontakt z Tobą na każdej platformie.
-        </p>
-      </div>
-
-      <div class="glass rounded-3xl p-8 lift group">
-        <div class="w-14 h-14 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mb-6 group-hover:scale-110 transition-transform">
-          <i data-lucide="bar-chart-3" class="h-7 w-7"></i>
-        </div>
-        <h3 class="text-2xl font-bold mb-3">Statystyki Odwiedzin (Wkrótce)</h3>
-        <p class="text-white/60 text-sm leading-relaxed">
-          Śledź, kto ogląda Twoje prace. Sprawdzaj, które z Twoich projektów generują największe zainteresowanie i z jakich źródeł trafiają do Ciebie klienci.
-        </p>
-      </div>
-
-    </div>
-
-    <div id="paywall" class="max-w-2xl mx-auto text-center mt-20 scroll-mt-24">
-      <h2 class="text-3xl font-black mb-8">Gotowy przenieść swój wizerunek wyżej?</h2>
-      
-      <div class="glass rounded-[2.5rem] p-8 sm:p-12 glow-border relative overflow-hidden bg-black/40 backdrop-blur-2xl">
-        <div class="absolute -top-24 -right-24 w-64 h-64 bg-[var(--accent2)]/20 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-[#e2b714]/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div class="relative z-10">
-          <div class="inline-block px-4 py-1 rounded-full bg-white/5 border border-white/10 text-white/80 text-sm font-bold uppercase tracking-widest mb-6">
-            Licencja Dożywotnia
+        <div id="view-projekty" class="view-hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold uppercase text-white/70">Twoje Prace</h3>
+            <button onclick="addProject()" class="text-xs font-bold bg-[var(--accent2)]/20 text-[var(--accent2)] px-3 py-1.5 rounded-lg hover:bg-[var(--accent2)]/30 transition flex items-center gap-1">
+              <i data-lucide="plus" class="h-3 w-3"></i> Dodaj
+            </button>
           </div>
           
-          <div class="flex items-end justify-center gap-3 mb-8">
-            <span class="text-6xl font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">99.00</span>
-            <span class="text-[#e2b714] font-bold text-xl mb-2 flex items-center gap-1">
-              <i data-lucide="coins" class="h-5 w-5"></i> vPLN
-            </span>
+          <div id="projects-list" class="space-y-4">
+            </div>
+        </div>
+
+        <div id="view-linki" class="view-hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold uppercase text-white/70">Social Media & Linki</h3>
+            <button onclick="addLink()" class="text-xs font-bold bg-[var(--accent2)]/20 text-[var(--accent2)] px-3 py-1.5 rounded-lg hover:bg-[var(--accent2)]/30 transition flex items-center gap-1">
+              <i data-lucide="plus" class="h-3 w-3"></i> Dodaj
+            </button>
+          </div>
+          
+          <div id="links-list" class="space-y-3">
+            </div>
+        </div>
+
+        <div id="view-domena" class="view-hidden space-y-6">
+          <div class="glass p-5 rounded-2xl border-l-4 border-green-500">
+            <h3 class="font-bold mb-1 flex items-center gap-2"><i data-lucide="check-circle" class="h-4 w-4 text-green-500"></i> Plan PRO Aktywny</h3>
+            <p class="text-xs text-white/60">Możesz podpiąć własną domenę. Skonfiguruj rekordy DNS w panelu swojego rejestratora.</p>
           </div>
 
-          <ul class="text-left max-w-xs mx-auto space-y-4 mb-10">
-            <li class="flex items-center gap-3 text-white/80"><i data-lucide="check" class="h-5 w-5 text-green-400 shrink-0"></i> Kreator Drag & Drop</li>
-            <li class="flex items-center gap-3 text-white/80"><i data-lucide="check" class="h-5 w-5 text-green-400 shrink-0"></i> Podpięcie własnej domeny</li>
-            <li class="flex items-center gap-3 text-white/80"><i data-lucide="check" class="h-5 w-5 text-green-400 shrink-0"></i> Brak reklam i loga Velorie</li>
-            <li class="flex items-center gap-3 text-white/80"><i data-lucide="check" class="h-5 w-5 text-green-400 shrink-0"></i> Nielimitowane projekty</li>
-          </ul>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Subdomena Velorie (Darmowa)</label>
+            <div class="flex items-center">
+              <input type="text" class="v-input rounded-r-none border-r-0 text-right" value="devkuba" />
+              <span class="bg-white/10 px-4 py-[11px] rounded-r-xl border border-white/14 border-l-0 text-sm text-white/60">.velorie.me</span>
+            </div>
+          </div>
 
-          <button onclick="handlePurchase()" class="btn-gold w-full sm:w-auto px-10 py-4 rounded-2xl text-lg font-black flex items-center justify-center gap-3 mx-auto">
-            <i data-lucide="unlock" class="h-5 w-5"></i> Odblokuj Kreator Portfolio
-          </button>
-          <p class="text-xs text-white/40 mt-4">Opłata jednorazowa. Środki zostaną pobrane z Twojego portfela.</p>
+          <div class="relative py-4">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
+            <div class="relative flex justify-center"><span class="bg-[#050505] px-4 text-xs font-bold uppercase text-white/40">LUB</span></div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Własna domena (np. twojenazwisko.pl)</label>
+            <input type="text" class="v-input" placeholder="Wpisz swoją domenę..." />
+            <div class="mt-3 p-3 bg-white/5 rounded-xl border border-white/10 text-xs text-white/60 font-mono">
+              Skieruj rekord A na IP:<br/> <span class="text-white">192.168.1.1</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="hidden lg:flex flex-1 items-center justify-center p-8 bg-[var(--bg1)]/50 relative">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(124,58,237,0.1)_0%,transparent_70%)] pointer-events-none"></div>
+      
+      <div class="preview-frame w-[360px] h-[720px] shadow-2xl relative">
+        <div id="portfolio-preview" class="w-full h-full overflow-y-auto hide-scrollbar bg-gradient-to-b from-[#1a1c29] to-[#0a0a0f] text-white">
+          
+          <div class="h-32 bg-gradient-to-r from-[var(--accent2)] to-[var(--accent)] opacity-80"></div>
+          <div class="px-6 -mt-12 text-center relative z-10">
+            <img id="pv-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-24 h-24 rounded-full border-4 border-[#1a1c29] mx-auto object-cover bg-black" />
+            <h1 id="pv-name" class="text-2xl font-bold mt-3 tracking-tight">DevKuba</h1>
+            <p id="pv-headline" class="text-[var(--accent2)] font-medium text-sm mt-1">Fullstack Developer & UI Designer</p>
+            <p id="pv-bio" class="text-white/60 text-sm mt-4 leading-relaxed">Tworzę nowoczesne aplikacje webowe. Kocham czysty kod i minimalistyczny design. Otwarty na zlecenia freelance.</p>
+          </div>
+
+          <div id="pv-links" class="px-6 mt-6 flex flex-col gap-3">
+            </div>
+
+          <div class="px-6 mt-8 pb-12">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-white/40 mb-4 text-center">Wybrane Projekty</h2>
+            <div id="pv-projects" class="space-y-4">
+              </div>
+          </div>
+
         </div>
       </div>
+      
     </div>
-
   </main>
 
-  <div id="success-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-    <div class="glass rounded-3xl p-8 max-w-sm w-full text-center relative transform scale-95 opacity-0 transition-all duration-300" id="modal-content">
-      <div class="w-16 h-16 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center mx-auto mb-4 border border-green-500/30">
-        <i data-lucide="check-circle" class="h-8 w-8"></i>
-      </div>
-      <h3 class="text-2xl font-bold mb-2">Portfolio Odblokowane!</h3>
-      <p class="text-white/60 text-sm mb-6">Pobrano 99.00 vPLN. Możesz teraz przejść do konfiguracji swojej wizytówki i podpięcia domeny.</p>
-      <button onclick="closeModal()" class="btn-primary w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2">
-        Przejdź do edytora <i data-lucide="arrow-right" class="h-4 w-4"></i>
-      </button>
-    </div>
-  </div>
-
   <script>
-    // Inicjalizacja ikon
     lucide.createIcons();
 
-    // Prosta obsługa zakupu (Mockup)
-    function handlePurchase() {
-      const modal = document.getElementById('success-modal');
-      const modalContent = document.getElementById('modal-content');
-      
-      // Pokazujemy tło modala
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      
-      // Animacja wejścia zawartości modala
-      setTimeout(() => {
-        modalContent.classList.remove('scale-95', 'opacity-0');
-        modalContent.classList.add('scale-100', 'opacity-100');
-      }, 10);
+    // STAN APLIKACJI
+    let linksData = [
+      { id: 1, title: "GitHub", url: "github.com/devkuba", icon: "github" },
+      { id: 2, title: "LinkedIn", url: "linkedin.com/in/devkuba", icon: "linkedin" }
+    ];
+
+    let projectsData = [
+      { id: 1, title: "E-commerce App", desc: "React, Node.js, Stripe", img: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=400&h=250" }
+    ];
+
+    // ZMIANA ZAKŁADEK
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`tab-${tabId}`).classList.add('active');
+
+      document.querySelectorAll('[id^="view-"]').forEach(v => v.classList.add('view-hidden'));
+      document.getElementById(`view-${tabId}`).classList.remove('view-hidden');
     }
 
-    function closeModal() {
-      const modal = document.getElementById('success-modal');
-      const modalContent = document.getElementById('modal-content');
-      
-      // Animacja wyjścia
-      modalContent.classList.remove('scale-100', 'opacity-100');
-      modalContent.classList.add('scale-95', 'opacity-0');
-      
-      setTimeout(() => {
-        modal.classList.remove('flex');
-        modal.classList.add('hidden');
-        // Tutaj w prawdziwej aplikacji byłoby przekierowanie np. window.location.href = 'portfolio-editor.html'
-      }, 300);
+    // AKTUALIZACJA DANYCH GŁÓWNYCH (LIVE PREVIEW)
+    function updatePreview() {
+      const name = document.getElementById('input-name').value || 'Twoje Imię';
+      const headline = document.getElementById('input-headline').value || 'Twoja specjalizacja';
+      const bio = document.getElementById('input-bio').value || 'Krótki opis...';
+
+      document.getElementById('pv-name').textContent = name;
+      document.getElementById('pv-headline').textContent = headline;
+      document.getElementById('pv-bio').textContent = bio;
     }
+
+    // RENDEROWANIE LINKÓW
+    function renderLinks() {
+      const listEl = document.getElementById('links-list');
+      const pvLinksEl = document.getElementById('pv-links');
+      
+      listEl.innerHTML = '';
+      pvLinksEl.innerHTML = '';
+
+      linksData.forEach((link, index) => {
+        // Formularz w edytorze
+        listEl.innerHTML += `
+          <div class="glass p-4 rounded-2xl flex gap-3 relative group">
+            <div class="flex-1 space-y-3">
+              <input type="text" value="${link.title}" onchange="updateLink(${index}, 'title', this.value)" placeholder="Nazwa linku (np. GitHub)" class="v-input text-sm py-2" />
+              <input type="text" value="${link.url}" onchange="updateLink(${index}, 'url', this.value)" placeholder="URL" class="v-input text-sm py-2" />
+            </div>
+            <button onclick="removeLink(${index})" class="text-white/30 hover:text-red-400 transition self-start p-1"><i data-lucide="trash-2" class="h-4 w-4"></i></button>
+          </div>
+        `;
+
+        // Podgląd w telefonie
+        pvLinksEl.innerHTML += `
+          <a href="#" class="block w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-3 text-center transition shadow-lg shadow-black/20 text-sm font-semibold flex items-center justify-center gap-2">
+            ${link.title}
+          </a>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function addLink() {
+      linksData.push({ id: Date.now(), title: "Nowy link", url: "" });
+      renderLinks();
+    }
+    function updateLink(index, field, value) {
+      linksData[index][field] = value;
+      renderLinks();
+    }
+    function removeLink(index) {
+      linksData.splice(index, 1);
+      renderLinks();
+    }
+
+    // RENDEROWANIE PROJEKTÓW
+    function renderProjects() {
+      const listEl = document.getElementById('projects-list');
+      const pvProjectsEl = document.getElementById('pv-projects');
+
+      listEl.innerHTML = '';
+      pvProjectsEl.innerHTML = '';
+
+      projectsData.forEach((proj, index) => {
+        // Formularz w edytorze
+        listEl.innerHTML += `
+          <div class="glass p-4 rounded-2xl relative">
+            <button onclick="removeProject(${index})" class="absolute top-4 right-4 text-white/30 hover:text-red-400 transition z-10"><i data-lucide="trash-2" class="h-4 w-4"></i></button>
+            <div class="space-y-3">
+              <div class="h-24 w-full bg-white/5 rounded-xl border border-white/10 overflow-hidden relative group cursor-pointer">
+                 <img src="${proj.img}" class="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition" />
+                 <div class="absolute inset-0 flex items-center justify-center text-xs font-bold"><i data-lucide="image" class="h-4 w-4 mr-1"></i> Zmień okładkę</div>
+              </div>
+              <input type="text" value="${proj.title}" onchange="updateProject(${index}, 'title', this.value)" placeholder="Tytuł projektu" class="v-input text-sm font-bold py-2" />
+              <input type="text" value="${proj.desc}" onchange="updateProject(${index}, 'desc', this.value)" placeholder="Tagi / Technologie" class="v-input text-xs py-2 text-white/70" />
+            </div>
+          </div>
+        `;
+
+        // Podgląd w telefonie
+        pvProjectsEl.innerHTML += `
+          <div class="group rounded-2xl overflow-hidden relative cursor-pointer border border-white/10 bg-white/5">
+            <img src="${proj.img}" class="w-full h-32 object-cover opacity-80 group-hover:scale-105 transition duration-500" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+            <div class="absolute bottom-0 left-0 p-4 w-full">
+              <h3 class="font-bold text-sm text-white">${proj.title}</h3>
+              <p class="text-[10px] text-[var(--accent2)] font-semibold mt-0.5">${proj.desc}</p>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function addProject() {
+      projectsData.push({ id: Date.now(), title: "Nowy Projekt", desc: "Opis", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=400&h=250" });
+      renderProjects();
+    }
+    function updateProject(index, field, value) {
+      projectsData[index][field] = value;
+      renderProjects();
+    }
+    function removeProject(index) {
+      projectsData.splice(index, 1);
+      renderProjects();
+    }
+
+    // Inicjalizacja
+    renderLinks();
+    renderProjects();
+    updatePreview();
   </script>
 </body>
 </html>
