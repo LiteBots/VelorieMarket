@@ -11,6 +11,8 @@ const client = new Client({
 
 // === KONFIGURACJA ===
 const CHANNEL_ID = '1472391921535029413'; // Twój kanał do statystyk
+// Nowość: kanał logów dla panelu admina (z variables / zmiennych środowiskowych)
+const ADMIN_LOGS_CHANNEL_ID = process.env.ADMIN_LOGS_CHANNEL_ID || '1473791737456758875';
 
 // === 1. AKTUALIZACJA STATYSTYK NA KANALE ===
 const updateDiscordStats = async () => {
@@ -103,7 +105,47 @@ const sendAdminOTP = async (discordId, otpCode) => {
     }
 };
 
-// === 4. INICJALIZACJA BOTA ===
+// === 4. WYSYŁANIE ALERTÓW BEZPIECZEŃSTWA PANELU ADMINA (NA KANAŁ) ===
+const sendAdminSecurityAlert = async (discordId, action, reason = '') => {
+    try {
+        if (!client.isReady()) return;
+        const channel = await client.channels.fetch(ADMIN_LOGS_CHANNEL_ID);
+        if (!channel) return;
+
+        let embed = null;
+        let contentMsg = null;
+        const userPing = discordId ? `<@${discordId}>` : '**Nieznany użytkownik**';
+
+        if (action === 'failed') {
+            embed = {
+                title: "Alert Bezpieczeństwa!",
+                description: `> Ktoś próbował zalogować sie na konto ${userPing}\n> Powód **${reason}**`,
+                color: 16711782,
+                image: { url: "https://i.imgur.com/dkmtI8l.png" }
+            };
+        } else if (action === 'success') {
+            embed = {
+                title: "Alert Bezpieczeństwa!",
+                description: `> Administrator ${userPing} zalogował się do panelu administratora!`,
+                color: 16711782,
+                image: { url: "https://i.imgur.com/dkmtI8l.png" }
+            };
+        } else if (action === 'logout') {
+            contentMsg = `Administrator ${userPing} wylogował się z panelu administratora!`;
+        }
+
+        if (embed) {
+            await channel.send({ content: null, embeds: [embed] });
+        } else if (contentMsg) {
+            await channel.send({ content: contentMsg });
+        }
+
+    } catch (err) {
+        console.error('❌ [Discord] Błąd wysyłania alertu na kanał:', err.message);
+    }
+};
+
+// === 5. INICJALIZACJA BOTA ===
 const initDiscordBot = () => {
     if (!process.env.DISCORD_TOKEN) {
         console.error('❌ Brak tokenu w .env');
@@ -128,5 +170,5 @@ const initDiscordBot = () => {
     client.login(process.env.DISCORD_TOKEN);
 };
 
-// Eksportujemy wszystkie cztery funkcje, aby móc ich używać w głównym pliku aplikacji
-module.exports = { initDiscordBot, updateDiscordStats, sendWelcomeDM, sendAdminOTP };
+// Eksportujemy wszystkie funkcje, aby móc ich używać w głównym pliku aplikacji
+module.exports = { initDiscordBot, updateDiscordStats, sendWelcomeDM, sendAdminOTP, sendAdminSecurityAlert };
