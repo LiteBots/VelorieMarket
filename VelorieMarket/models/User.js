@@ -11,29 +11,36 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    lowercase: true, // Zawsze zapisuje email małymi literami
+    lowercase: true,
     trim: true
   },
   password: {
     type: String,
-    required: true
+    // 🟡 ZMIANA: Usunięto required: true, ponieważ użytkownicy Discorda nie mają hasła w naszej bazie
+    required: function() {
+      return !this.discordId; // Hasło jest wymagane TYLKO, jeśli nie ma podpiętego Discorda
+    }
   },
   role: {
     type: String,
-    enum: ['freelancer', 'client'], // Akceptuje tylko te dwie wartości z formularza
+    enum: ['freelancer', 'client'],
     default: 'freelancer'
   },
-  // 🟢 NOWE POLE: Wirtualny portfel (domyślnie 0)
   vpln: {
     type: Number,
     default: 0
   },
-  // 🟢 NOWE POLE: Discord ID (opcjonalne, puste na start)
+  // 🟢 ZMIANA: Discord ID jako String, unikalny (zapobiega duplikatom kont)
   discordId: {
     type: String,
-    default: ''
+    unique: true,
+    sparse: true // Pozwala na to, by wielu użytkowników miało to pole puste (null)
   },
-  // 🟢 NOWE POLE: Link do portfolio/GitHub (opcjonalne, puste na start)
+  // 🟢 NOWE POLE: Avatar użytkownika
+  avatar: {
+    type: String,
+    default: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'
+  },
   portfolioLink: {
     type: String,
     default: ''
