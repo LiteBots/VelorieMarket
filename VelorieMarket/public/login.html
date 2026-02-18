@@ -481,19 +481,17 @@
             throw new Error(result.error || "Wystąpił błąd serwera");
         }
 
-        // SUKCES
+        // === ZMIENIONY BLOK SUKCESU ===
         if (type === 'login') {
             showToast("Zalogowano pomyślnie! Przekierowywanie...", 'success');
-            setTimeout(() => {
-                window.location.href = result.redirectUrl || '/dashboard';
-            }, 1500);
         } else {
-            showToast("Konto utworzone pomyślnie! Możesz się zalogować.", 'success');
-            // Przełącz na logowanie po sukcesie
-            setTimeout(() => {
-                btnL.click();
-            }, 2000);
+            showToast("Konto utworzone pomyślnie! Przekierowywanie...", 'success');
         }
+
+        // Wspólne przekierowanie po 1.5 sekundy
+        setTimeout(() => {
+            window.location.href = result.redirectUrl || '/market';
+        }, 1500);
 
       } catch (err) {
         console.error("🔴 [Frontend] Błąd:", err);
