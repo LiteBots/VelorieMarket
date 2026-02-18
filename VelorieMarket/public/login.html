@@ -7,7 +7,7 @@
   
   <meta name="description" content="Dołącz do profesjonalnej platformy dla freelancerów." />
   <meta name="theme-color" content="#0a1030" />
-    <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" type="image/png" href="favicon.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -75,7 +75,7 @@
         border-radius: 2px;
         margin-top: 8px;
         overflow: hidden;
-        display: none; /* Domyślnie ukryty, pokazuje się przy wpisywaniu */
+        display: none;
     }
     .password-strength-bar {
         height: 100%;
@@ -260,7 +260,7 @@
             <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
             <div class="relative flex justify-center"><span class="bg-[#00010f] px-4 text-xs text-white/40 uppercase">lub</span></div>
           </div>
-          <button type="button" class="w-full py-3.5 rounded-xl btn-discord font-medium text-sm flex items-center justify-center gap-3">
+          <button id="discord-login-btn" type="button" class="w-full py-3.5 rounded-xl btn-discord font-medium text-sm flex items-center justify-center gap-3">
             <img src="https://i.imgur.com/h3hjStL.png" alt="Discord" class="h-6 w-auto object-contain" />
             <span>Zaloguj przez Discord</span>
           </button>
@@ -342,6 +342,20 @@
   </div>
 
   <script>
+    // 🟢 KONFIGURACJA DISCORD OAUTH2
+    const DISCORD_AUTH_URL = "https://discord.com/oauth2/authorize?client_id=1473749778302111856&response_type=code&redirect_uri=https%3A%2F%2Fwww.velorie.pl%2Fapi%2Fauth%2Fdiscord%2Fcallback&scope=identify+email";
+
+    // Obsługa przycisku Discord
+    document.getElementById('discord-login-btn').addEventListener('click', () => {
+        window.location.href = DISCORD_AUTH_URL;
+    });
+
+    // Sprawdzanie błędów z URL (np. nieudane logowanie Discord)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('error') === 'auth_failed') {
+        setTimeout(() => showToast("Błąd autoryzacji Discord. Spróbuj ponownie.", "error"), 500);
+    }
+
     // 🟢 AUTOLOGIN: Jeśli użytkownik ma ważny token, przekieruj go od razu na Market
     if (localStorage.getItem('token')) {
         window.location.href = '/market';
@@ -356,7 +370,6 @@
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
         
-        // Klasy CSS dla różnych typów
         let typeClass = '';
         let iconName = 'info';
         
@@ -375,9 +388,8 @@
         `;
 
         container.appendChild(toast);
-        lucide.createIcons(); // Odśwież ikony w nowym elemencie
+        lucide.createIcons();
 
-        // Usuwanie po 5 sekundach
         setTimeout(() => {
             toast.style.animation = 'fadeOut 0.4s forwards';
             setTimeout(() => {
@@ -404,13 +416,11 @@
             }
 
             let strength = 0;
-            // Warunki siły
             if (val.length >= 6) strength++;
             if (val.length >= 10) strength++;
             if (/[!@#$%^&*(),.?":{}|<>]/.test(val)) strength++;
             if (/[0-9]/.test(val)) strength++;
 
-            // Kolory paska
             if (strength <= 1) {
                 strengthBar.style.width = '30%';
                 strengthBar.style.backgroundColor = 'var(--error)';
@@ -435,31 +445,27 @@
     btnL.onclick = () => { btnL.classList.add('active'); btnR.classList.remove('active'); viewL.classList.add('active'); viewR.classList.remove('active'); };
     btnR.onclick = () => { btnR.classList.add('active'); btnL.classList.remove('active'); viewR.classList.add('active'); viewL.classList.remove('active'); };
 
-    // Obsługa wysyłania
+    // Obsługa wysyłania formularzy
     async function handleAuth(e, type) {
       e.preventDefault();
       
       const btn = e.target.querySelector('button[type="submit"]');
       
-      // === WALIDACJA REJESTRACJI ===
       if (type === 'register') {
         const p1 = document.getElementById('reg-pass-1').value;
         const p2 = document.getElementById('reg-pass-2').value;
 
-        // Sprawdzenie długości
         if (p1.length < 6) {
             showToast("Hasło musi mieć minimum 6 znaków!", 'error');
             return;
         }
 
-        // Sprawdzenie znaku specjalnego
         const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
         if (!specialCharRegex.test(p1)) {
             showToast("Hasło musi zawierać znak specjalny (np. ! @ # $)", 'error');
             return;
         }
 
-        // Sprawdzenie zgodności
         if (p1 !== p2) { 
             showToast("Hasła nie są identyczne!", 'error'); 
             return; 
@@ -482,23 +488,15 @@
         const result = await res.json();
         
         if (!res.ok) {
-            // Jeśli błąd (np. user istnieje)
             throw new Error(result.error || "Wystąpił błąd serwera");
         }
 
-        // 🟢 ZAPISUJEMY TOKEN W PAMIĘCI PRZEGLĄDARKI
         if (result.token) {
             localStorage.setItem('token', result.token);
         }
 
-        // === ZMIENIONY BLOK SUKCESU ===
-        if (type === 'login') {
-            showToast("Zalogowano pomyślnie! Przekierowywanie...", 'success');
-        } else {
-            showToast("Konto utworzone pomyślnie! Przekierowywanie...", 'success');
-        }
+        showToast(type === 'login' ? "Zalogowano pomyślnie!" : "Konto utworzone pomyślnie!", 'success');
 
-        // Wspólne przekierowanie po 1.5 sekundy
         setTimeout(() => {
             window.location.href = result.redirectUrl || '/market';
         }, 1500);
