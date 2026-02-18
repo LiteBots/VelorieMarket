@@ -342,6 +342,11 @@
   </div>
 
   <script>
+    // 🟢 AUTOLOGIN: Jeśli użytkownik ma ważny token, przekieruj go od razu na Market
+    if (localStorage.getItem('token')) {
+        window.location.href = '/market';
+    }
+
     lucide.createIcons();
 
     const API_URL = '/api';
@@ -479,6 +484,11 @@
         if (!res.ok) {
             // Jeśli błąd (np. user istnieje)
             throw new Error(result.error || "Wystąpił błąd serwera");
+        }
+
+        // 🟢 ZAPISUJEMY TOKEN W PAMIĘCI PRZEGLĄDARKI
+        if (result.token) {
+            localStorage.setItem('token', result.token);
         }
 
         // === ZMIENIONY BLOK SUKCESU ===
