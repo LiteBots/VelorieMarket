@@ -142,16 +142,19 @@
       </button>
     </nav>
 
-    <div class="p-4 border-t border-white/10">
+    <div class="p-4 border-t border-white/10 flex items-center justify-between">
       <div class="flex items-center gap-3 px-2">
         <div class="h-10 w-10 rounded-full bg-gradient-to-tr from-[var(--accent)] to-[var(--accent2)] p-0.5">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" class="h-full w-full rounded-full bg-[#0a1030] object-cover" />
+          <img id="admin-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" class="h-full w-full rounded-full bg-[#0a1030] object-cover" />
         </div>
         <div>
-          <div class="text-sm font-bold text-white">SuperAdmin</div>
+          <div id="admin-username" class="text-sm font-bold text-white">SuperAdmin</div>
           <div class="text-[11px] text-white/50">Zarządca systemu</div>
         </div>
       </div>
+      <button onclick="logoutAdmin()" class="p-2 text-white/50 hover:text-red-400 transition" title="Wyloguj się">
+        <i data-lucide="log-out" class="h-5 w-5"></i>
+      </button>
     </div>
   </aside>
 
@@ -336,10 +339,46 @@
     // === SYSTEM LOGOWANIA ADMINA 2FA ===
     let currentAdminDiscordId = null;
 
+    // 🟢 ZMIANA: Dekodowanie tokena i przypisanie profilu
+    function setAdminProfile(token) {
+      if (!token) return;
+      try {
+        // Zdekodowanie części payload tokena JWT
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join('')));
+        
+        const discordId = payload.discordId;
+        const avatarEl = document.getElementById('admin-avatar');
+        const usernameEl = document.getElementById('admin-username');
+        
+        // Zmiana danych na podstawie Discord ID z tokena
+        if (discordId === '913479364883136532') { // Gracjan
+          avatarEl.src = 'https://i.imgur.com/CX9Evwm.png';
+          usernameEl.innerText = 'zxq0';
+        } else if (discordId === '810238396953264129') { // Adam
+          avatarEl.src = 'https://i.imgur.com/N9OEjiX.png';
+          usernameEl.innerText = 'adambejmert';
+        }
+      } catch (err) {
+        console.error("Błąd ładowania profilu administratora", err);
+      }
+    }
+
+    // 🟢 ZMIANA: Wylogowywanie
+    function logoutAdmin() {
+      localStorage.removeItem('adminToken');
+      window.location.reload(); // Odświeża stronę, by pokazać overlay logowania
+    }
+
     // Sprawdzamy czy admin jest już zalogowany
     window.onload = () => {
-        if (localStorage.getItem('adminToken')) {
+        const token = localStorage.getItem('adminToken');
+        if (token) {
             document.getElementById('admin-login-overlay').style.display = 'none';
+            setAdminProfile(token); // Wczytuje odpowiednie dane z zapisanego tokenu
         }
     };
 
@@ -391,8 +430,9 @@
         
         if (!res.ok) throw new Error(data.error);
         
-        // Zapisujemy token admina
+        // Zapisujemy token admina i ładujemy profil
         localStorage.setItem('adminToken', data.token);
+        setAdminProfile(data.token);
         
         // Ukrywamy nakładkę logowania płynnie
         document.getElementById('admin-login-overlay').style.opacity = '0';
