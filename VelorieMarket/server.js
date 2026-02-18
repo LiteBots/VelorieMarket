@@ -19,8 +19,8 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // === 1. POŁĄCZENIE Z BAZĄ DANYCH (Z DIAGNOSTYKĄ) ===
-// Wklej tu swój link z pliku .env
-const mongoUri = "mongodb://mongo:eEDpdgLcAnqZdjWlxNsaNYisLzJGIKmA@mongodb.railway.internal:27017";
+// Najpierw szuka linku w pliku .env (MONGO_URI), a jeśli go tam nie ma, używa tego z Railway
+const mongoUri = process.env.MONGO_URI || "mongodb://mongo:eEDpdgLcAnqZdjWlxNsaNYisLzJGIKmA@mongodb.railway.internal:27017";
 
 if (!mongoUri) {
   console.error('❌ [BŁĄD KRYTYCZNY] Brak zmiennej MONGO_URI! Sprawdź plik .env lub konfigurację kontenera.');
@@ -38,7 +38,6 @@ if (!mongoUri) {
 
 // === 2. START BOTA DISCORD ===
 // Uruchamiamy bota (logika jest w pliku discordBot.js)
-// Warto to robić tylko jeśli mamy połączenie z bazą, ale na razie zostawiamy tak jak prosiłeś
 try {
     initDiscordBot(); 
 } catch (error) {
@@ -55,6 +54,11 @@ app.get('/', (req, res) => {
 // Strona Logowania -> https://www.velorie.pl/login
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// Strona Marketu -> https://www.velorie.pl/market
+app.get('/market', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'market.html'));
 });
 
 
@@ -91,9 +95,13 @@ app.post('/api/register', async (req, res) => {
     console.log(`✅ [Rejestracja] Nowy użytkownik: ${username}`);
 
     // 🔥 Aktualizacja Discorda (z pliku discordBot.js)
-     updateDiscordStats(); 
+    updateDiscordStats(); 
 
-    res.status(201).json({ message: 'Konto utworzone pomyślnie!' });
+    // SUKCES - Dodany redirectUrl do /market
+    res.status(201).json({ 
+      message: 'Konto utworzone pomyślnie!',
+      redirectUrl: '/market'
+    });
 
   } catch (err) {
     console.error('Błąd rejestracji:', err);
@@ -118,14 +126,14 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ error: 'Błędny email lub hasło.' });
     }
 
-    // Sukces
+    // SUKCES - Zmieniony redirectUrl na /market
     res.json({ 
       message: 'Zalogowano pomyślnie!', 
       user: { 
         username: user.username, 
         role: user.role 
       },
-      redirectUrl: '/dashboard' // Tu możesz w przyszłości dodać przekierowanie do panelu
+      redirectUrl: '/market'
     });
 
   } catch (err) {
