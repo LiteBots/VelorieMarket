@@ -73,7 +73,37 @@ const sendWelcomeDM = async (discordId) => {
     }
 };
 
-// === 3. INICJALIZACJA BOTA ===
+// === 3. WYSYŁANIE KODU OTP DLA ADMINA (DM) ===
+const sendAdminOTP = async (discordId, otpCode) => {
+    try {
+        // Pobieramy usera bezpośrednio przez klienta bota
+        const user = await client.users.fetch(discordId);
+        
+        if (user) {
+            await user.send({
+                embeds: [
+                    {
+                        title: "Twój jednorazowy kod weryfikacyjny!",
+                        description: `> Twój kod autoryzacji to : \n# ${otpCode}`,
+                        color: 16711782,
+                        image: {
+                            url: "https://i.imgur.com/dkmtI8l.png"
+                        }
+                    }
+                ]
+            });
+            console.log(`🔐 [Discord] Wysłano kod OTP do admina: ${user.tag}`);
+        }
+    } catch (err) {
+        if (err.code === 50007) {
+            console.warn(`⚠️ [Discord] Nie można wysłać kodu OTP do ${discordId} (Zablokowane wiadomości prywatne).`);
+        } else {
+            console.error('❌ [Discord] Błąd wysyłania kodu OTP:', err.message);
+        }
+    }
+};
+
+// === 4. INICJALIZACJA BOTA ===
 const initDiscordBot = () => {
     if (!process.env.DISCORD_TOKEN) {
         console.error('❌ Brak tokenu w .env');
@@ -98,5 +128,5 @@ const initDiscordBot = () => {
     client.login(process.env.DISCORD_TOKEN);
 };
 
-// Eksportujemy wszystkie trzy funkcje, aby móc ich używać w głównym pliku aplikacji
-module.exports = { initDiscordBot, updateDiscordStats, sendWelcomeDM };
+// Eksportujemy wszystkie cztery funkcje, aby móc ich używać w głównym pliku aplikacji
+module.exports = { initDiscordBot, updateDiscordStats, sendWelcomeDM, sendAdminOTP };
