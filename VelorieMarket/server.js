@@ -9,7 +9,8 @@ require('dotenv').config();
 
 // === IMPORTY WŁASNE ===
 const User = require('./models/User');
-const { initDiscordBot, updateDiscordStats } = require('./discordBot'); 
+// 🟢 ZMIANA: Dodano import 'sendWelcomeDM'
+const { initDiscordBot, updateDiscordStats, sendWelcomeDM } = require('./discordBot'); 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -91,6 +92,9 @@ app.get('/api/auth/discord/callback', async (req, res) => {
     // 3. Szukaj użytkownika po Discord ID lub Emailu
     let user = await User.findOne({ $or: [{ discordId: dUser.id }, { email: dUser.email }] });
 
+    // Flaga sprawdzająca czy użytkownik jest nowy
+    let isNewUser = false;
+
     if (!user) {
       // Jeśli nie ma – stwórz nowe konto
       user = new User({
@@ -103,8 +107,12 @@ app.get('/api/auth/discord/callback', async (req, res) => {
       });
       await user.save();
       updateDiscordStats();
+      isNewUser = true; // Zaznaczamy, że to nowa rejestracja
     } else {
       // Jeśli jest – zaktualizuj profil (podpięcie Discorda i avatar)
+      // Sprawdzamy czy to pierwsze podpięcie Discorda do istniejącego konta
+      if (!user.discordId) isNewUser = true; 
+
       user.discordId = dUser.id;
       user.avatar = avatarUrl;
       await user.save();
@@ -116,6 +124,12 @@ app.get('/api/auth/discord/callback', async (req, res) => {
       JWT_SECRET,
       { expiresIn: '24h' }
     );
+
+    // 🟢 ZMIANA: Wysyłamy wiadomość DM 
+    // Dodałem warunek (isNewUser), by bot nie spamował usera przy każdym logowaniu, a tylko przy rejestracji/pierwszym podpięciu konta.
+    if (isNewUser) {
+        sendWelcomeDM(dUser.id);
+    }
 
     // 5. Przekierowanie na market z tokenem w URL (frontend go przechwyci)
     res.redirect(`/market?token=${token}`);
