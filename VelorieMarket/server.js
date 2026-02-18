@@ -17,10 +17,10 @@ const PORT = process.env.PORT || 3000;
 // === KONFIGURACJA ZMIENNYCH ===
 const JWT_SECRET = process.env.JWT_SECRET || 'super-tajne-haslo-velorie-123';
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || '1473749778302111856';
-const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET; // Koniecznie dodaj do .env
+const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET; 
 const DISCORD_REDIRECT_URI = 'https://www.velorie.pl/api/auth/discord/callback';
 
-// === DANE ADMINISTRATORÓW (Struktura pozwalająca na rozpoznanie ID po haśle) ===
+// === DANE ADMINISTRATORÓW ===
 const adminUsers = {
   'zxq0': {
     password: process.env.ADMIN_PASS_GRACJAN,
@@ -39,7 +39,7 @@ const activeOTPs = new Map();
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// === MIDDLEWARE AUTORYZACJI UŻYTKOWNIKA ===
+// === MIDDLEWARE AUTORYZACJI UŻYTKOWNIKA (STANDARDOWY) ===
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -49,6 +49,26 @@ const authenticateToken = (req, res, next) => {
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ error: 'Wygasła sesja.' });
     req.user = user;
+    next();
+  });
+};
+
+// === MIDDLEWARE AUTORYZACJI ADMINA (NOWY) ===
+const authenticateAdmin = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) return res.status(401).json({ error: 'Brak tokena admina.' });
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(403).json({ error: 'Nieprawidłowy token.' });
+    
+    // Sprawdzenie czy token ma rolę admina (nadawaną przy weryfikacji OTP)
+    if (decoded.role !== 'admin') {
+        return res.status(403).json({ error: 'Brak uprawnień administratora.' });
+    }
+    
+    req.admin = decoded;
     next();
   });
 };
@@ -75,6 +95,66 @@ app.get('/admin3443', (req, res) => res.sendFile(path.join(__dirname, 'public', 
 
 // === 4. ROUTING API (BACKEND) ===
 
+// ---------------------------------------------------------
+// SEKCJ ADMIN API (NOWA - Obsługa Panelu)
+// ---------------------------------------------------------
+
+// A. Pobieranie listy użytkowników
+app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
+    try {
+        // Pobierz wszystkich użytkowników, posortuj od najnowszych
+        // select('-password') ukrywa zahashowane hasła dla bezpieczeństwa, choć admin mógłby je widzieć
+        const users = await User.find().select('-password').sort({ createdAt: -1 });
+        res.json(users);
+    } catch (err) {
+        console.error('Błąd pobierania użytkowników:', err);
+        res.status(500).json({ error: 'Błąd serwera przy pobieraniu listy.' });
+    }
+});
+
+// B. Zmiana salda użytkownika (vPLN)
+app.post('/api/admin/users/:id/balance', authenticateAdmin, async (req, res) => {
+    try {
+        const { amount } = req.body; // amount może być dodatnie lub ujemne
+        const userId = req.params.id;
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ error: 'Użytkownik nie istnieje.' });
+
+        // Aktualizacja salda
+        // Używamy (user.vpln || 0) na wypadek gdyby pole nie istniało
+        user.vpln = (user.vpln || 0) + Number(amount);
+        
+        await user.save();
+
+        res.json({ success: true, message: 'Saldo zaktualizowane', newBalance: user.vpln });
+    } catch (err) {
+        console.error('Błąd edycji salda:', err);
+        res.status(500).json({ error: 'Błąd serwera.' });
+    }
+});
+
+// C. Usuwanie użytkownika
+app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const deletedUser = await User.findByIdAndDelete(userId);
+        
+        if (!deletedUser) return res.status(404).json({ error: 'Użytkownik nie istnieje.' });
+
+        updateDiscordStats(); // Aktualizuj licznik na DC
+        res.json({ success: true, message: 'Użytkownik usunięty.' });
+    } catch (err) {
+        console.error('Błąd usuwania użytkownika:', err);
+        res.status(500).json({ error: 'Błąd serwera.' });
+    }
+});
+
+// ---------------------------------------------------------
+// KONIEC SEKCJI ADMIN API
+// ---------------------------------------------------------
+
+
 // --- AUTORYZACJA ADMINA (2FA DISCORD) ---
 // Krok 1: Weryfikacja hasła i wysłanie OTP
 app.post('/api/admin/login', async (req, res) => {
@@ -89,21 +169,18 @@ app.post('/api/admin/login', async (req, res) => {
     }
   }
 
-  // Jeśli hasło jest błędne (nie pasuje do nikogo)
+  // Jeśli hasło jest błędne
   if (!foundAdmin) {
-    // Sprawdzamy czy to była próba wpisania hasła Gracjana czy Adama z błędem?
-    // Logika: Jeśli hasło zawiera fragmenty lub jest blisko, ale tutaj wysyłamy ogólny błąd
-    // Bo przy samym haśle bez nicku nie wiemy kogo oznaczyć.
     await sendAdminSecurityAlert(null, 'failed', 'Niepoprawne hasło logowania');
     return res.status(401).json({ error: 'Nieprawidłowe hasło administratora.' });
   }
 
-  // Jeśli hasło było poprawne, bot pinguje tę konkretną osobę wysyłając kod
+  // Generowanie kodu OTP
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
   
   activeOTPs.set(foundAdmin.discordId, { code: otpCode, expires: Date.now() + 5 * 60 * 1000 });
 
-  // Wysyłamy kod na Discorda do zidentyfikowanej osoby
+  // Wysyłamy kod na Discorda
   await sendAdminOTP(foundAdmin.discordId, otpCode);
 
   res.json({ message: 'Kod został wysłany na Discorda.', discordId: foundAdmin.discordId });
@@ -120,7 +197,6 @@ app.post('/api/admin/verify', async (req, res) => {
     return res.status(400).json({ error: 'Kod wygasł. Zaloguj się ponownie.' });
   }
   if (storedOTP.code !== otpCode) {
-    // Tutaj już znamy discordId, więc bot oznaczy osobę w alercie o błędnym kodzie
     await sendAdminSecurityAlert(discordId, 'failed', 'Niepoprawny kod autoryzacyjny');
     return res.status(401).json({ error: 'Nieprawidłowy kod.' });
   }
@@ -128,9 +204,9 @@ app.post('/api/admin/verify', async (req, res) => {
   // Pomyślna weryfikacja! 
   activeOTPs.delete(discordId); 
   
-  // Sukces - pinguje admina
   await sendAdminSecurityAlert(discordId, 'success');
 
+  // Token ADMINA posiada { role: 'admin' }
   const adminToken = jwt.sign({ discordId, role: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
   
   res.json({ token: adminToken });
