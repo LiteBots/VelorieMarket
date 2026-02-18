@@ -85,13 +85,8 @@
       
       <div id="login-step-1">
         <h2 class="text-xl font-bold mb-2">Autoryzacja Admina</h2>
-        <p class="text-sm text-white/50 mb-6">Wybierz konto i wprowadź hasło główne.</p>
+        <p class="text-sm text-white/50 mb-6">Wprowadź hasło główne.</p>
         
-        <select id="admin-username" class="v-input text-center text-lg mb-4 font-bold cursor-pointer bg-[var(--bg2)]">
-          <option value="zxq0">Gracjan (zxq0)</option>
-          <option value="adambejmert">Adam (adambejmert)</option>
-        </select>
-
         <input type="password" id="admin-password" class="v-input text-center text-lg mb-4 tracking-widest" placeholder="••••••••" />
         <button onclick="requestAdminOTP()" class="btn-primary w-full py-3 rounded-xl font-bold text-sm">Zaloguj</button>
       </div>
@@ -107,6 +102,7 @@
       <p id="admin-login-error" class="text-red-400 text-xs font-bold mt-4 h-4"></p>
     </div>
   </div>
+
   <aside class="w-full md:w-64 glass-soft border-r border-white/10 flex flex-col z-40 sticky top-0 h-auto md:h-screen shrink-0">
     <div class="p-5 border-b border-white/10 flex items-center gap-3">
       <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo" />
@@ -342,7 +338,6 @@
   <script>
     lucide.createIcons();
 
-    // === SYSTEM LOGOWANIA ADMINA 2FA ===
     let currentAdminDiscordId = null;
 
     // Dekodowanie tokena i przypisanie profilu
@@ -371,13 +366,11 @@
       }
     }
 
-    // 🟢 ZMIANA: Wylogowywanie ze strzałem do backendu!
     async function logoutAdmin() {
       const token = localStorage.getItem('adminToken');
       
       if (token) {
         try {
-          // Puka do backendu, żeby serwer kazał botowi wysłać alert na kanał
           await fetch('/api/admin/logout', {
             method: 'POST',
             headers: {
@@ -389,7 +382,6 @@
         }
       }
 
-      // Usuwa sesję i cofa użytkownika do ekranu logowania
       localStorage.removeItem('adminToken');
       window.location.reload(); 
     }
@@ -399,7 +391,7 @@
         const token = localStorage.getItem('adminToken');
         if (token) {
             document.getElementById('admin-login-overlay').style.display = 'none';
-            setAdminProfile(token); // Wczytuje odpowiednie dane z zapisanego tokenu
+            setAdminProfile(token);
         }
     };
 
@@ -414,17 +406,15 @@
         const res = await fetch('/api/admin/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password })
+          body: JSON.stringify({ password }) // <-- Wysyłamy TYLKO hasło
         });
         
         const data = await res.json();
         
         if (!res.ok) throw new Error(data.error);
         
-        // Zapiszmy id admina by wiedzieć kogo weryfikujemy
         currentAdminDiscordId = data.discordId; 
         
-        // Przejście do kroku 2
         document.getElementById('login-step-1').classList.add('hidden');
         document.getElementById('login-step-2').classList.remove('hidden');
         
@@ -451,11 +441,9 @@
         
         if (!res.ok) throw new Error(data.error);
         
-        // Zapisujemy token admina i ładujemy profil
         localStorage.setItem('adminToken', data.token);
         setAdminProfile(data.token);
         
-        // Ukrywamy nakładkę logowania płynnie
         document.getElementById('admin-login-overlay').style.opacity = '0';
         setTimeout(() => {
           document.getElementById('admin-login-overlay').style.display = 'none';
@@ -466,36 +454,30 @@
       }
     }
 
-    // === NAWIGACJA ZAKŁADEK ===
     function switchAdminTab(tabName) {
-      // 1. Zresetowanie wyglądu wszystkich przycisków w bocznym menu
       const navButtons = document.querySelectorAll('button[id^="nav-"]');
       navButtons.forEach(btn => {
         btn.classList.remove('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
         btn.classList.add('text-white/70', 'hover:bg-white/5');
       });
 
-      // 2. Aktywacja klikniętego przycisku
       const activeBtn = document.getElementById(`nav-${tabName}`);
       if(activeBtn) {
         activeBtn.classList.remove('text-white/70', 'hover:bg-white/5');
         activeBtn.classList.add('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
       }
 
-      // 3. Ukrycie wszystkich widoków
       const views = ['dashboard', 'pasek', 'blokada', 'uzytkownicy', 'finanse', 'ogloszenia'];
       views.forEach(v => {
         const el = document.getElementById(`view-${v}`);
         if(el) el.classList.add('admin-view-hidden');
       });
 
-      // 4. Pokazanie właściwego widoku
       const activeView = document.getElementById(`view-${tabName}`);
       if(activeView) {
         activeView.classList.remove('admin-view-hidden');
       }
 
-      // Scroll do góry (szczególnie przydatne na mobile)
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   </script>
