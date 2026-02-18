@@ -11,7 +11,7 @@ const client = new Client({
 
 // === KONFIGURACJA ===
 const CHANNEL_ID = '1472391921535029413'; // Twój kanał do statystyk
-// Nowość: kanał logów dla panelu admina (z variables / zmiennych środowiskowych)
+// Kanał logów dla panelu admina (z variables / zmiennych środowiskowych)
 const ADMIN_LOGS_CHANNEL_ID = process.env.ADMIN_LOGS_CHANNEL_ID || '1473791737456758875';
 
 // === 1. AKTUALIZACJA STATYSTYK NA KANALE ===
@@ -114,24 +114,39 @@ const sendAdminSecurityAlert = async (discordId, action, reason = '') => {
 
         let embed = null;
         let contentMsg = null;
-        const userPing = discordId ? `<@${discordId}>` : '**Nieznany użytkownik**';
 
-        if (action === 'failed') {
-            embed = {
-                title: "Alert Bezpieczeństwa!",
-                description: `> Ktoś próbował zalogować sie na konto ${userPing}\n> Powód **${reason}**`,
-                color: 16711782,
-                image: { url: "https://i.imgur.com/dkmtI8l.png" }
-            };
-        } else if (action === 'success') {
-            embed = {
-                title: "Alert Bezpieczeństwa!",
-                description: `> Administrator ${userPing} zalogował się do panelu administratora!`,
-                color: 16711782,
-                image: { url: "https://i.imgur.com/dkmtI8l.png" }
-            };
-        } else if (action === 'logout') {
-            contentMsg = `Administrator ${userPing} wylogował się z panelu administratora!`;
+        // Jeśli znamy Discord ID (użytkownik wpisał dobre hasło, ale zły kod OTP / zalogował się / wylogował się)
+        if (discordId) {
+            const userPing = `<@${discordId}>`;
+            
+            if (action === 'failed') {
+                embed = {
+                    title: "Alert Bezpieczeństwa!",
+                    description: `> Ktoś próbował zalogować sie na konto ${userPing}\n> Powód **${reason}**`,
+                    color: 16711782,
+                    image: { url: "https://i.imgur.com/dkmtI8l.png" }
+                };
+            } else if (action === 'success') {
+                embed = {
+                    title: "Alert Bezpieczeństwa!",
+                    description: `> Administrator ${userPing} zalogował się do panelu administratora!`,
+                    color: 16711782,
+                    image: { url: "https://i.imgur.com/dkmtI8l.png" }
+                };
+            } else if (action === 'logout') {
+                contentMsg = `Administrator ${userPing} wylogował się z panelu administratora!`;
+            }
+        } 
+        // Jeśli wpisano zmyślone hasło (nie wiemy, na czyje konto był atak)
+        else {
+            if (action === 'failed') {
+                embed = {
+                    title: "Alert Bezpieczeństwa!",
+                    description: `> Ktoś próbował zalogować się do **Panelu Administratora**\n> Powód **${reason}**`,
+                    color: 16711782,
+                    image: { url: "https://i.imgur.com/dkmtI8l.png" }
+                };
+            }
         }
 
         if (embed) {
