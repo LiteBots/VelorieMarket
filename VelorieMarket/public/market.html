@@ -125,7 +125,7 @@
         </button>
 
         <button onclick="switchMainView('dashboard'); switchDashTab('profil')" class="relative inline-flex items-center justify-center h-10 w-10 rounded-xl glass lift border border-[var(--accent)]/50">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="h-full w-full rounded-xl p-0.5 object-cover" />
+          <img id="user-avatar-header" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="h-full w-full rounded-xl p-0.5 object-cover" />
           <div class="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-green-500 border-2 border-[#0a1030]"></div>
         </button>
       </div>
@@ -249,7 +249,7 @@
         
         <div class="lg:col-span-3 glass rounded-2xl p-3 flex flex-col gap-1 sticky top-24">
           <div class="p-4 flex items-center gap-3 border-b border-white/10 mb-2">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="h-12 w-12 rounded-full border border-white/20 bg-black/50" />
+            <img id="user-avatar-dash" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="h-12 w-12 rounded-full border border-white/20 bg-black/50" />
             <div>
               <div class="font-bold flex items-center gap-1 text-sm"><span id="user-display-name">...</span></div>
               <div class="text-[11px] text-white/50">Plan: <span id="user-role-display">Użytkownik</span></div>
@@ -289,8 +289,8 @@
                   <input type="email" id="setting-email" class="v-input text-white/50 cursor-not-allowed" value="..." readonly title="Nie można zmienić emaila" />
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Discord ID (Opcjonalnie)</label>
-                  <input type="text" id="setting-discord" class="v-input" placeholder="np. devkuba#1234" />
+                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Discord ID (Pobrano z Autoryzacji)</label>
+                  <input type="text" id="setting-discord" class="v-input text-white/50 cursor-not-allowed" readonly placeholder="Brak połączenia" />
                 </div>
                 <div>
                   <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Link do Portfolio / GitHub</label>
@@ -317,6 +317,14 @@
   </main>
 
   <script>
+    // === PRZECHWYTYWANIE TOKENA (OAUTH2 DISCORD) ===
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+        localStorage.setItem('token', token);
+        window.history.replaceState({}, document.title, "/market"); // Czyścimy URL
+    }
+
     lucide.createIcons();
 
     function showToast(message, type = 'info') {
@@ -340,11 +348,10 @@
         }, 4000);
     }
 
-    // === GŁÓWNA ZMIANA: POBIERANIE PRAWDZIWYCH DANYCH Z SERWERA ===
+    // === POBIERANIE DANYCH Z SERWERA ===
     async function fetchUserData() {
         const token = localStorage.getItem('token');
         
-        // Brak tokena = niezalogowany, wraca na ekran logowania
         if (!token) {
             window.location.href = '/login';
             return;
@@ -364,25 +371,30 @@
 
             const userData = await response.json();
 
-            // Podmiana danych na stronie
+            // Podmiana tekstów
             document.getElementById('user-display-name').textContent = userData.username;
             document.getElementById('user-role-display').textContent = userData.role === 'freelancer' ? 'Freelancer' : 'Zleceniodawca';
             document.getElementById('header-vpln').textContent = parseFloat(userData.vpln).toFixed(2);
             
-            // Ustawienia
+            // Podmiana Avatara (Nagłówek i Dashboard)
+            if (userData.avatar) {
+                document.getElementById('user-avatar-header').src = userData.avatar;
+                document.getElementById('user-avatar-dash').src = userData.avatar;
+            }
+
+            // Wypełnienie ustawień
             document.getElementById('setting-username').value = userData.username;
             document.getElementById('setting-email').value = userData.email;
-            document.getElementById('setting-discord').value = userData.discordId || '';
+            document.getElementById('setting-discord').value = userData.discordId || 'Niepodpięty';
             document.getElementById('setting-portfolio').value = userData.portfolioLink || '';
 
         } catch (error) {
             console.error("Błąd autoryzacji:", error);
-            localStorage.removeItem('token'); // Czyści błędny token
+            localStorage.removeItem('token');
             window.location.href = '/login';
         }
     }
 
-    // Wylogowanie faktycznie usuwa token
     function logoutUser() {
         showToast("Wylogowywanie...", "info");
         localStorage.removeItem('token');
@@ -391,10 +403,8 @@
         }, 1200);
     }
 
-    // Inicjalizacja po załadowaniu okna
     document.addEventListener("DOMContentLoaded", () => {
-      fetchUserData(); // Uruchamia pobieranie danych
-      
+      fetchUserData();
       lucide.createIcons();
       renderJobs();
       switchDashTab('profil');
@@ -402,7 +412,7 @@
       selectListingType('zlecenie');
     });
 
-    /* --- Reszta Twoich funkcji nawigacyjnych --- */
+    /* --- Nawigacja i UI --- */
     function renderJobs() { document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="briefcase" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Zlecenia załadowane</h3></div>`; lucide.createIcons(); }
     function renderFreelancers() { document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="users" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Profile freelancerów załadowane</h3></div>`; lucide.createIcons(); }
     
