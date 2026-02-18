@@ -339,11 +339,10 @@
     // === SYSTEM LOGOWANIA ADMINA 2FA ===
     let currentAdminDiscordId = null;
 
-    // 🟢 ZMIANA: Dekodowanie tokena i przypisanie profilu
+    // Dekodowanie tokena i przypisanie profilu
     function setAdminProfile(token) {
       if (!token) return;
       try {
-        // Zdekodowanie części payload tokena JWT
         const base64Url = token.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
         const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(function(c) {
@@ -354,7 +353,6 @@
         const avatarEl = document.getElementById('admin-avatar');
         const usernameEl = document.getElementById('admin-username');
         
-        // Zmiana danych na podstawie Discord ID z tokena
         if (discordId === '913479364883136532') { // Gracjan
           avatarEl.src = 'https://i.imgur.com/CX9Evwm.png';
           usernameEl.innerText = 'zxq0';
@@ -367,10 +365,27 @@
       }
     }
 
-    // 🟢 ZMIANA: Wylogowywanie
-    function logoutAdmin() {
+    // 🟢 ZMIANA: Wylogowywanie ze strzałem do backendu!
+    async function logoutAdmin() {
+      const token = localStorage.getItem('adminToken');
+      
+      if (token) {
+        try {
+          // Puka do backendu, żeby serwer kazał botowi wysłać alert na kanał
+          await fetch('/api/admin/logout', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+        } catch (err) {
+          console.error("Błąd podczas wysyłania alertu o wylogowaniu:", err);
+        }
+      }
+
+      // Usuwa sesję i cofa użytkownika do ekranu logowania
       localStorage.removeItem('adminToken');
-      window.location.reload(); // Odświeża stronę, by pokazać overlay logowania
+      window.location.reload(); 
     }
 
     // Sprawdzamy czy admin jest już zalogowany
