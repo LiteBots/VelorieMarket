@@ -79,6 +79,28 @@
   <div class="grid-bg" aria-hidden="true"></div>
   <div class="noise" aria-hidden="true"></div>
 
+  <div id="admin-login-overlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-[var(--bg2)]/95 backdrop-blur-xl transition-opacity duration-300">
+    <div class="glass rounded-3xl p-8 max-w-sm w-full mx-4 relative overflow-hidden text-center shadow-2xl">
+      <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo mx-auto mb-6 h-10 w-auto" />
+      
+      <div id="login-step-1">
+        <h2 class="text-xl font-bold mb-2">Autoryzacja Admina</h2>
+        <p class="text-sm text-white/50 mb-6">Wprowadź hasło główne.</p>
+        <input type="password" id="admin-password" class="v-input text-center text-lg mb-4 tracking-widest" placeholder="••••••••" />
+        <button onclick="requestAdminOTP()" class="btn-primary w-full py-3 rounded-xl font-bold text-sm">Zaloguj</button>
+      </div>
+
+      <div id="login-step-2" class="hidden">
+        <i data-lucide="shield-check" class="h-12 w-12 text-[var(--accent)] mx-auto mb-3"></i>
+        <h2 class="text-xl font-bold mb-2">Weryfikacja Discord</h2>
+        <p class="text-sm text-white/50 mb-6">Wysłaliśmy 6-cyfrowy kod na Twoje konto Discord.</p>
+        <input type="text" id="admin-otp" class="v-input text-center text-2xl font-black tracking-[0.5em] mb-4" maxlength="6" placeholder="000000" />
+        <button onclick="verifyAdminOTP()" class="btn-primary w-full py-3 rounded-xl font-bold text-sm">Zweryfikuj kod</button>
+      </div>
+      
+      <p id="admin-login-error" class="text-red-400 text-xs font-bold mt-4 h-4"></p>
+    </div>
+  </div>
   <aside class="w-full md:w-64 glass-soft border-r border-white/10 flex flex-col z-40 sticky top-0 h-auto md:h-screen shrink-0">
     <div class="p-5 border-b border-white/10 flex items-center gap-3">
       <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo" />
@@ -311,6 +333,79 @@
   <script>
     lucide.createIcons();
 
+    // === SYSTEM LOGOWANIA ADMINA 2FA ===
+    let currentAdminDiscordId = null;
+
+    // Sprawdzamy czy admin jest już zalogowany
+    window.onload = () => {
+        if (localStorage.getItem('adminToken')) {
+            document.getElementById('admin-login-overlay').style.display = 'none';
+        }
+    };
+
+    async function requestAdminOTP() {
+      const password = document.getElementById('admin-password').value;
+      const errorText = document.getElementById('admin-login-error');
+      
+      if (!password) { errorText.innerText = "Podaj hasło!"; return; }
+      errorText.innerText = "";
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.error);
+        
+        // Zapiszmy id admina by wiedzieć kogo weryfikujemy
+        currentAdminDiscordId = data.discordId; 
+        
+        // Przejście do kroku 2
+        document.getElementById('login-step-1').classList.add('hidden');
+        document.getElementById('login-step-2').classList.remove('hidden');
+        
+      } catch (err) {
+        errorText.innerText = err.message || "Błąd logowania.";
+      }
+    }
+
+    async function verifyAdminOTP() {
+      const otpCode = document.getElementById('admin-otp').value;
+      const errorText = document.getElementById('admin-login-error');
+      
+      if (otpCode.length !== 6) { errorText.innerText = "Kod musi mieć 6 cyfr!"; return; }
+      errorText.innerText = "";
+
+      try {
+        const res = await fetch('/api/admin/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordId: currentAdminDiscordId, otpCode })
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.error);
+        
+        // Zapisujemy token admina
+        localStorage.setItem('adminToken', data.token);
+        
+        // Ukrywamy nakładkę logowania płynnie
+        document.getElementById('admin-login-overlay').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('admin-login-overlay').style.display = 'none';
+        }, 300);
+        
+      } catch (err) {
+        errorText.innerText = err.message || "Nieprawidłowy kod.";
+      }
+    }
+
+    // === NAWIGACJA ZAKŁADEK ===
     function switchAdminTab(tabName) {
       // 1. Zresetowanie wyglądu wszystkich przycisków w bocznym menu
       const navButtons = document.querySelectorAll('button[id^="nav-"]');
