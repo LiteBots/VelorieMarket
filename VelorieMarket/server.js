@@ -9,7 +9,6 @@ require('dotenv').config();
 
 // === IMPORTY WŁASNE ===
 const User = require('./models/User');
-// 🟢 ZMIANA: Dodano import sendAdminSecurityAlert
 const { initDiscordBot, updateDiscordStats, sendWelcomeDM, sendAdminOTP, sendAdminSecurityAlert } = require('./discordBot'); 
 
 const app = express();
@@ -21,10 +20,16 @@ const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || '1473749778302111856'
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET; // Koniecznie dodaj do .env
 const DISCORD_REDIRECT_URI = 'https://www.velorie.pl/api/auth/discord/callback';
 
-// === DANE ADMINISTRATORÓW (Hasła pobierane z .env / Railway) ===
+// === DANE ADMINISTRATORÓW (Nicki + Hasła + Discord ID) ===
 const adminUsers = {
-  [process.env.ADMIN_PASS_GRACJAN]: '913479364883136532', // Gracjan
-  [process.env.ADMIN_PASS_ADAM]: '810238396953264129'     // Adam
+  'zxq0': {
+    password: process.env.ADMIN_PASS_GRACJAN,
+    discordId: '913479364883136532'
+  },
+  'adambejmert': {
+    password: process.env.ADMIN_PASS_ADAM,
+    discordId: '810238396953264129'
+  }
 };
 
 // Tymczasowe przechowywanie kodów (Discord ID -> { code, expires })
@@ -71,32 +76,37 @@ app.get('/admin3443', (req, res) => res.sendFile(path.join(__dirname, 'public', 
 // === 4. ROUTING API (BACKEND) ===
 
 // --- AUTORYZACJA ADMINA (2FA DISCORD) ---
-// Krok 1: Weryfikacja hasła i wysłanie OTP
+// Krok 1: Weryfikacja nicku i hasła, następnie wysłanie OTP
 app.post('/api/admin/login', async (req, res) => {
-  const { password } = req.body;
-  const discordId = adminUsers[password];
+  const { username, password } = req.body; 
+  const admin = adminUsers[username];
 
-  // Zabezpieczenie na wypadek, gdyby hasło wpisane było puste lub nie zgadzało się z bazą
-  if (!password || !discordId) {
-    // 🟢 ZMIANA: Wysłanie alertu o błędnym haśle
-    await sendAdminSecurityAlert(null, 'failed', 'Niepoprawne hasło');
+  // Zabezpieczenie przed próbą podania fałszywego nicku omijającego nasz panel HTML
+  if (!admin) {
+    await sendAdminSecurityAlert(null, 'failed', `Próba logowania na nieznane konto: ${username || 'Brak'}`);
+    return res.status(401).json({ error: 'Nieprawidłowy użytkownik.' });
+  }
+
+  // Zabezpieczenie na wypadek błędnego hasła (TERAZ OZNACZA POPRAWNIE!)
+  if (!password || admin.password !== password) {
+    await sendAdminSecurityAlert(admin.discordId, 'failed', 'Niepoprawne hasło główne');
     return res.status(401).json({ error: 'Nieprawidłowe hasło administratora.' });
   }
 
   // Generujemy 6-cyfrowy kod
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
   
-  // Zapisujemy kod przypisany do Discord ID (wygasa po 5 minutach)
-  activeOTPs.set(discordId, { code: otpCode, expires: Date.now() + 5 * 60 * 1000 });
+  // Zapisujemy kod przypisany do Discord ID wybranego admina (wygasa po 5 minutach)
+  activeOTPs.set(admin.discordId, { code: otpCode, expires: Date.now() + 5 * 60 * 1000 });
 
   // Wysyłamy kod na Discorda (funkcja z bota)
-  await sendAdminOTP(discordId, otpCode);
+  await sendAdminOTP(admin.discordId, otpCode);
 
-  res.json({ message: 'Kod został wysłany na Discorda.', discordId });
+  res.json({ message: 'Kod został wysłany na Discorda.', discordId: admin.discordId });
 });
 
 // Krok 2: Weryfikacja kodu z Discorda
-app.post('/api/admin/verify', async (req, res) => { // 🟢 ZMIANA: Dodano async
+app.post('/api/admin/verify', async (req, res) => { 
   const { discordId, otpCode } = req.body;
   const storedOTP = activeOTPs.get(discordId);
 
@@ -106,7 +116,7 @@ app.post('/api/admin/verify', async (req, res) => { // 🟢 ZMIANA: Dodano async
     return res.status(400).json({ error: 'Kod wygasł. Zaloguj się ponownie.' });
   }
   if (storedOTP.code !== otpCode) {
-    // 🟢 ZMIANA: Wysłanie alertu o błędnym kodzie
+    // Wysłanie alertu o błędnym kodzie
     await sendAdminSecurityAlert(discordId, 'failed', 'Niepoprawny kod autoryzacyjny');
     return res.status(401).json({ error: 'Nieprawidłowy kod.' });
   }
@@ -114,7 +124,7 @@ app.post('/api/admin/verify', async (req, res) => { // 🟢 ZMIANA: Dodano async
   // Pomyślna weryfikacja! 
   activeOTPs.delete(discordId); // Usuwamy wykorzystany kod
   
-  // 🟢 ZMIANA: Wysłanie alertu o udanym logowaniu
+  // Wysłanie alertu o udanym logowaniu
   await sendAdminSecurityAlert(discordId, 'success');
 
   // Generujemy token JWT ze specjalną rolą 'admin'
