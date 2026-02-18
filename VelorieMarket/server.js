@@ -20,10 +20,16 @@ const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || '1473749778302111856'
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET; // Koniecznie dodaj do .env
 const DISCORD_REDIRECT_URI = 'https://www.velorie.pl/api/auth/discord/callback';
 
-// === DANE ADMINISTRATORÓW (Hasła pobierane z .env / Railway) ===
+// === DANE ADMINISTRATORÓW (Struktura pozwalająca na rozpoznanie ID po haśle) ===
 const adminUsers = {
-  [process.env.ADMIN_PASS_GRACJAN]: '913479364883136532', // Gracjan
-  [process.env.ADMIN_PASS_ADAM]: '810238396953264129'     // Adam
+  'zxq0': {
+    password: process.env.ADMIN_PASS_GRACJAN,
+    discordId: '913479364883136532'
+  },
+  'adambejmert': {
+    password: process.env.ADMIN_PASS_ADAM,
+    discordId: '810238396953264129'
+  }
 };
 
 // Tymczasowe przechowywanie kodów (Discord ID -> { code, expires })
@@ -74,25 +80,33 @@ app.get('/admin3443', (req, res) => res.sendFile(path.join(__dirname, 'public', 
 app.post('/api/admin/login', async (req, res) => {
   const { password } = req.body; 
 
-  // Wyszukiwanie admina po wpisanym haśle
-  const discordId = adminUsers[password];
+  // SZUKAMY CZY HASŁO PASUJE DO KTÓREGOŚ ADMINA
+  let foundAdmin = null;
+  for (const key in adminUsers) {
+    if (adminUsers[key].password === password && password !== undefined) {
+      foundAdmin = adminUsers[key];
+      break;
+    }
+  }
 
-  // Jeśli hasło jest błędne lub brak przypisanego ID
-  if (!discordId) {
-    await sendAdminSecurityAlert(null, 'failed', 'Niepoprawne hasło logowania (Brak ID przypisanego do tego hasła)');
+  // Jeśli hasło jest błędne (nie pasuje do nikogo)
+  if (!foundAdmin) {
+    // Sprawdzamy czy to była próba wpisania hasła Gracjana czy Adama z błędem?
+    // Logika: Jeśli hasło zawiera fragmenty lub jest blisko, ale tutaj wysyłamy ogólny błąd
+    // Bo przy samym haśle bez nicku nie wiemy kogo oznaczyć.
+    await sendAdminSecurityAlert(null, 'failed', 'Niepoprawne hasło logowania');
     return res.status(401).json({ error: 'Nieprawidłowe hasło administratora.' });
   }
 
-  // Generujemy 6-cyfrowy kod
+  // Jeśli hasło było poprawne, bot pinguje tę konkretną osobę wysyłając kod
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
   
-  // Zapisujemy kod przypisany do Discord ID wybranego admina (wygasa po 5 minutach)
-  activeOTPs.set(discordId, { code: otpCode, expires: Date.now() + 5 * 60 * 1000 });
+  activeOTPs.set(foundAdmin.discordId, { code: otpCode, expires: Date.now() + 5 * 60 * 1000 });
 
-  // Wysyłamy kod na Discorda (funkcja z bota)
-  await sendAdminOTP(discordId, otpCode);
+  // Wysyłamy kod na Discorda do zidentyfikowanej osoby
+  await sendAdminOTP(foundAdmin.discordId, otpCode);
 
-  res.json({ message: 'Kod został wysłany na Discorda.', discordId: discordId });
+  res.json({ message: 'Kod został wysłany na Discorda.', discordId: foundAdmin.discordId });
 });
 
 // Krok 2: Weryfikacja kodu z Discorda
@@ -106,31 +120,29 @@ app.post('/api/admin/verify', async (req, res) => {
     return res.status(400).json({ error: 'Kod wygasł. Zaloguj się ponownie.' });
   }
   if (storedOTP.code !== otpCode) {
-    // Wysłanie alertu o błędnym kodzie
+    // Tutaj już znamy discordId, więc bot oznaczy osobę w alercie o błędnym kodzie
     await sendAdminSecurityAlert(discordId, 'failed', 'Niepoprawny kod autoryzacyjny');
     return res.status(401).json({ error: 'Nieprawidłowy kod.' });
   }
 
   // Pomyślna weryfikacja! 
-  activeOTPs.delete(discordId); // Usuwamy wykorzystany kod
+  activeOTPs.delete(discordId); 
   
-  // Wysłanie alertu o udanym logowaniu
+  // Sukces - pinguje admina
   await sendAdminSecurityAlert(discordId, 'success');
 
-  // Generujemy token JWT ze specjalną rolą 'admin'
   const adminToken = jwt.sign({ discordId, role: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
   
   res.json({ token: adminToken });
 });
 
-// Krok 3: Wylogowanie (nowy endpoint wysyłający log na Discorda)
+// Krok 3: Wylogowanie
 app.post('/api/admin/logout', (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (token) {
     jwt.verify(token, JWT_SECRET, async (err, decoded) => {
-      // Jeśli token był ważny, wysyłamy log do bota
       if (!err && decoded && decoded.discordId) {
         await sendAdminSecurityAlert(decoded.discordId, 'logout');
       }
@@ -206,7 +218,7 @@ app.get('/api/auth/discord/callback', async (req, res) => {
   }
 });
 
-// Pobieranie danych profilu (dla userów)
+// Pobieranie danych profilu
 app.get('/api/me', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
