@@ -169,7 +169,6 @@
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-        
         <div class="glass rounded-3xl p-6 relative overflow-hidden lift">
           <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/20 rounded-full blur-2xl"></div>
           <div class="flex justify-between items-start mb-4 relative z-10">
@@ -306,12 +305,34 @@
       </div>
     </div>
 
-    <div id="view-uzytkownicy" class="admin-view-hidden">
-      <h2 class="text-3xl font-black tracking-tight mb-6">Lista Użytkowników</h2>
-      <div class="glass p-12 text-center rounded-3xl border-dashed">
-        <i data-lucide="users" class="w-12 h-12 text-white/30 mx-auto mb-3"></i>
-        <h3 class="font-bold text-xl text-white/70">Tabela Użytkowników</h3>
-        <p class="text-sm text-white/40 mt-1">Tutaj pojawi się lista użytkowników z opcją bana i edycji salda.</p>
+    <div id="view-uzytkownicy" class="admin-view-hidden space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-3xl font-black tracking-tight">Baza Użytkowników</h2>
+          <p class="text-white/50 text-sm mt-1">Zarządzaj profilami, edytuj vPLN i moderuj konta Discord.</p>
+        </div>
+        <div class="relative">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40"></i>
+          <input type="text" placeholder="Szukaj użytkownika..." class="v-input pl-10 w-full md:w-64 text-sm" />
+        </div>
+      </div>
+
+      <div class="glass rounded-3xl overflow-hidden border border-white/5">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-white/5 text-[10px] uppercase tracking-widest font-bold text-white/40">
+                <th class="px-6 py-4">Użytkownik</th>
+                <th class="px-6 py-4">Kontakt / Metoda</th>
+                <th class="px-6 py-4">Data rejestracji</th>
+                <th class="px-6 py-4 text-center">Saldo vPLN</th>
+                <th class="px-6 py-4 text-right">Zarządzanie</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body" class="divide-y divide-white/5">
+              </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -335,163 +356,297 @@
 
   </main>
 
- <script>
-  lucide.createIcons();
+  <div id="user-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="glass max-w-2xl w-full rounded-3xl overflow-hidden relative shadow-2xl">
+      <button onclick="closeUserModal()" class="absolute top-6 right-6 text-white/40 hover:text-white transition"><i data-lucide="x"></i></button>
+      
+      <div class="p-8">
+        <div class="flex items-center gap-6 mb-8">
+          <div class="relative">
+            <img id="modal-user-avatar" src="" class="h-24 w-24 rounded-2xl border-2 border-[var(--accent)] object-cover bg-white/5" />
+            <div id="modal-discord-badge" class="absolute -bottom-2 -right-2 bg-[#5865F2] p-1.5 rounded-lg border-2 border-[#0a1030] hidden">
+               <i data-lucide="message-square" class="h-4 w-4 text-white"></i>
+            </div>
+          </div>
+          <div>
+            <h3 id="modal-user-name" class="text-3xl font-black">---</h3>
+            <p id="modal-user-email" class="text-white/40 text-sm">---</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <span class="px-2.5 py-1 rounded-md bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-wider border border-green-500/20">Użytkownik Aktywny</span>
+              <span id="modal-method-text" class="px-2.5 py-1 rounded-md bg-white/5 text-white/60 text-[10px] font-bold uppercase tracking-wider border border-white/10">Standard</span>
+            </div>
+          </div>
+        </div>
 
-  let currentAdminDiscordId = null;
-  let logoutTimer;
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="glass-soft p-6 rounded-2xl border border-white/5 relative overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 opacity-5 text-white rotate-12"><i data-lucide="wallet" class="w-24 h-24"></i></div>
+            <label class="text-[10px] uppercase font-bold text-white/40 block mb-4 tracking-widest">Saldo Portfela</label>
+            <div class="text-4xl font-black text-[#e2b714] mb-6 flex items-baseline gap-2">
+                <span id="modal-user-balance">0</span><span class="text-sm font-medium opacity-50">vPLN</span>
+            </div>
+            <div class="flex gap-2 relative z-10">
+              <input type="number" id="vpln-amount" class="v-input text-lg" placeholder="Kwota..." />
+              <button onclick="updateBalance('add')" class="bg-green-500/20 text-green-400 hover:bg-green-500/30 p-3 rounded-xl transition" title="Dodaj">
+                <i data-lucide="plus"></i>
+              </button>
+              <button onclick="updateBalance('sub')" class="bg-red-500/20 text-red-400 hover:bg-red-500/30 p-3 rounded-xl transition" title="Odejmij">
+                <i data-lucide="minus"></i>
+              </button>
+            </div>
+          </div>
 
-  // --- NOWE: Zarządzanie czasem sesji ---
-  function resetLogoutTimer() {
-    clearTimeout(logoutTimer);
-    // 30 minut = 30 * 60 * 1000 ms
-    logoutTimer = setTimeout(() => {
-      console.log("Sesja wygasła z powodu braku aktywności.");
-      logoutAdmin();
-    }, 1800000); 
-  }
+          <div class="flex flex-col gap-3">
+            <label class="text-[10px] uppercase font-bold text-white/40 block tracking-widest">Moderacja</label>
+            <button class="w-full btn-ghost py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-3">
+              <i data-lucide="layers" class="h-4 w-4"></i> Zobacz profil i ogłoszenia
+            </button>
+            <button onclick="confirmDelete()" class="w-full btn-danger py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-3">
+              <i data-lucide="trash-2" class="h-4 w-4 text-red-400"></i> Usuń konto na zawsze
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  // Nasłuchiwanie aktywności użytkownika
-  ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(evt => {
-    window.addEventListener(evt, resetLogoutTimer);
-  });
+  <div id="delete-confirm-modal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-black/95 backdrop-blur-sm">
+    <div class="glass max-w-sm w-full p-8 rounded-3xl text-center shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+      <div class="w-20 h-20 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+        <i data-lucide="alert-triangle" class="h-10 w-10"></i>
+      </div>
+      <h4 class="text-2xl font-black mb-3 text-white">Jesteś pewny?</h4>
+      <p class="text-white/50 text-sm mb-8 leading-relaxed">Tej operacji nie można cofnąć. Wszystkie dane użytkownika, ogłoszenia i saldo zostaną trwale usunięte.</p>
+      <div class="flex gap-4">
+        <button onclick="closeDeleteConfirm()" class="flex-1 btn-ghost py-4 rounded-xl font-bold transition">Anuluj</button>
+        <button onclick="executeDelete()" class="flex-1 btn-danger py-4 rounded-xl font-bold transition">Usuń konto</button>
+      </div>
+    </div>
+  </div>
 
-  // --- NOWE: Wylogowanie przy zamknięciu okna ---
-  // Uwaga: Browsery mogą blokować zapytania fetch w 'unload', dlatego używamy keepalive: true
-  window.addEventListener('beforeunload', () => {
-    const token = localStorage.getItem('adminToken');
-    if (token) {
-      // Synchronizacja wylogowania przy zamknięciu karty
-      navigator.sendBeacon('/api/admin/logout', JSON.stringify({ token }));
-      localStorage.removeItem('adminToken');
+  <script>
+    lucide.createIcons();
+
+    let currentAdminDiscordId = null;
+
+    // Przykładowe dane użytkowników (zastąp to pobieraniem z bazy)
+    const mockUsers = [
+      { id: '1', name: 'zxq0', email: 'gracjan@velorie.pl', date: '18.02.2026, 12:30', vpln: 14500, method: 'Discord', avatar: 'https://i.imgur.com/CX9Evwm.png' },
+      { id: '2', name: 'adambejmert', email: 'adam@velorie.pl', date: '17.02.2026, 09:15', vpln: 250, method: 'Discord', avatar: 'https://i.imgur.com/N9OEjiX.png' },
+      { id: '3', name: 'DevKuba', email: 'kuba@velorie.pl', date: '16.02.2026, 21:45', vpln: 120, method: 'E-mail', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kuba' },
+      { id: '4', name: 'Zleceniodawca12', email: 'kontakt@zlecenie.pl', date: '15.02.2026, 10:00', vpln: 0, method: 'E-mail', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=User12' }
+    ];
+
+    let selectedUserId = null;
+
+    // Renderowanie tabeli
+    function renderUsers() {
+      const tbody = document.getElementById('users-table-body');
+      tbody.innerHTML = mockUsers.map(user => `
+        <tr class="hover:bg-white/[0.02] transition group">
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <img src="${user.avatar}" class="h-10 w-10 rounded-xl bg-white/5 object-cover" />
+              <div>
+                <div class="font-bold text-sm text-white">${user.name}</div>
+                <div class="text-[10px] font-bold ${user.method === 'Discord' ? 'text-blue-400' : 'text-white/30'} flex items-center gap-1 uppercase tracking-tighter">
+                  ${user.method === 'Discord' ? '<i data-lucide="message-square" class="h-2 w-2"></i> Discord' : 'Konto Standard'}
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="text-sm text-white/70">${user.email}</div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="text-sm text-white/40">${user.date}</div>
+          </td>
+          <td class="px-6 py-4 text-center">
+            <div class="text-sm font-bold text-[#e2b714]">${user.vpln.toLocaleString()} <span class="text-[10px] opacity-50">vPLN</span></div>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <button onclick="openUserModal('${user.id}')" class="btn-ghost p-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition inline-flex items-center gap-2 text-xs font-bold">
+              <i data-lucide="settings-2" class="h-4 w-4"></i> Zarządzaj
+            </button>
+          </td>
+        </tr>
+      `).join('');
+      lucide.createIcons();
     }
-  });
 
-  // Dekodowanie tokena i przypisanie profilu
-  function setAdminProfile(token) {
-    if (!token) return;
-    resetLogoutTimer(); // Uruchom licznik po zalogowaniu
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join('')));
+    // Modal zarządzania
+    function openUserModal(userId) {
+      const user = mockUsers.find(u => u.id === userId);
+      if (!user) return;
+
+      selectedUserId = userId;
+      document.getElementById('modal-user-name').innerText = user.name;
+      document.getElementById('modal-user-email').innerText = user.email;
+      document.getElementById('modal-user-avatar').src = user.avatar;
+      document.getElementById('modal-user-balance').innerText = user.vpln.toLocaleString();
       
-      const discordId = payload.discordId;
-      const avatarEl = document.getElementById('admin-avatar');
-      const usernameEl = document.getElementById('admin-username');
+      const badge = document.getElementById('modal-discord-badge');
+      const methodText = document.getElementById('modal-method-text');
       
-      if (discordId === '913479364883136532') {
-        avatarEl.src = 'https://i.imgur.com/CX9Evwm.png';
-        usernameEl.innerText = 'zxq0';
-      } else if (discordId === '810238396953264129') {
-        avatarEl.src = 'https://i.imgur.com/N9OEjiX.png';
-        usernameEl.innerText = 'adambejmert';
+      if(user.method === 'Discord') {
+          badge.classList.remove('hidden');
+          methodText.innerText = 'Discord Verified';
+          methodText.classList.replace('text-white/60', 'text-blue-400');
+      } else {
+          badge.classList.add('hidden');
+          methodText.innerText = 'Konto Standard';
+          methodText.classList.replace('text-blue-400', 'text-white/60');
       }
-    } catch (err) {
-      console.error("Błąd ładowania profilu administratora", err);
-    }
-  }
 
-  async function logoutAdmin() {
-    const token = localStorage.getItem('adminToken');
-    if (token) {
+      const modal = document.getElementById('user-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeUserModal() {
+      document.getElementById('user-modal').classList.add('hidden');
+      document.getElementById('user-modal').classList.remove('flex');
+    }
+
+    function updateBalance(type) {
+      const amount = parseInt(document.getElementById('vpln-amount').value);
+      if (!amount || amount <= 0) return alert("Podaj prawidłową kwotę vPLN");
+
+      const user = mockUsers.find(u => u.id === selectedUserId);
+      if (type === 'add') user.vpln += amount;
+      else user.vpln = Math.max(0, user.vpln - amount);
+
+      document.getElementById('modal-user-balance').innerText = user.vpln.toLocaleString();
+      document.getElementById('vpln-amount').value = '';
+      renderUsers(); // Odśwież tabelę w tle
+    }
+
+    function confirmDelete() {
+      document.getElementById('delete-confirm-modal').classList.remove('hidden');
+      document.getElementById('delete-confirm-modal').classList.add('flex');
+    }
+
+    function closeDeleteConfirm() {
+      document.getElementById('delete-confirm-modal').classList.add('hidden');
+    }
+
+    function executeDelete() {
+      const index = mockUsers.findIndex(u => u.id === selectedUserId);
+      if (index > -1) mockUsers.splice(index, 1);
+      
+      alert("Konto użytkownika zostało trwale usunięte.");
+      closeDeleteConfirm();
+      closeUserModal();
+      renderUsers();
+    }
+
+    // Pozostałe funkcje Twojego panelu
+    function setAdminProfile(token) {
+      if (!token) return;
       try {
-        await fetch('/api/admin/logout', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
-          keepalive: true // Ważne dla procesów kończących sesję
-        });
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join('')));
+        
+        const discordId = payload.discordId;
+        const avatarEl = document.getElementById('admin-avatar');
+        const usernameEl = document.getElementById('admin-username');
+        
+        if (discordId === '913479364883136532') {
+          avatarEl.src = 'https://i.imgur.com/CX9Evwm.png';
+          usernameEl.innerText = 'zxq0';
+        } else if (discordId === '810238396953264129') {
+          avatarEl.src = 'https://i.imgur.com/N9OEjiX.png';
+          usernameEl.innerText = 'adambejmert';
+        }
       } catch (err) {
-        console.error("Błąd podczas wylogowania:", err);
+        console.error("Błąd ładowania profilu", err);
       }
     }
-    localStorage.removeItem('adminToken');
-    window.location.reload(); 
-  }
 
-  window.onload = () => {
+    async function logoutAdmin() {
       const token = localStorage.getItem('adminToken');
       if (token) {
-          document.getElementById('admin-login-overlay').style.display = 'none';
-          setAdminProfile(token);
+        try {
+          await fetch('/api/admin/logout', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        } catch (err) {}
       }
-  };
+      localStorage.removeItem('adminToken');
+      window.location.reload(); 
+    }
 
-  async function requestAdminOTP() {
-    const password = document.getElementById('admin-password').value;
-    const errorText = document.getElementById('admin-login-error');
-    if (!password) { errorText.innerText = "Podaj hasło!"; return; }
-    errorText.innerText = "";
+    window.onload = () => {
+        const token = localStorage.getItem('adminToken');
+        if (token) {
+            document.getElementById('admin-login-overlay').style.display = 'none';
+            setAdminProfile(token);
+        }
+        renderUsers(); // Inicjalizacja tabeli
+    };
 
-    try {
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
+    async function requestAdminOTP() {
+      const password = document.getElementById('admin-password').value;
+      const errorText = document.getElementById('admin-login-error');
+      if (!password) { errorText.innerText = "Podaj hasło!"; return; }
+      errorText.innerText = "";
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        currentAdminDiscordId = data.discordId; 
+        document.getElementById('login-step-1').classList.add('hidden');
+        document.getElementById('login-step-2').classList.remove('hidden');
+      } catch (err) { errorText.innerText = err.message || "Błąd logowania."; }
+    }
+
+    async function verifyAdminOTP() {
+      const otpCode = document.getElementById('admin-otp').value;
+      const errorText = document.getElementById('admin-login-error');
+      if (otpCode.length !== 6) { errorText.innerText = "Kod musi mieć 6 cyfr!"; return; }
+      try {
+        const res = await fetch('/api/admin/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordId: currentAdminDiscordId, otpCode })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        localStorage.setItem('adminToken', data.token);
+        setAdminProfile(data.token);
+        document.getElementById('admin-login-overlay').style.opacity = '0';
+        setTimeout(() => { document.getElementById('admin-login-overlay').style.display = 'none'; }, 300);
+      } catch (err) { errorText.innerText = err.message || "Nieprawidłowy kod."; }
+    }
+
+    function switchAdminTab(tabName) {
+      const navButtons = document.querySelectorAll('button[id^="nav-"]');
+      navButtons.forEach(btn => {
+        btn.classList.remove('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
+        btn.classList.add('text-white/70', 'hover:bg-white/5');
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      currentAdminDiscordId = data.discordId; 
-      document.getElementById('login-step-1').classList.add('hidden');
-      document.getElementById('login-step-2').classList.remove('hidden');
-    } catch (err) {
-      errorText.innerText = err.message || "Błąd logowania.";
-    }
-  }
-
-  async function verifyAdminOTP() {
-    const otpCode = document.getElementById('admin-otp').value;
-    const errorText = document.getElementById('admin-login-error');
-    if (otpCode.length !== 6) { errorText.innerText = "Kod musi mieć 6 cyfr!"; return; }
-    errorText.innerText = "";
-
-    try {
-      const res = await fetch('/api/admin/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ discordId: currentAdminDiscordId, otpCode })
+      const activeBtn = document.getElementById(`nav-${tabName}`);
+      if(activeBtn) {
+        activeBtn.classList.remove('text-white/70', 'hover:bg-white/5');
+        activeBtn.classList.add('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
+      }
+      const views = ['dashboard', 'pasek', 'blokada', 'uzytkownicy', 'finanse', 'ogloszenia'];
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        if(el) el.classList.add('admin-view-hidden');
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      
-      localStorage.setItem('adminToken', data.token);
-      setAdminProfile(data.token);
-      
-      document.getElementById('admin-login-overlay').style.opacity = '0';
-      setTimeout(() => {
-        document.getElementById('admin-login-overlay').style.display = 'none';
-      }, 300);
-    } catch (err) {
-      errorText.innerText = err.message || "Nieprawidłowy kod.";
+      const activeView = document.getElementById(`view-${tabName}`);
+      if(activeView) activeView.classList.remove('admin-view-hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }
-
-  function switchAdminTab(tabName) {
-    resetLogoutTimer(); // Reset timera przy zmianie zakładki
-    const navButtons = document.querySelectorAll('button[id^="nav-"]');
-    navButtons.forEach(btn => {
-      btn.classList.remove('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
-      btn.classList.add('text-white/70', 'hover:bg-white/5');
-    });
-
-    const activeBtn = document.getElementById(`nav-${tabName}`);
-    if(activeBtn) {
-      activeBtn.classList.remove('text-white/70', 'hover:bg-white/5');
-      activeBtn.classList.add('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
-    }
-
-    const views = ['dashboard', 'pasek', 'blokada', 'uzytkownicy', 'finanse', 'ogloszenia'];
-    views.forEach(v => {
-      const el = document.getElementById(`view-${v}`);
-      if(el) el.classList.add('admin-view-hidden');
-    });
-
-    const activeView = document.getElementById(`view-${tabName}`);
-    if(activeView) activeView.classList.remove('admin-view-hidden');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-</script>
+  </script>
 </body>
 </html>
