@@ -1,8 +1,8 @@
-const { Client, GatewayIntentBits, ActivityType, Events } = require('discord.js'); // 🟢 Dodano import 'Events'
-const User = require('./models/User'); // Upewnij się, że ścieżka jest dobra
+const { Client, GatewayIntentBits, ActivityType, Events } = require('discord.js');
+const User = require('./models/User'); // Upewnij się, że ścieżka do modelu jest poprawna
 require('dotenv').config();
 
-// 1. NAPRAWA BŁĘDU: Usunąłem 'GuildPresences', zostawiłem tylko 'Guilds'
+// Inicjalizacja klienta Discord z wymaganymi intencjami
 const client = new Client({ 
     intents: [
         GatewayIntentBits.Guilds 
@@ -12,6 +12,7 @@ const client = new Client({
 // === KONFIGURACJA ===
 const CHANNEL_ID = '1472391921535029413'; // Twój kanał do statystyk
 
+// === 1. AKTUALIZACJA STATYSTYK NA KANALE ===
 const updateDiscordStats = async () => {
     try {
         if (!client.isReady()) return;
@@ -41,17 +42,49 @@ const updateDiscordStats = async () => {
     }
 };
 
+// === 2. WYSYŁANIE WIADOMOŚCI POWITALNEJ (DM) ===
+const sendWelcomeDM = async (discordId) => {
+    try {
+        // Pobieramy usera bezpośrednio przez klienta bota
+        const user = await client.users.fetch(discordId);
+        
+        if (user) {
+            await user.send({
+                embeds: [
+                    {
+                        title: "Autoryzacja przeszła pomyślnie!",
+                        description: `> Witaj <@${discordId}> w Velorie Market, Dziękujemy za rejestracje na naszej platformie, od teraz będziesz otrzymywał powiadomienia o nadchodzących płatnościach oraz informacje serwisowe.`,
+                        color: 16711782, // Czerwony/Różowy kolor
+                        image: {
+                            url: "https://i.imgur.com/dkmtI8l.png"
+                        }
+                    }
+                ]
+            });
+            console.log(`✉️ [Discord] Wysłano powiadomienie DM do: ${user.tag}`);
+        }
+    } catch (err) {
+        // Błąd 50007 oznacza, że użytkownik ma zablokowane wiadomości prywatne
+        if (err.code === 50007) {
+            console.warn(`⚠️ [Discord] Nie można wysłać DM do ${discordId} (Zablokowane wiadomości prywatne).`);
+        } else {
+            console.error('❌ [Discord] Błąd wysyłania DM:', err.message);
+        }
+    }
+};
+
+// === 3. INICJALIZACJA BOTA ===
 const initDiscordBot = () => {
     if (!process.env.DISCORD_TOKEN) {
         console.error('❌ Brak tokenu w .env');
         return;
     }
 
-    // 🟢 ZMIANA: Używamy Events.ClientReady zamiast 'ready', aby pozbyć się ostrzeżenia (DeprecationWarning)
+    // Używamy Events.ClientReady zamiast 'ready', aby uniknąć DeprecationWarning
     client.once(Events.ClientReady, () => {
         console.log(`🤖 [Discord] Zalogowano jako ${client.user.tag}`);
         
-        // 2. NOWOŚĆ: Ustawienie statusu "Ogląda Znajdź Specjalistę"
+        // Ustawienie statusu
         client.user.setActivity('Znajdź Specjalistę', { type: ActivityType.Watching });
 
         // Pierwsze uruchomienie statystyk
@@ -61,8 +94,9 @@ const initDiscordBot = () => {
         setInterval(updateDiscordStats, 600000); 
     });
 
-    // Najpierw deklarujemy nasłuchiwanie zdarzeń, a dopiero na końcu logujemy bota
+    // Logowanie bota
     client.login(process.env.DISCORD_TOKEN);
 };
 
-module.exports = { initDiscordBot, updateDiscordStats };
+// Eksportujemy wszystkie trzy funkcje, aby móc ich używać w głównym pliku aplikacji
+module.exports = { initDiscordBot, updateDiscordStats, sendWelcomeDM };
