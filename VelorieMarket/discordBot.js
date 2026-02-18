@@ -53,7 +53,7 @@ const sendWelcomeDM = async (discordId) => {
                 embeds: [
                     {
                         title: "Autoryzacja przeszła pomyślnie!",
-                        description: `> Witaj <@${discordId}> w Velorie Market, Dziękujemy za rejestracje na naszej platformie, od teraz będziesz otrzymywał powiadomienia o nadchodzących płatnościach oraz informacje serwisowe.`,
+                        description: `> Witaj <@${discordId}> w Velorie Market, Dziękujemy za rejestracje na naszej platformie, od teraz będziesz otrzymywał/a powiadomienia o nadchodzących płatnościach oraz informacje serwisowe.`,
                         color: 16711782, // Czerwony/Różowy kolor
                         image: {
                             url: "https://i.imgur.com/dkmtI8l.png"
