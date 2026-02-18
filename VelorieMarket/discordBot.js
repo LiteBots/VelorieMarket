@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
+const { Client, GatewayIntentBits, ActivityType, Events } = require('discord.js'); // 🟢 Dodano import 'Events'
 const User = require('./models/User'); // Upewnij się, że ścieżka jest dobra
 require('dotenv').config();
 
@@ -10,7 +10,7 @@ const client = new Client({
 });
 
 // === KONFIGURACJA ===
-const CHANNEL_ID = '1472391921535029413'; // np. '123456789012345678'
+const CHANNEL_ID = '1472391921535029413'; // Twój kanał do statystyk
 
 const updateDiscordStats = async () => {
     try {
@@ -47,9 +47,8 @@ const initDiscordBot = () => {
         return;
     }
 
-    client.login(process.env.DISCORD_TOKEN);
-
-    client.once('ready', () => {
+    // 🟢 ZMIANA: Używamy Events.ClientReady zamiast 'ready', aby pozbyć się ostrzeżenia (DeprecationWarning)
+    client.once(Events.ClientReady, () => {
         console.log(`🤖 [Discord] Zalogowano jako ${client.user.tag}`);
         
         // 2. NOWOŚĆ: Ustawienie statusu "Ogląda Znajdź Specjalistę"
@@ -58,9 +57,12 @@ const initDiscordBot = () => {
         // Pierwsze uruchomienie statystyk
         updateDiscordStats();
 
-        // Pętla co 10 min
+        // Pętla co 10 min (zapobiega blokadom Rate Limit ze strony Discorda)
         setInterval(updateDiscordStats, 600000); 
     });
+
+    // Najpierw deklarujemy nasłuchiwanie zdarzeń, a dopiero na końcu logujemy bota
+    client.login(process.env.DISCORD_TOKEN);
 };
 
 module.exports = { initDiscordBot, updateDiscordStats };
