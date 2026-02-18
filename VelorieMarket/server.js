@@ -65,14 +65,16 @@ app.get('/api/auth/discord/callback', async (req, res) => {
   if (!code) return res.redirect('/login?error=no_code');
 
   try {
-    // 1. Wymiana kodu na Access Token
+    // 1. Wymiana kodu na Access Token (POPRAWIONY NAGŁÓWEK)
     const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
       client_secret: DISCORD_CLIENT_SECRET,
       grant_type: 'authorization_code',
       code: code,
       redirect_uri: DISCORD_REDIRECT_URI,
-    }), { headers: { 'Content-Type': 'application/x-form-urlencoded' } });
+    }), { 
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' } // Tutaj brakowało "www-"
+    });
 
     const accessToken = tokenResponse.data.access_token;
 
