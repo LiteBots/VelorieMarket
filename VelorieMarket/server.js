@@ -9,7 +9,8 @@ require('dotenv').config();
 
 // === IMPORTY WŁASNE ===
 const User = require('./models/User');
-const { initDiscordBot, updateDiscordStats, sendWelcomeDM, sendAdminOTP } = require('./discordBot'); 
+// 🟢 ZMIANA: Dodano import sendAdminSecurityAlert
+const { initDiscordBot, updateDiscordStats, sendWelcomeDM, sendAdminOTP, sendAdminSecurityAlert } = require('./discordBot'); 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -77,6 +78,8 @@ app.post('/api/admin/login', async (req, res) => {
 
   // Zabezpieczenie na wypadek, gdyby hasło wpisane było puste lub nie zgadzało się z bazą
   if (!password || !discordId) {
+    // 🟢 ZMIANA: Wysłanie alertu o błędnym haśle
+    await sendAdminSecurityAlert(null, 'failed', 'Niepoprawne hasło');
     return res.status(401).json({ error: 'Nieprawidłowe hasło administratora.' });
   }
 
@@ -93,7 +96,7 @@ app.post('/api/admin/login', async (req, res) => {
 });
 
 // Krok 2: Weryfikacja kodu z Discorda
-app.post('/api/admin/verify', (req, res) => {
+app.post('/api/admin/verify', async (req, res) => { // 🟢 ZMIANA: Dodano async
   const { discordId, otpCode } = req.body;
   const storedOTP = activeOTPs.get(discordId);
 
@@ -102,15 +105,38 @@ app.post('/api/admin/verify', (req, res) => {
     activeOTPs.delete(discordId);
     return res.status(400).json({ error: 'Kod wygasł. Zaloguj się ponownie.' });
   }
-  if (storedOTP.code !== otpCode) return res.status(401).json({ error: 'Nieprawidłowy kod.' });
+  if (storedOTP.code !== otpCode) {
+    // 🟢 ZMIANA: Wysłanie alertu o błędnym kodzie
+    await sendAdminSecurityAlert(discordId, 'failed', 'Niepoprawny kod autoryzacyjny');
+    return res.status(401).json({ error: 'Nieprawidłowy kod.' });
+  }
 
   // Pomyślna weryfikacja! 
   activeOTPs.delete(discordId); // Usuwamy wykorzystany kod
   
+  // 🟢 ZMIANA: Wysłanie alertu o udanym logowaniu
+  await sendAdminSecurityAlert(discordId, 'success');
+
   // Generujemy token JWT ze specjalną rolą 'admin'
   const adminToken = jwt.sign({ discordId, role: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
   
   res.json({ token: adminToken });
+});
+
+// Krok 3: Wylogowanie (nowy endpoint wysyłający log na Discorda)
+app.post('/api/admin/logout', (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token) {
+    jwt.verify(token, JWT_SECRET, async (err, decoded) => {
+      // Jeśli token był ważny, wysyłamy log do bota
+      if (!err && decoded && decoded.discordId) {
+        await sendAdminSecurityAlert(decoded.discordId, 'logout');
+      }
+    });
+  }
+  res.json({ success: true });
 });
 
 // --- AUTORYZACJA DISCORD (OAUTH2 DLA UŻYTKOWNIKÓW) ---
