@@ -20,16 +20,10 @@ const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || '1473749778302111856'
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET; // Koniecznie dodaj do .env
 const DISCORD_REDIRECT_URI = 'https://www.velorie.pl/api/auth/discord/callback';
 
-// === DANE ADMINISTRATORÓW (Nicki + Hasła + Discord ID) ===
+// === DANE ADMINISTRATORÓW (Hasła pobierane z .env / Railway) ===
 const adminUsers = {
-  'zxq0': {
-    password: process.env.ADMIN_PASS_GRACJAN,
-    discordId: '913479364883136532'
-  },
-  'adambejmert': {
-    password: process.env.ADMIN_PASS_ADAM,
-    discordId: '810238396953264129'
-  }
+  [process.env.ADMIN_PASS_GRACJAN]: '913479364883136532', // Gracjan
+  [process.env.ADMIN_PASS_ADAM]: '810238396953264129'     // Adam
 };
 
 // Tymczasowe przechowywanie kodów (Discord ID -> { code, expires })
@@ -76,20 +70,16 @@ app.get('/admin3443', (req, res) => res.sendFile(path.join(__dirname, 'public', 
 // === 4. ROUTING API (BACKEND) ===
 
 // --- AUTORYZACJA ADMINA (2FA DISCORD) ---
-// Krok 1: Weryfikacja nicku i hasła, następnie wysłanie OTP
+// Krok 1: Weryfikacja hasła i wysłanie OTP
 app.post('/api/admin/login', async (req, res) => {
-  const { username, password } = req.body; 
-  const admin = adminUsers[username];
+  const { password } = req.body; 
 
-  // Zabezpieczenie przed próbą podania fałszywego nicku omijającego nasz panel HTML
-  if (!admin) {
-    await sendAdminSecurityAlert(null, 'failed', `Próba logowania na nieznane konto: ${username || 'Brak'}`);
-    return res.status(401).json({ error: 'Nieprawidłowy użytkownik.' });
-  }
+  // Wyszukiwanie admina po wpisanym haśle
+  const discordId = adminUsers[password];
 
-  // Zabezpieczenie na wypadek błędnego hasła (TERAZ OZNACZA POPRAWNIE!)
-  if (!password || admin.password !== password) {
-    await sendAdminSecurityAlert(admin.discordId, 'failed', 'Niepoprawne hasło główne');
+  // Jeśli hasło jest błędne lub brak przypisanego ID
+  if (!discordId) {
+    await sendAdminSecurityAlert(null, 'failed', 'Niepoprawne hasło logowania (Brak ID przypisanego do tego hasła)');
     return res.status(401).json({ error: 'Nieprawidłowe hasło administratora.' });
   }
 
@@ -97,12 +87,12 @@ app.post('/api/admin/login', async (req, res) => {
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
   
   // Zapisujemy kod przypisany do Discord ID wybranego admina (wygasa po 5 minutach)
-  activeOTPs.set(admin.discordId, { code: otpCode, expires: Date.now() + 5 * 60 * 1000 });
+  activeOTPs.set(discordId, { code: otpCode, expires: Date.now() + 5 * 60 * 1000 });
 
   // Wysyłamy kod na Discorda (funkcja z bota)
-  await sendAdminOTP(admin.discordId, otpCode);
+  await sendAdminOTP(discordId, otpCode);
 
-  res.json({ message: 'Kod został wysłany na Discorda.', discordId: admin.discordId });
+  res.json({ message: 'Kod został wysłany na Discorda.', discordId: discordId });
 });
 
 // Krok 2: Weryfikacja kodu z Discorda
