@@ -10,7 +10,6 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    /* Spójność: Importujemy czcionkę z login.html */
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap');
 
     :root {
@@ -26,7 +25,7 @@
 
     html { scroll-behavior: smooth; }
     body {
-      font-family: 'Outfit', sans-serif; /* Spójność: Użycie Outfit */
+      font-family: 'Outfit', sans-serif;
       background:
         radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.18), transparent 60%),
         radial-gradient(900px 600px at 85% 15%, rgba(255,3,84,.16), transparent 55%),
@@ -79,12 +78,10 @@
       -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
     }
     
-    /* Typ opcji ogłoszenia */
     .type-card { transition: all 0.3s; }
     .type-card.active { border-color: var(--accent); background: rgba(255,3,84,0.05); box-shadow: 0 0 0 1px var(--accent), 0 10px 30px rgba(255,3,84,0.15); }
     .type-card.active .icon-container { background: var(--accent); color: white; }
 
-    /* === SPÓJNOŚĆ: System Toasts === */
     #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
     .toast { background: rgba(10, 16, 48, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid var(--accent); color: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 12px; min-width: 300px; transform: translateX(100%); opacity: 0; animation: slideIn 0.4s forwards; }
     .toast.success { border-left-color: var(--success); }
@@ -115,7 +112,7 @@
         
         <a href="wallet.html" title="Twój Portfel" class="flex items-center gap-2 rounded-xl glass-soft px-3 py-1.5 text-sm font-bold text-[#e2b714] border border-[#e2b714]/30 hover:bg-[#e2b714]/10 transition lift">
           <i data-lucide="coins" class="h-4 w-4"></i>
-          <span>150.00 <span class="text-[11px] text-[#e2b714]/70">vPLN</span></span>
+          <span><span id="header-vpln">...</span> <span class="text-[11px] text-[#e2b714]/70">vPLN</span></span>
         </a>
 
         <button onclick="switchMainView('add-listing')" class="hidden sm:inline-flex items-center gap-2 rounded-xl btn-primary lift px-4 py-2 text-sm font-semibold">
@@ -125,7 +122,6 @@
 
         <button class="relative hidden sm:inline-flex items-center justify-center h-10 w-10 rounded-xl glass lift hover:text-[var(--accent)] transition text-white/70">
           <i data-lucide="bell" class="h-5 w-5"></i>
-          <span class="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-[var(--accent)] shadow-[0_0_8px_rgba(255,3,84,0.8)]"></span>
         </button>
 
         <button onclick="switchMainView('dashboard'); switchDashTab('profil')" class="relative inline-flex items-center justify-center h-10 w-10 rounded-xl glass lift border border-[var(--accent)]/50">
@@ -255,8 +251,8 @@
           <div class="p-4 flex items-center gap-3 border-b border-white/10 mb-2">
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="h-12 w-12 rounded-full border border-white/20 bg-black/50" />
             <div>
-              <div class="font-bold flex items-center gap-1 text-sm"><span id="user-display-name">DevKuba</span> <i data-lucide="badge-check" class="h-4 w-4 text-blue-400" title="Zweryfikowany użytkownik"></i></div>
-              <div class="text-[11px] text-white/50">Plan: Zweryfikowany</div>
+              <div class="font-bold flex items-center gap-1 text-sm"><span id="user-display-name">...</span></div>
+              <div class="text-[11px] text-white/50">Plan: <span id="user-role-display">Użytkownik</span></div>
             </div>
           </div>
           
@@ -286,98 +282,32 @@
               <div class="grid sm:grid-cols-2 gap-5">
                 <div>
                   <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Nazwa użytkownika</label>
-                  <input type="text" class="v-input" value="DevKuba" />
+                  <input type="text" id="setting-username" class="v-input text-white/50 cursor-not-allowed" value="..." readonly title="Nie można zmienić nazwy" />
                 </div>
                 <div>
                   <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Adres E-mail</label>
-                  <input type="email" class="v-input" value="kuba@example.com" />
+                  <input type="email" id="setting-email" class="v-input text-white/50 cursor-not-allowed" value="..." readonly title="Nie można zmienić emaila" />
                 </div>
                 <div>
                   <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Discord ID (Opcjonalnie)</label>
-                  <input type="text" class="v-input" placeholder="np. devkuba#1234" />
+                  <input type="text" id="setting-discord" class="v-input" placeholder="np. devkuba#1234" />
                 </div>
                 <div>
                   <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Link do Portfolio / GitHub</label>
-                  <input type="url" class="v-input" placeholder="https://" />
+                  <input type="url" id="setting-portfolio" class="v-input" placeholder="https://" />
                 </div>
               </div>
               <div class="flex justify-end pt-4 border-t border-white/10">
-                <button type="button" onclick="showToast('Ustawienia zostały zapisane!', 'success')" class="btn-ghost lift px-6 py-2.5 rounded-xl text-sm font-bold">Zapisz zmiany</button>
+                <button type="button" onclick="showToast('Funkcja edycji dostępna wkrótce!', 'info')" class="btn-ghost lift px-6 py-2.5 rounded-xl text-sm font-bold">Zapisz zmiany</button>
               </div>
             </div>
           </div>
 
           <div id="dash-sklep" class="space-y-6 hidden">
-            <div>
-              <h2 class="text-2xl font-bold">Sklep Velorie</h2>
-              <p class="text-sm text-white/50">Rozszerz możliwości swojego konta i wyróżnij się na rynku.</p>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-6">
-              <div class="glass rounded-3xl p-6 border border-blue-500/30 relative overflow-hidden lift group">
-                <div class="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl transition duration-500 group-hover:bg-blue-500/40"></div>
-                <div class="flex items-center gap-3 mb-4">
-                  <div class="p-2 bg-blue-500/10 rounded-xl border border-blue-500/20">
-                    <i data-lucide="badge-check" class="h-8 w-8 text-blue-400"></i>
-                  </div>
-                  <h3 class="text-xl font-bold">Weryfikacja Konta</h3>
-                </div>
-                <p class="text-sm text-white/60 mb-6 min-h-[48px]">Zdobądź oficjalny znaczek zweryfikowanego użytkownika obok nicku, buduj zaufanie klientów i pozycjonuj swoje ogłoszenia wyżej.</p>
-                <div class="flex items-end gap-2 mb-6">
-                  <span class="text-4xl font-black text-white">19,99</span>
-                  <span class="text-[#e2b714] font-bold text-sm mb-1.5 flex items-center gap-1"><i data-lucide="coins" class="h-3 w-3"></i> vPLN / mies.</span>
-                </div>
-                <button onclick="showToast('Brak wystarczających środków vPLN.', 'error')" class="w-full py-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 font-bold transition flex items-center justify-center gap-2 lift">
-                  Kup Subskrypcję <i data-lucide="arrow-right" class="h-4 w-4"></i>
-                </button>
-              </div>
-
-              <div class="glass rounded-3xl p-6 border border-[var(--accent)]/30 relative overflow-hidden lift group">
-                <div class="absolute -right-6 -top-6 w-32 h-32 bg-[var(--accent)]/20 rounded-full blur-3xl transition duration-500 group-hover:bg-[var(--accent)]/40"></div>
-                <div class="flex items-center gap-3 mb-4">
-                  <div class="p-2 bg-[var(--accent)]/10 rounded-xl border border-[var(--accent)]/20">
-                    <i data-lucide="rocket" class="h-8 w-8 text-[var(--accent)]"></i>
-                  </div>
-                  <h3 class="text-xl font-bold">Wyróżnienie VIP</h3>
-                </div>
-                <p class="text-sm text-white/60 mb-6 min-h-[48px]">Podbij swoje ogłoszenie na samą górę listy wyników wyszukiwania na okres 7 dni. Zdobądź nawet do 3x więcej zleceń.</p>
-                <div class="flex items-end gap-2 mb-6">
-                  <span class="text-4xl font-black text-white">9,99</span>
-                  <span class="text-[#e2b714] font-bold text-sm mb-1.5 flex items-center gap-1"><i data-lucide="coins" class="h-3 w-3"></i> vPLN / sztuka</span>
-                </div>
-                <button onclick="showToast('Brak wystarczających środków vPLN.', 'error')" class="w-full py-3 rounded-xl bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 border border-[var(--accent)]/30 text-[var(--accent)] font-bold transition flex items-center justify-center gap-2 lift">
-                  Kup Pakiet <i data-lucide="arrow-right" class="h-4 w-4"></i>
-                </button>
-              </div>
-            </div>
+             <div><h2 class="text-2xl font-bold">Sklep Velorie</h2><p class="text-sm text-white/50">W przygotowaniu...</p></div>
           </div>
-
           <div id="dash-moje-ogloszenia" class="space-y-6 hidden">
-            <div class="flex justify-between items-center mb-2">
-              <div>
-                <h2 class="text-2xl font-bold">Zarządzaj Ogłoszeniami</h2>
-                <p class="text-sm text-white/50">Twoje zlecenia i profile w jednym miejscu.</p>
-              </div>
-              <button onclick="switchMainView('add-listing')" class="btn-primary lift px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2">
-                <i data-lucide="plus" class="h-4 w-4"></i> Dodaj nowe
-              </button>
-            </div>
-            
-            <div class="glass rounded-3xl p-6 border-l-4 border-[var(--accent)] lift relative">
-              <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div class="flex-1">
-                  <div class="flex flex-wrap items-center gap-2 text-xs text-white/60 mb-2">
-                    <span class="px-2.5 py-1 rounded-md bg-[var(--accent)]/10 text-[var(--accent)] font-bold border border-[var(--accent)]/20">Wizytówka Freelancera</span>
-                    <span>Wygasa za: 28 dni</span>
-                  </div>
-                  <h3 class="font-bold text-xl mb-1">Fullstack Developer (React + Node.js)</h3>
-                </div>
-                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                  <button class="btn-ghost lift p-2.5 rounded-xl text-white hover:text-white/80" title="Edytuj"><i data-lucide="edit-3" class="h-4 w-4"></i></button>
-                  <button onclick="showToast('Usunięto pomyślnie!', 'success'); this.closest('.glass').remove();" class="btn-ghost lift p-2.5 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/20" title="Usuń"><i data-lucide="trash-2" class="h-4 w-4"></i></button>
-                </div>
-              </div>
-            </div>
+             <div><h2 class="text-2xl font-bold">Zarządzaj Ogłoszeniami</h2><p class="text-sm text-white/50">W przygotowaniu...</p></div>
           </div>
 
         </div>
@@ -389,7 +319,6 @@
   <script>
     lucide.createIcons();
 
-    // === SPÓJNOŚĆ: SYSTEM POWIADOMIEŃ (TOAST) Z LOGIN.HTML ===
     function showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
@@ -397,13 +326,8 @@
         let typeClass = '';
         let iconName = 'info';
         
-        if (type === 'success') {
-            typeClass = 'success';
-            iconName = 'check-circle';
-        } else if (type === 'error') {
-            typeClass = 'error';
-            iconName = 'alert-octagon';
-        }
+        if (type === 'success') { typeClass = 'success'; iconName = 'check-circle'; } 
+        else if (type === 'error') { typeClass = 'error'; iconName = 'alert-octagon'; }
 
         toast.className = `toast ${typeClass}`;
         toast.innerHTML = `<i data-lucide="${iconName}" class="w-6 h-6"></i><span class="font-medium text-sm">${message}</span>`;
@@ -416,40 +340,88 @@
         }, 4000);
     }
 
-    // === SPÓJNOŚĆ: FUNKCJA WYLOGOWYWANIA ===
+    // === GŁÓWNA ZMIANA: POBIERANIE PRAWDZIWYCH DANYCH Z SERWERA ===
+    async function fetchUserData() {
+        const token = localStorage.getItem('token');
+        
+        // Brak tokena = niezalogowany, wraca na ekran logowania
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/me', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Sesja wygasła');
+            }
+
+            const userData = await response.json();
+
+            // Podmiana danych na stronie
+            document.getElementById('user-display-name').textContent = userData.username;
+            document.getElementById('user-role-display').textContent = userData.role === 'freelancer' ? 'Freelancer' : 'Zleceniodawca';
+            document.getElementById('header-vpln').textContent = parseFloat(userData.vpln).toFixed(2);
+            
+            // Ustawienia
+            document.getElementById('setting-username').value = userData.username;
+            document.getElementById('setting-email').value = userData.email;
+            document.getElementById('setting-discord').value = userData.discordId || '';
+            document.getElementById('setting-portfolio').value = userData.portfolioLink || '';
+
+        } catch (error) {
+            console.error("Błąd autoryzacji:", error);
+            localStorage.removeItem('token'); // Czyści błędny token
+            window.location.href = '/login';
+        }
+    }
+
+    // Wylogowanie faktycznie usuwa token
     function logoutUser() {
         showToast("Wylogowywanie...", "info");
-        // Tu docelowo usuniemy token z localStorage
+        localStorage.removeItem('token');
         setTimeout(() => {
             window.location.href = '/login';
         }, 1200);
     }
 
-    // Rynek render
+    // Inicjalizacja po załadowaniu okna
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchUserData(); // Uruchamia pobieranie danych
+      
+      lucide.createIcons();
+      renderJobs();
+      switchDashTab('profil');
+      document.getElementById('tab-zlecenia').className = 'tab-active pb-2 px-1 transition-colors flex items-center gap-2';
+      selectListingType('zlecenie');
+    });
+
+    /* --- Reszta Twoich funkcji nawigacyjnych --- */
     function renderJobs() { document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="briefcase" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Zlecenia załadowane</h3></div>`; lucide.createIcons(); }
     function renderFreelancers() { document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="users" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Profile freelancerów załadowane</h3></div>`; lucide.createIcons(); }
-
-    // Nawigacja główna
+    
     function switchMainView(viewId) {
       document.getElementById('view-market').classList.add('view-hidden');
       document.getElementById('view-dashboard').classList.add('view-hidden');
       document.getElementById('view-add-listing').classList.add('view-hidden');
-      
       document.getElementById(`view-${viewId}`).classList.remove('view-hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Zakładki na Rynku
     function switchMarketTab(tab) {
       document.getElementById('tab-zlecenia').className = 'tab-inactive pb-2 px-1 transition-colors flex items-center gap-2';
       document.getElementById('tab-freelancerzy').className = 'tab-inactive pb-2 px-1 transition-colors flex items-center gap-2';
       document.getElementById(`tab-${tab}`).className = 'tab-active pb-2 px-1 transition-colors flex items-center gap-2';
-      
       if(tab === 'zlecenia') renderJobs();
       if(tab === 'freelancerzy') renderFreelancers();
     }
 
-    // Zakładki w Dashboardzie
     function switchDashTab(tab) {
       const btns = document.querySelectorAll('[id^="dash-btn-"]');
       btns.forEach(btn => {
@@ -461,32 +433,24 @@
         activeBtn.classList.remove('hover:bg-white/5', 'text-white/70');
         activeBtn.classList.add('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
       }
-
-      const views = ['profil', 'sklep', 'moje-ogloszenia'];
-      views.forEach(v => {
+      ['profil', 'sklep', 'moje-ogloszenia'].forEach(v => {
         const el = document.getElementById(`dash-${v}`);
         if(el) el.classList.add('hidden');
       });
-
       const activeView = document.getElementById(`dash-${tab}`);
       if(activeView) activeView.classList.remove('hidden');
     }
 
-    // Wybór w kreatorze ogłoszenia
     function selectListingType(type) {
-      const btnZlecenie = document.getElementById('type-btn-zlecenie');
-      const btnProfil = document.getElementById('type-btn-profil');
-      const formZlecenie = document.getElementById('form-zlecenie');
-      const formProfil = document.getElementById('form-profil');
+      const btnZlecenie = document.getElementById('type-btn-zlecenie'), btnProfil = document.getElementById('type-btn-profil');
+      const formZlecenie = document.getElementById('form-zlecenie'), formProfil = document.getElementById('form-profil');
 
       btnZlecenie.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 border-white/10 hover:border-white/20 hover:bg-white/5";
       btnZlecenie.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors";
-      
       btnProfil.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 border-white/10 hover:border-white/20 hover:bg-white/5";
       btnProfil.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors";
 
-      formZlecenie.classList.add('hidden');
-      formProfil.classList.add('hidden');
+      formZlecenie.classList.add('hidden'); formProfil.classList.add('hidden');
 
       if(type === 'zlecenie') {
         btnZlecenie.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 active";
@@ -499,25 +463,13 @@
       }
     }
 
-    // Dodanie ogłoszenia
     function submitListing(e) {
       e.preventDefault();
       switchMainView('dashboard');
       switchDashTab('moje-ogloszenia');
-      
-      // SPÓJNOŚĆ: Używamy systemu Toasts zamiast surowego elementu alertBox
       showToast("Ogłoszenie zostało pomyślnie dodane!", "success");
       e.target.reset();
     }
-
-    // Init
-    document.addEventListener("DOMContentLoaded", () => {
-      lucide.createIcons();
-      renderJobs();
-      switchDashTab('profil');
-      document.getElementById('tab-zlecenia').className = 'tab-active pb-2 px-1 transition-colors flex items-center gap-2';
-      selectListingType('zlecenie');
-    });
   </script>
 </body>
 </html>
