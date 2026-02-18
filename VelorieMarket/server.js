@@ -4,13 +4,12 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const axios = require('axios'); // Potrzebne do komunikacji z API Discorda
+const axios = require('axios');
 require('dotenv').config();
 
 // === IMPORTY WŁASNE ===
 const User = require('./models/User');
-// 🟢 ZMIANA: Dodano import 'sendWelcomeDM'
-const { initDiscordBot, updateDiscordStats, sendWelcomeDM } = require('./discordBot'); 
+const { initDiscordBot, updateDiscordStats, sendWelcomeDM, sendAdminOTP } = require('./discordBot'); 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,11 +20,20 @@ const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || '1473749778302111856'
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET; // Koniecznie dodaj do .env
 const DISCORD_REDIRECT_URI = 'https://www.velorie.pl/api/auth/discord/callback';
 
+// === DANE ADMINISTRATORÓW (Hasła pobierane z .env / Railway) ===
+const adminUsers = {
+  [process.env.ADMIN_PASS_GRACJAN]: '913479364883136532', // Gracjan
+  [process.env.ADMIN_PASS_ADAM]: '810238396953264129'     // Adam
+};
+
+// Tymczasowe przechowywanie kodów (Discord ID -> { code, expires })
+const activeOTPs = new Map();
+
 // === MIDDLEWARE ===
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// === MIDDLEWARE AUTORYZACJI ===
+// === MIDDLEWARE AUTORYZACJI UŻYTKOWNIKA ===
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -57,16 +65,60 @@ try {
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/market', (req, res) => res.sendFile(path.join(__dirname, 'public', 'market.html')));
+app.get('/admin3443', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin3443.html')));
 
 // === 4. ROUTING API (BACKEND) ===
 
-// 🔵 NOWOŚĆ: Logowanie/Rejestracja przez Discord (OAuth2 Callback)
+// --- AUTORYZACJA ADMINA (2FA DISCORD) ---
+// Krok 1: Weryfikacja hasła i wysłanie OTP
+app.post('/api/admin/login', async (req, res) => {
+  const { password } = req.body;
+  const discordId = adminUsers[password];
+
+  // Zabezpieczenie na wypadek, gdyby hasło wpisane było puste lub nie zgadzało się z bazą
+  if (!password || !discordId) {
+    return res.status(401).json({ error: 'Nieprawidłowe hasło administratora.' });
+  }
+
+  // Generujemy 6-cyfrowy kod
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  
+  // Zapisujemy kod przypisany do Discord ID (wygasa po 5 minutach)
+  activeOTPs.set(discordId, { code: otpCode, expires: Date.now() + 5 * 60 * 1000 });
+
+  // Wysyłamy kod na Discorda (funkcja z bota)
+  await sendAdminOTP(discordId, otpCode);
+
+  res.json({ message: 'Kod został wysłany na Discorda.', discordId });
+});
+
+// Krok 2: Weryfikacja kodu z Discorda
+app.post('/api/admin/verify', (req, res) => {
+  const { discordId, otpCode } = req.body;
+  const storedOTP = activeOTPs.get(discordId);
+
+  if (!storedOTP) return res.status(400).json({ error: 'Brak aktywnego kodu weryfikacyjnego.' });
+  if (Date.now() > storedOTP.expires) {
+    activeOTPs.delete(discordId);
+    return res.status(400).json({ error: 'Kod wygasł. Zaloguj się ponownie.' });
+  }
+  if (storedOTP.code !== otpCode) return res.status(401).json({ error: 'Nieprawidłowy kod.' });
+
+  // Pomyślna weryfikacja! 
+  activeOTPs.delete(discordId); // Usuwamy wykorzystany kod
+  
+  // Generujemy token JWT ze specjalną rolą 'admin'
+  const adminToken = jwt.sign({ discordId, role: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
+  
+  res.json({ token: adminToken });
+});
+
+// --- AUTORYZACJA DISCORD (OAUTH2 DLA UŻYTKOWNIKÓW) ---
 app.get('/api/auth/discord/callback', async (req, res) => {
   const { code } = req.query;
   if (!code) return res.redirect('/login?error=no_code');
 
   try {
-    // 1. Wymiana kodu na Access Token (POPRAWIONY NAGŁÓWEK)
     const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
       client_secret: DISCORD_CLIENT_SECRET,
@@ -74,12 +126,11 @@ app.get('/api/auth/discord/callback', async (req, res) => {
       code: code,
       redirect_uri: DISCORD_REDIRECT_URI,
     }), { 
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' } // Tutaj brakowało "www-"
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' } 
     });
 
     const accessToken = tokenResponse.data.access_token;
 
-    // 2. Pobranie danych użytkownika z API Discorda
     const userResponse = await axios.get('https://discord.com/api/users/@me', {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
@@ -89,49 +140,38 @@ app.get('/api/auth/discord/callback', async (req, res) => {
       ? `https://cdn.discordapp.com/avatars/${dUser.id}/${dUser.avatar}.png`
       : `https://cdn.discordapp.com/embed/avatars/${dUser.discriminator % 5}.png`;
 
-    // 3. Szukaj użytkownika po Discord ID lub Emailu
     let user = await User.findOne({ $or: [{ discordId: dUser.id }, { email: dUser.email }] });
-
-    // Flaga sprawdzająca czy użytkownik jest nowy
     let isNewUser = false;
 
     if (!user) {
-      // Jeśli nie ma – stwórz nowe konto
       user = new User({
         username: dUser.username,
         email: dUser.email,
         discordId: dUser.id,
         avatar: avatarUrl,
-        role: 'freelancer', // Domyślna rola
+        role: 'freelancer', 
         vpln: 0
       });
       await user.save();
       updateDiscordStats();
-      isNewUser = true; // Zaznaczamy, że to nowa rejestracja
+      isNewUser = true; 
     } else {
-      // Jeśli jest – zaktualizuj profil (podpięcie Discorda i avatar)
-      // Sprawdzamy czy to pierwsze podpięcie Discorda do istniejącego konta
       if (!user.discordId) isNewUser = true; 
-
       user.discordId = dUser.id;
       user.avatar = avatarUrl;
       await user.save();
     }
 
-    // 4. Generowanie tokena JWT Velorie
     const token = jwt.sign(
       { id: user._id, username: user.username, role: user.role },
       JWT_SECRET,
       { expiresIn: '24h' }
     );
 
-    // 🟢 ZMIANA: Wysyłamy wiadomość DM 
-    // Dodałem warunek (isNewUser), by bot nie spamował usera przy każdym logowaniu, a tylko przy rejestracji/pierwszym podpięciu konta.
     if (isNewUser) {
         sendWelcomeDM(dUser.id);
     }
 
-    // 5. Przekierowanie na market z tokenem w URL (frontend go przechwyci)
     res.redirect(`/market?token=${token}`);
 
   } catch (error) {
@@ -140,7 +180,7 @@ app.get('/api/auth/discord/callback', async (req, res) => {
   }
 });
 
-// Pobieranie danych profilu
+// Pobieranie danych profilu (dla userów)
 app.get('/api/me', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
