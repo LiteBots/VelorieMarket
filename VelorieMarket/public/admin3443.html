@@ -85,7 +85,13 @@
       
       <div id="login-step-1">
         <h2 class="text-xl font-bold mb-2">Autoryzacja Admina</h2>
-        <p class="text-sm text-white/50 mb-6">Wprowadź hasło główne.</p>
+        <p class="text-sm text-white/50 mb-6">Wybierz konto i wprowadź hasło główne.</p>
+        
+        <select id="admin-username" class="v-input text-center text-lg mb-4 font-bold cursor-pointer bg-[var(--bg2)]">
+          <option value="zxq0">Gracjan (zxq0)</option>
+          <option value="adambejmert">Adam (adambejmert)</option>
+        </select>
+
         <input type="password" id="admin-password" class="v-input text-center text-lg mb-4 tracking-widest" placeholder="••••••••" />
         <button onclick="requestAdminOTP()" class="btn-primary w-full py-3 rounded-xl font-bold text-sm">Zaloguj</button>
       </div>
