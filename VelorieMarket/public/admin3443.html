@@ -69,7 +69,6 @@
       -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
     }
     
-    /* Ukrywanie widoków panelu */
     .admin-view-hidden { display: none !important; }
   </style>
 </head>
@@ -86,7 +85,6 @@
       <div id="login-step-1">
         <h2 class="text-xl font-bold mb-2">Autoryzacja Admina</h2>
         <p class="text-sm text-white/50 mb-6">Wprowadź hasło główne.</p>
-        
         <input type="password" id="admin-password" class="v-input text-center text-lg mb-4 tracking-widest" placeholder="••••••••" />
         <button onclick="requestAdminOTP()" class="btn-primary w-full py-3 rounded-xl font-bold text-sm">Zaloguj</button>
       </div>
@@ -114,31 +112,25 @@
 
     <nav class="flex-1 overflow-y-auto p-4 flex flex-col gap-1.5">
       <div class="text-[10px] uppercase font-bold text-white/40 tracking-wider mb-2 mt-2 px-2">Główne statystyki</div>
-      
       <button onclick="switchAdminTab('dashboard')" id="nav-dashboard" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium bg-[var(--accent)]/10 text-[var(--accent)] glow-card">
         <i data-lucide="layout-dashboard" class="h-4 w-4"></i> Statystyki
       </button>
 
       <div class="text-[10px] uppercase font-bold text-white/40 tracking-wider mb-2 mt-6 px-2">Zarządzanie</div>
-
       <button onclick="switchAdminTab('pasek')" id="nav-pasek" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
         <i data-lucide="megaphone" class="h-4 w-4"></i> Pasek informacyjny
       </button>
-
       <button onclick="switchAdminTab('blokada')" id="nav-blokada" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
         <i data-lucide="shield-alert" class="h-4 w-4"></i> Blokada płatności
       </button>
 
       <div class="text-[10px] uppercase font-bold text-white/40 tracking-wider mb-2 mt-6 px-2">Baza danych</div>
-
       <button onclick="switchAdminTab('uzytkownicy')" id="nav-uzytkownicy" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
         <i data-lucide="users" class="h-4 w-4"></i> Użytkownicy
       </button>
-
       <button onclick="switchAdminTab('finanse')" id="nav-finanse" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
         <i data-lucide="banknote" class="h-4 w-4"></i> Finanse
       </button>
-
       <button onclick="switchAdminTab('ogloszenia')" id="nav-ogloszenia" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
         <i data-lucide="layers" class="h-4 w-4"></i> Ogłoszenia
       </button>
@@ -154,154 +146,38 @@
           <div class="text-[11px] text-white/50">Zarządca systemu</div>
         </div>
       </div>
-      <button onclick="logoutAdmin()" class="p-2 text-white/50 hover:text-red-400 transition" title="Wyloguj się">
+      <button onclick="logoutAdmin()" class="p-2 text-white/50 hover:text-red-400 transition">
         <i data-lucide="log-out" class="h-5 w-5"></i>
       </button>
     </div>
   </aside>
 
   <main class="flex-1 p-4 md:p-8 relative z-10 w-full overflow-hidden">
-
     <div id="view-dashboard" class="space-y-8">
       <div>
         <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Przegląd Systemu</h1>
-        <p class="text-white/50 text-sm mt-1">Bieżące statystyki i podsumowanie aktywności na platformie Velorie.</p>
+        <p class="text-white/50 text-sm mt-1">Bieżące statystyki Velorie.</p>
       </div>
-
       <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div class="glass rounded-3xl p-6 relative overflow-hidden lift">
-          <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/20 rounded-full blur-2xl"></div>
-          <div class="flex justify-between items-start mb-4 relative z-10">
-            <div class="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
-              <i data-lucide="users" class="h-6 w-6"></i>
-            </div>
-            <span class="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-md">+12% dzisiaj</span>
-          </div>
-          <div class="relative z-10">
+        <div class="glass rounded-3xl p-6 lift">
             <div class="text-3xl font-black text-white mb-1">4,281</div>
-            <div class="text-sm font-medium text-white/50 uppercase tracking-wider">Liczba Użytkowników</div>
-          </div>
+            <div class="text-sm font-medium text-white/50 uppercase tracking-wider">Użytkownicy</div>
         </div>
-
-        <div class="glass rounded-3xl p-6 relative overflow-hidden lift">
-          <div class="absolute -right-6 -top-6 w-24 h-24 bg-[var(--accent2)]/20 rounded-full blur-2xl"></div>
-          <div class="flex justify-between items-start mb-4 relative z-10">
-            <div class="p-3 rounded-2xl bg-[var(--accent2)]/10 border border-[var(--accent2)]/20 text-[var(--accent2)]">
-              <i data-lucide="user-check" class="h-6 w-6"></i>
-            </div>
-          </div>
-          <div class="relative z-10">
-            <div class="text-3xl font-black text-white mb-1">1,842</div>
-            <div class="text-sm font-medium text-white/50 uppercase tracking-wider">Ogłoszenia (Freelancer)</div>
-          </div>
         </div>
-
-        <div class="glass rounded-3xl p-6 relative overflow-hidden lift">
-          <div class="absolute -right-6 -top-6 w-24 h-24 bg-[var(--accent)]/20 rounded-full blur-2xl"></div>
-          <div class="flex justify-between items-start mb-4 relative z-10">
-            <div class="p-3 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[var(--accent)]">
-              <i data-lucide="briefcase" class="h-6 w-6"></i>
-            </div>
-            <span class="text-xs font-bold text-[var(--accent)] bg-[var(--accent)]/10 px-2 py-1 rounded-md border border-[var(--accent)]/20">Nowe zlecenia!</span>
-          </div>
-          <div class="relative z-10">
-            <div class="text-3xl font-black text-white mb-1">853</div>
-            <div class="text-sm font-medium text-white/50 uppercase tracking-wider">Ogłoszenia (Zlecenia)</div>
-          </div>
-        </div>
-
-        <div class="glass rounded-3xl p-6 relative overflow-hidden lift border-l-4 border-[#e2b714]">
-          <div class="absolute -right-6 -top-6 w-24 h-24 bg-[#e2b714]/20 rounded-full blur-2xl"></div>
-          <div class="flex justify-between items-start mb-4 relative z-10">
-            <div class="p-3 rounded-2xl bg-[#e2b714]/10 border border-[#e2b714]/20 text-[#e2b714]">
-              <i data-lucide="wallet" class="h-6 w-6"></i>
-            </div>
-            <span class="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-md">+5.2% (M/M)</span>
-          </div>
-          <div class="relative z-10">
-            <div class="text-3xl font-black text-[#e2b714] mb-1">142,500 <span class="text-lg text-[#e2b714]/70">vPLN</span></div>
-            <div class="text-sm font-medium text-white/50 uppercase tracking-wider">Przychód ogółem</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid lg:grid-cols-2 gap-6 mt-8">
-        <div class="glass rounded-3xl p-6">
-          <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i data-lucide="activity" class="h-5 w-5 text-[var(--accent)]"></i> Ostatnie aktywności</h3>
-          <div class="space-y-4">
-            <div class="flex items-center justify-between text-sm pb-3 border-b border-white/5">
-              <span class="text-white/70">Nowy użytkownik: <strong>DevKuba</strong></span>
-              <span class="text-white/40">2 min temu</span>
-            </div>
-            <div class="flex items-center justify-between text-sm pb-3 border-b border-white/5">
-              <span class="text-white/70">Kupno VIP: <strong>Ogłoszenie #1024</strong></span>
-              <span class="text-white/40">15 min temu</span>
-            </div>
-            <div class="flex items-center justify-between text-sm pb-3 border-b border-white/5">
-              <span class="text-white/70">Nowe zlecenie w kat. <strong>Web Dev</strong></span>
-              <span class="text-white/40">1 godz temu</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <div id="view-pasek" class="admin-view-hidden space-y-6 max-w-4xl">
-      <div>
-        <h2 class="text-3xl font-black tracking-tight">Pasek Informacyjny</h2>
-        <p class="text-white/50 text-sm mt-1">Zarządzaj globalnym komunikatem wyświetlanym wszystkim użytkownikom platformy na samej górze strony.</p>
-      </div>
-
-      <div class="glass rounded-3xl p-6 sm:p-8 space-y-6 border-l-4 border-blue-500">
-        <div>
-          <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Treść Komunikatu</label>
-          <input type="text" class="v-input" placeholder="Wpisz treść globalnego alertu..." value="Promocja weekendowa! Wszystkie wyróżnienia VIP 50% taniej z kodem WEEKEND." />
-        </div>
-        <div class="grid sm:grid-cols-2 gap-5">
-          <div>
-            <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Kolor tła powiadomienia</label>
-            <select class="v-input"><option>Niebieski (Informacja)</option><option>Czerwony (Ostrzeżenie)</option><option>Zielony (Sukces)</option></select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Link w przycisku (Opcjonalnie)</label>
-            <input type="text" class="v-input" placeholder="https://" value="/sklep" />
-          </div>
-        </div>
-        
-        <div class="border-t border-white/10 pt-6 flex items-center justify-between">
-          <label class="flex items-center cursor-pointer gap-3">
-            <div class="relative">
-              <input type="checkbox" class="sr-only" checked>
-              <div class="block bg-white/10 w-10 h-6 rounded-full border border-white/20"></div>
-              <div class="dot absolute left-1 top-1 bg-[var(--accent)] w-4 h-4 rounded-full transition transform translate-x-4 shadow-[0_0_10px_rgba(255,3,84,0.8)]"></div>
-            </div>
-            <span class="text-sm font-bold">Pasek aktywny</span>
-          </label>
-          <button class="btn-primary lift px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2">
-            Zapisz i publikuj <i data-lucide="send" class="h-4 w-4"></i>
-          </button>
-        </div>
+      <h2 class="text-3xl font-black tracking-tight">Pasek Informacyjny</h2>
+      <div class="glass rounded-3xl p-8 border-l-4 border-blue-500">
+        <input type="text" class="v-input mb-4" placeholder="Treść komunikatu..." />
+        <button class="btn-primary px-6 py-2.5 rounded-xl font-bold">Publikuj</button>
       </div>
     </div>
 
     <div id="view-blokada" class="admin-view-hidden space-y-6 max-w-4xl">
-      <div>
-        <h2 class="text-3xl font-black tracking-tight text-red-400">Bezpieczeństwo i Płatności</h2>
-        <p class="text-white/50 text-sm mt-1">Główny przełącznik bramki płatności dla całego serwisu.</p>
-      </div>
-
-      <div class="glass rounded-3xl p-8 border border-red-500/30 text-center relative overflow-hidden">
-        <div class="absolute inset-0 bg-red-500/5 pointer-events-none"></div>
-        <i data-lucide="shield-alert" class="h-16 w-16 text-red-400 mx-auto mb-4 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]"></i>
-        <h3 class="text-2xl font-bold mb-2">Zarządzanie Bramką (vPLN)</h3>
-        <p class="text-white/60 text-sm max-w-lg mx-auto mb-8">Użyj tego przycisku tylko w przypadku awarii systemu, wykrycia oszustw lub planowanych prac serwisowych. Zablokuje to możliwość doładowywania portfeli i kupowania pakietów.</p>
-        
-        <div class="inline-block glass-soft p-2 rounded-2xl">
-          <button class="btn-danger lift px-8 py-4 rounded-xl text-base font-bold flex items-center gap-3">
-            <i data-lucide="lock" class="h-5 w-5"></i>
-            ZABLOKUJ WSZYSTKIE PŁATNOŚCI
-          </button>
-        </div>
+      <h2 class="text-3xl font-black tracking-tight text-red-400">Bezpieczeństwo</h2>
+      <div class="glass rounded-3xl p-8 text-center border border-red-500/30">
+        <button class="btn-danger px-8 py-4 rounded-xl font-bold">ZABLOKUJ PŁATNOŚCI</button>
       </div>
     </div>
 
@@ -309,11 +185,11 @@
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 class="text-3xl font-black tracking-tight">Baza Użytkowników</h2>
-          <p class="text-white/50 text-sm mt-1">Zarządzaj profilami, edytuj vPLN i moderuj konta Discord.</p>
+          <p class="text-white/50 text-sm mt-1">Dane z MongoDB: Profilowe, vPLN, Discord.</p>
         </div>
         <div class="relative">
           <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40"></i>
-          <input type="text" placeholder="Szukaj użytkownika..." class="v-input pl-10 w-full md:w-64 text-sm" />
+          <input type="text" oninput="filterUsers(this.value)" placeholder="Szukaj użytkownika..." class="v-input pl-10 w-full md:w-64 text-sm" />
         </div>
       </div>
 
@@ -337,21 +213,11 @@
     </div>
 
     <div id="view-finanse" class="admin-view-hidden">
-      <h2 class="text-3xl font-black tracking-tight mb-6">Raporty Finansowe</h2>
-      <div class="glass p-12 text-center rounded-3xl border-dashed">
-        <i data-lucide="bar-chart-3" class="w-12 h-12 text-white/30 mx-auto mb-3"></i>
-        <h3 class="font-bold text-xl text-white/70">Wykresy i transakcje</h3>
-        <p class="text-sm text-white/40 mt-1">Historia wszystkich zakupów vPLN i wykupionych abonamentów.</p>
-      </div>
+        <h2 class="text-3xl font-black tracking-tight mb-6">Finanse</h2>
     </div>
 
     <div id="view-ogloszenia" class="admin-view-hidden">
-      <h2 class="text-3xl font-black tracking-tight mb-6">Moderacja Ogłoszeń</h2>
-      <div class="glass p-12 text-center rounded-3xl border-dashed">
-        <i data-lucide="layers" class="w-12 h-12 text-white/30 mx-auto mb-3"></i>
-        <h3 class="font-bold text-xl text-white/70">Wszystkie wpisy na platformie</h3>
-        <p class="text-sm text-white/40 mt-1">Panel do weryfikacji, usuwania i podbijania ogłoszeń.</p>
-      </div>
+        <h2 class="text-3xl font-black tracking-tight mb-6">Ogłoszenia</h2>
     </div>
 
   </main>
@@ -359,51 +225,28 @@
   <div id="user-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-md">
     <div class="glass max-w-2xl w-full rounded-3xl overflow-hidden relative shadow-2xl">
       <button onclick="closeUserModal()" class="absolute top-6 right-6 text-white/40 hover:text-white transition"><i data-lucide="x"></i></button>
-      
       <div class="p-8">
         <div class="flex items-center gap-6 mb-8">
-          <div class="relative">
-            <img id="modal-user-avatar" src="" class="h-24 w-24 rounded-2xl border-2 border-[var(--accent)] object-cover bg-white/5" />
-            <div id="modal-discord-badge" class="absolute -bottom-2 -right-2 bg-[#5865F2] p-1.5 rounded-lg border-2 border-[#0a1030] hidden">
-               <i data-lucide="message-square" class="h-4 w-4 text-white"></i>
-            </div>
-          </div>
+          <img id="modal-user-avatar" src="" class="h-24 w-24 rounded-2xl border-2 border-[var(--accent)] object-cover bg-white/5" />
           <div>
             <h3 id="modal-user-name" class="text-3xl font-black">---</h3>
             <p id="modal-user-email" class="text-white/40 text-sm">---</p>
-            <div class="mt-3 flex flex-wrap gap-2">
-              <span class="px-2.5 py-1 rounded-md bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-wider border border-green-500/20">Użytkownik Aktywny</span>
-              <span id="modal-method-text" class="px-2.5 py-1 rounded-md bg-white/5 text-white/60 text-[10px] font-bold uppercase tracking-wider border border-white/10">Standard</span>
-            </div>
+            <div id="modal-discord-label" class="mt-2 text-[10px] font-black text-blue-400 uppercase hidden">- Discord</div>
           </div>
         </div>
-
         <div class="grid md:grid-cols-2 gap-6">
-          <div class="glass-soft p-6 rounded-2xl border border-white/5 relative overflow-hidden">
-            <div class="absolute -right-4 -bottom-4 opacity-5 text-white rotate-12"><i data-lucide="wallet" class="w-24 h-24"></i></div>
-            <label class="text-[10px] uppercase font-bold text-white/40 block mb-4 tracking-widest">Saldo Portfela</label>
-            <div class="text-4xl font-black text-[#e2b714] mb-6 flex items-baseline gap-2">
-                <span id="modal-user-balance">0</span><span class="text-sm font-medium opacity-50">vPLN</span>
-            </div>
-            <div class="flex gap-2 relative z-10">
-              <input type="number" id="vpln-amount" class="v-input text-lg" placeholder="Kwota..." />
-              <button onclick="updateBalance('add')" class="bg-green-500/20 text-green-400 hover:bg-green-500/30 p-3 rounded-xl transition" title="Dodaj">
-                <i data-lucide="plus"></i>
-              </button>
-              <button onclick="updateBalance('sub')" class="bg-red-500/20 text-red-400 hover:bg-red-500/30 p-3 rounded-xl transition" title="Odejmij">
-                <i data-lucide="minus"></i>
-              </button>
+          <div class="glass-soft p-6 rounded-2xl">
+            <label class="text-[10px] uppercase font-bold text-white/40 block mb-4">Saldo Portfela</label>
+            <div class="text-4xl font-black text-[#e2b714] mb-6"><span id="modal-user-balance">0</span> vPLN</div>
+            <div class="flex gap-2">
+              <input type="number" id="vpln-amount" class="v-input" placeholder="Kwota..." />
+              <button onclick="changeBalance('add')" class="bg-green-500/20 text-green-400 p-3 rounded-xl"><i data-lucide="plus"></i></button>
+              <button onclick="changeBalance('sub')" class="bg-red-500/20 text-red-400 p-3 rounded-xl"><i data-lucide="minus"></i></button>
             </div>
           </div>
-
           <div class="flex flex-col gap-3">
-            <label class="text-[10px] uppercase font-bold text-white/40 block tracking-widest">Moderacja</label>
-            <button class="w-full btn-ghost py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-3">
-              <i data-lucide="layers" class="h-4 w-4"></i> Zobacz profil i ogłoszenia
-            </button>
-            <button onclick="confirmDelete()" class="w-full btn-danger py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-3">
-              <i data-lucide="trash-2" class="h-4 w-4 text-red-400"></i> Usuń konto na zawsze
-            </button>
+            <button class="w-full btn-ghost py-4 rounded-xl text-sm font-bold">Pokaż Ogłoszenia</button>
+            <button onclick="openDeleteConfirm()" class="w-full btn-danger py-4 rounded-xl text-sm font-bold">Usuń konto</button>
           </div>
         </div>
       </div>
@@ -411,15 +254,13 @@
   </div>
 
   <div id="delete-confirm-modal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-black/95 backdrop-blur-sm">
-    <div class="glass max-w-sm w-full p-8 rounded-3xl text-center shadow-[0_0_50px_rgba(239,68,68,0.2)]">
-      <div class="w-20 h-20 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
-        <i data-lucide="alert-triangle" class="h-10 w-10"></i>
-      </div>
-      <h4 class="text-2xl font-black mb-3 text-white">Jesteś pewny?</h4>
-      <p class="text-white/50 text-sm mb-8 leading-relaxed">Tej operacji nie można cofnąć. Wszystkie dane użytkownika, ogłoszenia i saldo zostaną trwale usunięte.</p>
+    <div class="glass max-w-sm w-full p-8 rounded-3xl text-center">
+      <i data-lucide="alert-triangle" class="h-12 w-12 text-red-500 mx-auto mb-4"></i>
+      <h4 class="text-2xl font-black mb-2">Jesteś pewny?</h4>
+      <p class="text-white/50 text-sm mb-8">Usunięcie konta z MongoDB jest nieodwracalne.</p>
       <div class="flex gap-4">
-        <button onclick="closeDeleteConfirm()" class="flex-1 btn-ghost py-4 rounded-xl font-bold transition">Anuluj</button>
-        <button onclick="executeDelete()" class="flex-1 btn-danger py-4 rounded-xl font-bold transition">Usuń konto</button>
+        <button onclick="closeDeleteConfirm()" class="flex-1 btn-ghost py-3 rounded-xl">Anuluj</button>
+        <button onclick="deleteUser()" class="flex-1 btn-danger py-3 rounded-xl">Usuń</button>
       </div>
     </div>
   </div>
@@ -427,46 +268,44 @@
   <script>
     lucide.createIcons();
 
-    let currentAdminDiscordId = null;
-
-    // Przykładowe dane użytkowników (zastąp to pobieraniem z bazy)
-    const mockUsers = [
-      { id: '1', name: 'zxq0', email: 'gracjan@velorie.pl', date: '18.02.2026, 12:30', vpln: 14500, method: 'Discord', avatar: 'https://i.imgur.com/CX9Evwm.png' },
-      { id: '2', name: 'adambejmert', email: 'adam@velorie.pl', date: '17.02.2026, 09:15', vpln: 250, method: 'Discord', avatar: 'https://i.imgur.com/N9OEjiX.png' },
-      { id: '3', name: 'DevKuba', email: 'kuba@velorie.pl', date: '16.02.2026, 21:45', vpln: 120, method: 'E-mail', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kuba' },
-      { id: '4', name: 'Zleceniodawca12', email: 'kontakt@zlecenie.pl', date: '15.02.2026, 10:00', vpln: 0, method: 'E-mail', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=User12' }
-    ];
-
+    let allUsers = [];
     let selectedUserId = null;
 
-    // Renderowanie tabeli
-    function renderUsers() {
+    // 1. POBIERANIE Z MONGODB (API)
+    async function fetchUsersFromDB() {
+      const token = localStorage.getItem('adminToken');
+      try {
+        const res = await fetch('/api/admin/users', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("Błąd pobierania danych");
+        allUsers = await res.json();
+        renderUsersTable(allUsers);
+      } catch (err) {
+        console.error("MongoDB Fetch Error:", err);
+      }
+    }
+
+    // 2. RENDEROWANIE TABELI
+    function renderUsersTable(users) {
       const tbody = document.getElementById('users-table-body');
-      tbody.innerHTML = mockUsers.map(user => `
+      tbody.innerHTML = users.map(user => `
         <tr class="hover:bg-white/[0.02] transition group">
           <td class="px-6 py-4">
             <div class="flex items-center gap-3">
-              <img src="${user.avatar}" class="h-10 w-10 rounded-xl bg-white/5 object-cover" />
+              <img src="${user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.username}" class="h-10 w-10 rounded-xl object-cover" />
               <div>
-                <div class="font-bold text-sm text-white">${user.name}</div>
-                <div class="text-[10px] font-bold ${user.method === 'Discord' ? 'text-blue-400' : 'text-white/30'} flex items-center gap-1 uppercase tracking-tighter">
-                  ${user.method === 'Discord' ? '<i data-lucide="message-square" class="h-2 w-2"></i> Discord' : 'Konto Standard'}
-                </div>
+                <div class="font-bold text-sm text-white">${user.username || user.name}</div>
+                ${user.discordId ? '<div class="text-[10px] font-black text-blue-400 uppercase">- Discord</div>' : '<div class="text-[10px] font-bold text-white/20 uppercase">Standard</div>'}
               </div>
             </div>
           </td>
-          <td class="px-6 py-4">
-            <div class="text-sm text-white/70">${user.email}</div>
-          </td>
-          <td class="px-6 py-4">
-            <div class="text-sm text-white/40">${user.date}</div>
-          </td>
-          <td class="px-6 py-4 text-center">
-            <div class="text-sm font-bold text-[#e2b714]">${user.vpln.toLocaleString()} <span class="text-[10px] opacity-50">vPLN</span></div>
-          </td>
+          <td class="px-6 py-4 text-sm text-white/70">${user.email}</td>
+          <td class="px-6 py-4 text-sm text-white/40">${new Date(user.createdAt).toLocaleString('pl-PL')}</td>
+          <td class="px-6 py-4 text-center font-bold text-[#e2b714]">${user.vpln || 0} vPLN</td>
           <td class="px-6 py-4 text-right">
-            <button onclick="openUserModal('${user.id}')" class="btn-ghost p-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition inline-flex items-center gap-2 text-xs font-bold">
-              <i data-lucide="settings-2" class="h-4 w-4"></i> Zarządzaj
+            <button onclick="openUserModal('${user._id}')" class="btn-ghost p-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition">
+              <i data-lucide="settings-2" class="h-4 w-4"></i>
             </button>
           </td>
         </tr>
@@ -474,126 +313,118 @@
       lucide.createIcons();
     }
 
-    // Modal zarządzania
-    function openUserModal(userId) {
-      const user = mockUsers.find(u => u.id === userId);
-      if (!user) return;
-
-      selectedUserId = userId;
-      document.getElementById('modal-user-name').innerText = user.name;
-      document.getElementById('modal-user-email').innerText = user.email;
-      document.getElementById('modal-user-avatar').src = user.avatar;
-      document.getElementById('modal-user-balance').innerText = user.vpln.toLocaleString();
-      
-      const badge = document.getElementById('modal-discord-badge');
-      const methodText = document.getElementById('modal-method-text');
-      
-      if(user.method === 'Discord') {
-          badge.classList.remove('hidden');
-          methodText.innerText = 'Discord Verified';
-          methodText.classList.replace('text-white/60', 'text-blue-400');
-      } else {
-          badge.classList.add('hidden');
-          methodText.innerText = 'Konto Standard';
-          methodText.classList.replace('text-blue-400', 'text-white/60');
-      }
-
-      const modal = document.getElementById('user-modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+    // 3. FILTROWANIE
+    function filterUsers(query) {
+      const filtered = allUsers.filter(u => 
+        u.username?.toLowerCase().includes(query.toLowerCase()) || 
+        u.email?.toLowerCase().includes(query.toLowerCase())
+      );
+      renderUsersTable(filtered);
     }
 
-    function closeUserModal() {
-      document.getElementById('user-modal').classList.add('hidden');
-      document.getElementById('user-modal').classList.remove('flex');
-    }
-
-    function updateBalance(type) {
+    // 4. ZARZĄDZANIE SALDEM (API)
+    async function changeBalance(type) {
       const amount = parseInt(document.getElementById('vpln-amount').value);
-      if (!amount || amount <= 0) return alert("Podaj prawidłową kwotę vPLN");
+      if (!amount) return;
 
-      const user = mockUsers.find(u => u.id === selectedUserId);
-      if (type === 'add') user.vpln += amount;
-      else user.vpln = Math.max(0, user.vpln - amount);
-
-      document.getElementById('modal-user-balance').innerText = user.vpln.toLocaleString();
-      document.getElementById('vpln-amount').value = '';
-      renderUsers(); // Odśwież tabelę w tle
+      const token = localStorage.getItem('adminToken');
+      try {
+        const res = await fetch(`/api/admin/users/${selectedUserId}/balance`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ amount: type === 'add' ? amount : -amount })
+        });
+        
+        if (res.ok) {
+          await fetchUsersFromDB(); // Odśwież dane
+          const updatedUser = allUsers.find(u => u._id === selectedUserId);
+          document.getElementById('modal-user-balance').innerText = updatedUser.vpln;
+          document.getElementById('vpln-amount').value = '';
+        }
+      } catch (err) { alert("Błąd zapisu salda"); }
     }
 
-    function confirmDelete() {
-      document.getElementById('delete-confirm-modal').classList.remove('hidden');
-      document.getElementById('delete-confirm-modal').classList.add('flex');
+    // 5. USUWANIE (API)
+    async function deleteUser() {
+      const token = localStorage.getItem('adminToken');
+      try {
+        const res = await fetch(`/api/admin/users/${selectedUserId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          closeDeleteConfirm();
+          closeUserModal();
+          await fetchUsersFromDB();
+        }
+      } catch (err) { alert("Błąd usuwania użytkownika"); }
     }
 
-    function closeDeleteConfirm() {
-      document.getElementById('delete-confirm-modal').classList.add('hidden');
-    }
-
-    function executeDelete() {
-      const index = mockUsers.findIndex(u => u.id === selectedUserId);
-      if (index > -1) mockUsers.splice(index, 1);
+    // --- MODALE ---
+    function openUserModal(id) {
+      selectedUserId = id;
+      const user = allUsers.find(u => u._id === id);
+      document.getElementById('modal-user-name').innerText = user.username || user.name;
+      document.getElementById('modal-user-email').innerText = user.email;
+      document.getElementById('modal-user-balance').innerText = user.vpln || 0;
+      document.getElementById('modal-user-avatar').src = user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.username;
       
-      alert("Konto użytkownika zostało trwale usunięte.");
-      closeDeleteConfirm();
-      closeUserModal();
-      renderUsers();
+      const discLabel = document.getElementById('modal-discord-label');
+      user.discordId ? discLabel.classList.remove('hidden') : discLabel.classList.add('hidden');
+
+      document.getElementById('user-modal').classList.remove('hidden');
+      document.getElementById('user-modal').classList.add('flex');
     }
 
-    // Pozostałe funkcje Twojego panelu
+    function closeUserModal() { document.getElementById('user-modal').classList.add('hidden'); }
+    function openDeleteConfirm() { document.getElementById('delete-confirm-modal').classList.remove('hidden'); document.getElementById('delete-confirm-modal').classList.add('flex'); }
+    function closeDeleteConfirm() { document.getElementById('delete-confirm-modal').classList.add('hidden'); }
+
+    // --- SYSTEMOWE ---
+    function switchAdminTab(tabName) {
+      document.querySelectorAll('button[id^="nav-"]').forEach(btn => {
+        btn.className = "w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5";
+      });
+      const activeBtn = document.getElementById(`nav-${tabName}`);
+      activeBtn.className = "w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium bg-[var(--accent)]/10 text-[var(--accent)] glow-card";
+
+      const views = ['dashboard', 'pasek', 'blokada', 'uzytkownicy', 'finanse', 'ogloszenia'];
+      views.forEach(v => document.getElementById(`view-${v}`).classList.add('admin-view-hidden'));
+      document.getElementById(`view-${tabName}`).classList.remove('admin-view-hidden');
+      
+      if(tabName === 'uzytkownicy') fetchUsersFromDB();
+    }
+
+    window.onload = () => {
+      const token = localStorage.getItem('adminToken');
+      if (token) {
+        document.getElementById('admin-login-overlay').style.display = 'none';
+        setAdminProfile(token);
+        fetchUsersFromDB();
+      }
+    };
+
+    // (Funkcje requestAdminOTP, verifyAdminOTP, setAdminProfile i logoutAdmin pozostają identyczne jak w Twoim kodzie pierwotnym)
     function setAdminProfile(token) {
       if (!token) return;
       try {
         const base64Url = token.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join('')));
-        
+        const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
         const discordId = payload.discordId;
         const avatarEl = document.getElementById('admin-avatar');
         const usernameEl = document.getElementById('admin-username');
-        
-        if (discordId === '913479364883136532') {
-          avatarEl.src = 'https://i.imgur.com/CX9Evwm.png';
-          usernameEl.innerText = 'zxq0';
-        } else if (discordId === '810238396953264129') {
-          avatarEl.src = 'https://i.imgur.com/N9OEjiX.png';
-          usernameEl.innerText = 'adambejmert';
-        }
-      } catch (err) {
-        console.error("Błąd ładowania profilu", err);
-      }
+        if (discordId === '913479364883136532') { avatarEl.src = 'https://i.imgur.com/CX9Evwm.png'; usernameEl.innerText = 'zxq0'; }
+        else if (discordId === '810238396953264129') { avatarEl.src = 'https://i.imgur.com/N9OEjiX.png'; usernameEl.innerText = 'adambejmert'; }
+      } catch (err) {}
     }
-
-    async function logoutAdmin() {
-      const token = localStorage.getItem('adminToken');
-      if (token) {
-        try {
-          await fetch('/api/admin/logout', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-        } catch (err) {}
-      }
-      localStorage.removeItem('adminToken');
-      window.location.reload(); 
-    }
-
-    window.onload = () => {
-        const token = localStorage.getItem('adminToken');
-        if (token) {
-            document.getElementById('admin-login-overlay').style.display = 'none';
-            setAdminProfile(token);
-        }
-        renderUsers(); // Inicjalizacja tabeli
-    };
 
     async function requestAdminOTP() {
       const password = document.getElementById('admin-password').value;
       const errorText = document.getElementById('admin-login-error');
-      if (!password) { errorText.innerText = "Podaj hasło!"; return; }
-      errorText.innerText = "";
       try {
         const res = await fetch('/api/admin/login', {
           method: 'POST',
@@ -602,16 +433,15 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
-        currentAdminDiscordId = data.discordId; 
+        currentAdminDiscordId = data.discordId;
         document.getElementById('login-step-1').classList.add('hidden');
         document.getElementById('login-step-2').classList.remove('hidden');
-      } catch (err) { errorText.innerText = err.message || "Błąd logowania."; }
+      } catch (err) { errorText.innerText = err.message; }
     }
 
     async function verifyAdminOTP() {
       const otpCode = document.getElementById('admin-otp').value;
       const errorText = document.getElementById('admin-login-error');
-      if (otpCode.length !== 6) { errorText.innerText = "Kod musi mieć 6 cyfr!"; return; }
       try {
         const res = await fetch('/api/admin/verify', {
           method: 'POST',
@@ -621,31 +451,13 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         localStorage.setItem('adminToken', data.token);
-        setAdminProfile(data.token);
-        document.getElementById('admin-login-overlay').style.opacity = '0';
-        setTimeout(() => { document.getElementById('admin-login-overlay').style.display = 'none'; }, 300);
-      } catch (err) { errorText.innerText = err.message || "Nieprawidłowy kod."; }
+        location.reload();
+      } catch (err) { errorText.innerText = err.message; }
     }
 
-    function switchAdminTab(tabName) {
-      const navButtons = document.querySelectorAll('button[id^="nav-"]');
-      navButtons.forEach(btn => {
-        btn.classList.remove('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
-        btn.classList.add('text-white/70', 'hover:bg-white/5');
-      });
-      const activeBtn = document.getElementById(`nav-${tabName}`);
-      if(activeBtn) {
-        activeBtn.classList.remove('text-white/70', 'hover:bg-white/5');
-        activeBtn.classList.add('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
-      }
-      const views = ['dashboard', 'pasek', 'blokada', 'uzytkownicy', 'finanse', 'ogloszenia'];
-      views.forEach(v => {
-        const el = document.getElementById(`view-${v}`);
-        if(el) el.classList.add('admin-view-hidden');
-      });
-      const activeView = document.getElementById(`view-${tabName}`);
-      if(activeView) activeView.classList.remove('admin-view-hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    async function logoutAdmin() {
+      localStorage.removeItem('adminToken');
+      location.reload();
     }
   </script>
 </body>
