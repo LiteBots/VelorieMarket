@@ -225,11 +225,11 @@
         </div>
       </div>
 
-      <form id="form-zlecenie" class="glass rounded-3xl p-6 sm:p-8 space-y-6" onsubmit="submitListing(event)">
+      <form id="form-zlecenie" class="glass rounded-3xl p-6 sm:p-8 space-y-6" onsubmit="submitListing(event, 'job')">
         <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-4 border-b border-white/10 pb-2">2. Szczegóły Twojego projektu</h2>
         <div class="space-y-5">
-          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Krótki, chwytliwy tytuł <span class="text-[var(--accent)]">*</span></label><input type="text" class="v-input font-medium" required /></div>
-          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Opis zlecenia <span class="text-[var(--accent)]">*</span></label><textarea class="v-input min-h-[140px]" required></textarea></div>
+          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Krótki, chwytliwy tytuł <span class="text-[var(--accent)]">*</span></label><input type="text" id="job-title" class="v-input font-medium" required /></div>
+          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Opis zlecenia <span class="text-[var(--accent)]">*</span></label><textarea id="job-desc" class="v-input min-h-[140px]" required></textarea></div>
         </div>
         <div class="border-t border-white/10 pt-6 flex justify-end gap-3">
           <button type="button" onclick="switchMainView('market')" class="btn-ghost lift px-6 py-3 rounded-xl text-sm font-bold">Anuluj</button>
@@ -237,11 +237,11 @@
         </div>
       </form>
 
-      <form id="form-profil" class="glass rounded-3xl p-6 sm:p-8 space-y-6 hidden" onsubmit="submitListing(event)">
+      <form id="form-profil" class="glass rounded-3xl p-6 sm:p-8 space-y-6 hidden" onsubmit="submitListing(event, 'freelancer')">
          <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-4 border-b border-white/10 pb-2">2. Twoja wizytówka profesjonalisty</h2>
          <div class="space-y-5">
-           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Twój Tytuł / Rola <span class="text-[var(--accent)]">*</span></label><input type="text" class="v-input" required /></div>
-           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Bio / Opis doświadczenia <span class="text-[var(--accent)]">*</span></label><textarea class="v-input min-h-[140px]" required></textarea></div>
+           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Twój Tytuł / Rola <span class="text-[var(--accent)]">*</span></label><input type="text" id="profile-title" class="v-input" required /></div>
+           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Bio / Opis doświadczenia <span class="text-[var(--accent)]">*</span></label><textarea id="profile-desc" class="v-input min-h-[140px]" required></textarea></div>
          </div>
          <div class="border-t border-white/10 pt-6 flex justify-end gap-3">
            <button type="button" onclick="switchMainView('market')" class="btn-ghost lift px-6 py-3 rounded-xl text-sm font-bold">Anuluj</button>
@@ -394,15 +394,22 @@
   </main>
 
   <script>
+    // === AUTORYZACJA I PRZECHWYTYWANIE TOKENA ===
     const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    if (token) {
-        localStorage.setItem('token', token);
+    const urlToken = params.get('token');
+    if (urlToken) {
+        localStorage.setItem('token', urlToken);
         window.history.replaceState({}, document.title, "/market"); 
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login'; // Odsyła jeśli brak sesji
     }
 
     lucide.createIcons();
 
+    // === SYSTEM POWIADOMIEŃ ===
     function showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
@@ -424,33 +431,24 @@
         }, 4000);
     }
 
+    // === POBIERANIE DANYCH UŻYTKOWNIKA (API) ===
     async function fetchUserData() {
-        // Zmodyfikowane do testów frontendu
-        const mockUserData = {
-            username: "VelorieUser",
-            role: "freelancer",
-            vpln: 150.50,
-            isVerified: true,
-            verificationStatus: "none",
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-            email: "kontakt@velorie.pl",
-            discordId: "123456789012345678",
-            portfolioLink: "https://github.com/velorie"
-        };
-
         try {
-            const userData = mockUserData; // Używamy sztucznych danych
+            const response = await fetch('/api/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
+            if (!response.ok) throw new Error('Sesja wygasła');
+            const userData = await response.json();
+
+            // Renderowanie interfejsu
             document.getElementById('user-display-name').textContent = userData.username;
             document.getElementById('user-role-display').textContent = userData.role === 'freelancer' ? 'Freelancer' : 'Zleceniodawca';
             document.getElementById('header-vpln').textContent = parseFloat(userData.vpln).toFixed(2);
             
             const verifiedBadge = document.getElementById('user-verified-badge');
-            if (userData.isVerified) {
-                verifiedBadge.classList.remove('hidden');
-            } else {
-                verifiedBadge.classList.add('hidden');
-            }
+            if (userData.isVerified) verifiedBadge.classList.remove('hidden');
+            else verifiedBadge.classList.add('hidden');
 
             const buyVerBtn = document.getElementById('btn-buy-verification');
             if (userData.verificationStatus === 'pending') {
@@ -472,35 +470,137 @@
                 document.getElementById('user-avatar-dash').src = userData.avatar;
             }
 
-            document.getElementById('setting-username').value = userData.username;
-            document.getElementById('setting-email').value = userData.email;
+            document.getElementById('setting-username').value = userData.username || '';
+            document.getElementById('setting-email').value = userData.email || '';
             document.getElementById('setting-discord').value = userData.discordId || 'Niepodpięty';
             document.getElementById('setting-portfolio').value = userData.portfolioLink || '';
 
         } catch (error) {
             console.error("Błąd autoryzacji:", error);
+            localStorage.removeItem('token');
+            window.location.href = '/login';
         }
     }
 
+    // === ZAKUP WERYFIKACJI (API) ===
     async function buyVerification() {
-        if(!confirm("Czy na pewno chcesz złożyć wniosek o weryfikację konta za 29.99 vPLN? Upewnij się, że Twój profil nie narusza regulaminu.")) return;
-        showToast("Wniosek został złożony pomyślnie!", "success");
-        document.getElementById('btn-buy-verification').textContent = 'Oczekuje na akceptację...';
-        document.getElementById('btn-buy-verification').classList.add('cursor-not-allowed', 'opacity-50');
-        document.getElementById('btn-buy-verification').onclick = null;
+        if(!confirm("Czy na pewno chcesz złożyć wniosek o weryfikację konta za 29.99 vPLN?")) return;
+
+        try {
+            const response = await fetch('/api/shop/buy-verification', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showToast(data.message, "success");
+                fetchUserData(); // Odświeża portfel po zakupie
+            } else {
+                showToast(data.error, "error");
+            }
+        } catch (error) {
+            showToast("Błąd połączenia z serwerem.", "error");
+        }
     }
 
+    // === DODAWANIE OGŁOSZENIA (API) ===
+    async function submitListing(e, type) {
+        e.preventDefault();
+        
+        let payload = { type: type }; // 'job' lub 'freelancer'
+
+        if (type === 'job') {
+            payload.title = document.getElementById('job-title').value;
+            payload.description = document.getElementById('job-desc').value;
+        } else {
+            payload.title = document.getElementById('profile-title').value;
+            payload.description = document.getElementById('profile-desc').value;
+        }
+
+        try {
+            const response = await fetch('/api/listings', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showToast("Ogłoszenie zostało pomyślnie dodane!", "success");
+                e.target.reset();
+                switchMainView('market');
+                switchMarketTab(type === 'job' ? 'zlecenia' : 'freelancerzy');
+            } else {
+                showToast(data.error || "Wystąpił błąd", "error");
+            }
+        } catch (error) {
+            showToast("Błąd połączenia z serwerem.", "error");
+        }
+    }
+
+    // === POBIERANIE OGŁOSZEŃ (API) ===
+    async function loadListings(type) {
+        const listContainer = document.getElementById('market-list');
+        listContainer.innerHTML = '<div class="col-span-full text-center py-10"><i data-lucide="loader" class="w-8 h-8 animate-spin mx-auto text-[var(--accent)]"></i></div>';
+        lucide.createIcons();
+
+        try {
+            const res = await fetch(`/api/listings?type=${type}`);
+            const listings = await res.json();
+
+            listContainer.innerHTML = '';
+
+            if (listings.length === 0) {
+                listContainer.innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="${type === 'job' ? 'briefcase' : 'users'}" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Brak wyników</h3><p class="text-sm text-white/50">Bądź pierwszy i dodaj swoje ogłoszenie!</p></div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            listings.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "glass rounded-2xl p-5 lift group cursor-pointer border border-white/5 hover:border-[var(--accent)]";
+                card.innerHTML = `
+                    <div class="flex items-center gap-3 mb-4">
+                        <img src="${item.authorAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Unknown'}" class="w-10 h-10 rounded-full bg-white/5 p-0.5 border border-white/10 object-cover" />
+                        <div>
+                            <div class="text-sm font-bold">${item.authorName}</div>
+                            <div class="text-[10px] text-white/50 uppercase tracking-wider">${new Date(item.createdAt).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2 group-hover:text-[var(--accent)] transition-colors">${item.title}</h3>
+                    <p class="text-sm text-white/60 line-clamp-3">${item.description}</p>
+                `;
+                listContainer.appendChild(card);
+            });
+            lucide.createIcons();
+
+        } catch (err) {
+            listContainer.innerHTML = `<div class="col-span-full text-center text-red-400">Błąd ładowania danych. Spróbuj ponownie.</div>`;
+        }
+    }
+
+    function renderJobs() { loadListings('job'); }
+    function renderFreelancers() { loadListings('freelancer'); }
+
+    // === INFOBAR ===
     let lastBarData = null;
     async function fetchInfoBar() {
-        const mockBarData = {
-            isActive: true,
-            text: "🔥 Witaj na nowej platformie Velorie Market! Odbierz bonus na start.",
-            linkText: "Sprawdź szczegóły",
-            linkUrl: "#",
-            bgColor: "#ff0354",
-            textColor: "#ffffff"
-        };
-        updateInfoBarUI(mockBarData);
+        try {
+            const response = await fetch('/api/infobar?page=market');
+            if (!response.ok) return;
+            const data = await response.json();
+
+            if (JSON.stringify(data) !== JSON.stringify(lastBarData)) {
+                lastBarData = data;
+                updateInfoBarUI(data);
+            }
+        } catch (err) { console.error('Błąd paska info:', err); }
     }
 
     function updateInfoBarUI(data) {
@@ -508,7 +608,7 @@
         const text = document.getElementById('info-bar-text');
         const link = document.getElementById('info-bar-link');
 
-        if (data.isActive) {
+        if (data && data.isActive) {
             bar.style.backgroundColor = data.bgColor || '#ff0354';
             bar.style.color = data.textColor || '#ffffff';
             text.innerText = data.text;
@@ -517,9 +617,7 @@
                 link.innerText = data.linkText;
                 link.href = data.linkUrl;
                 link.classList.remove('hidden');
-            } else {
-                link.classList.add('hidden');
-            }
+            } else { link.classList.add('hidden'); }
 
             bar.classList.remove('bar-hidden');
             bar.classList.add('bar-visible');
@@ -529,34 +627,27 @@
         }
     }
 
+    // === LOGOUT ===
     function logoutUser() {
         showToast("Wylogowywanie...", "info");
         localStorage.removeItem('token');
-        setTimeout(() => {
-            showToast("Wylogowano! (Symulacja)", "success");
-        }, 1200);
+        setTimeout(() => window.location.href = '/login', 1200);
     }
 
+    // === INICJALIZACJA STRONY ===
     document.addEventListener("DOMContentLoaded", () => {
-      fetchUserData();
-      fetchInfoBar();
-      
-      renderJobs();
+      if (token) {
+        fetchUserData();
+        fetchInfoBar();
+        setInterval(fetchInfoBar, 5000); // Odświeżanie paska co 5s jest okej, jeśli API działa
+        renderJobs(); // Ładuje zlecenia na start
+      }
       switchDashTab('profil');
       document.getElementById('tab-zlecenia').className = 'tab-active pb-2 px-1 transition-colors flex items-center gap-2';
       selectListingType('zlecenie');
     });
 
-    function renderJobs() { 
-        document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="briefcase" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Zlecenia załadowane (Brak danych API)</h3></div>`; 
-        lucide.createIcons(); 
-    }
-    
-    function renderFreelancers() { 
-        document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="users" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Profile freelancerów załadowane (Brak danych API)</h3></div>`; 
-        lucide.createIcons(); 
-    }
-    
+    // === PRZEŁĄCZANIE WIDOKÓW ===
     function switchMainView(viewId) {
       document.getElementById('view-market').classList.add('view-hidden');
       document.getElementById('view-dashboard').classList.add('view-hidden');
@@ -612,14 +703,6 @@
         btnProfil.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-[var(--accent2)] flex items-center justify-center text-white transition-colors shadow-lg shadow-[var(--accent2)]/20";
         formProfil.classList.remove('hidden');
       }
-    }
-
-    function submitListing(e) {
-      e.preventDefault();
-      switchMainView('dashboard');
-      switchDashTab('moje-ogloszenia');
-      showToast("Ogłoszenie zostało pomyślnie dodane!", "success");
-      e.target.reset();
     }
   </script>
 </body>
