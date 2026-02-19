@@ -70,9 +70,12 @@
     }
     
     .admin-view-hidden { display: none !important; }
+    
+    /* Mobile Menu Transition */
+    .mobile-menu-enter { transform: translateX(0) !important; }
   </style>
 </head>
-<body class="selection:bg-[#ff0354]/40 selection:text-white flex flex-col md:flex-row min-h-screen">
+<body class="selection:bg-[#ff0354]/40 selection:text-white flex min-h-screen relative">
 
   <div class="aurora" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div></div>
   <div class="grid-bg" aria-hidden="true"></div>
@@ -101,8 +104,14 @@
     </div>
   </div>
 
-  <aside class="w-full md:w-64 glass-soft border-r border-white/10 flex flex-col z-40 sticky top-0 h-auto md:h-screen shrink-0">
-    <div class="p-5 border-b border-white/10 flex items-center gap-3">
+  <button id="mobile-toggle" onclick="toggleSidebar()" class="fixed top-4 left-4 z-[60] p-2.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl text-white shadow-lg md:hidden hover:bg-white/10 transition">
+    <i data-lucide="menu" class="h-6 w-6"></i>
+  </button>
+
+  <div id="mobile-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
+
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 glass-soft border-r border-white/10 flex flex-col transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static md:h-screen shrink-0 bg-[#00010f]/95 md:bg-transparent">
+    <div class="p-5 border-b border-white/10 flex items-center gap-3 mt-12 md:mt-0">
       <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo" />
       <div>
         <div class="text-lg font-bold tracking-tight leading-none">Admin</div>
@@ -152,7 +161,7 @@
     </div>
   </aside>
 
-  <main class="flex-1 p-4 md:p-8 relative z-10 w-full overflow-hidden">
+  <main class="flex-1 p-4 md:p-8 relative z-10 w-full overflow-x-hidden pt-20 md:pt-8">
     <div id="view-dashboard" class="space-y-8">
       <div>
         <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Przegląd Systemu</h1>
@@ -195,14 +204,14 @@
 
       <div class="glass rounded-3xl overflow-hidden border border-white/5">
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
+          <table class="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr class="bg-white/5 text-[10px] uppercase tracking-widest font-bold text-white/40">
                 <th class="px-6 py-4">Użytkownik</th>
                 <th class="px-6 py-4">Kontakt / Email</th>
-                <th class="px-6 py-4">Data i Godzina Rejestracji</th>
-                <th class="px-6 py-4 text-center">Saldo vPLN</th>
-                <th class="px-6 py-4 text-right">Zarządzanie</th>
+                <th class="px-6 py-4">Rejestracja</th>
+                <th class="px-6 py-4 text-center">Saldo</th>
+                <th class="px-6 py-4 text-right">Opcje</th>
               </tr>
             </thead>
             <tbody id="users-table-body" class="divide-y divide-white/5">
@@ -222,14 +231,14 @@
 
   </main>
 
-  <div id="user-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-    <div class="glass max-w-4xl w-full rounded-3xl overflow-hidden relative shadow-2xl h-auto max-h-[90vh] flex flex-col md:flex-row">
+  <div id="user-modal" class="fixed inset-0 z-[110] hidden items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-md">
+    <div class="glass w-full rounded-t-3xl md:rounded-3xl overflow-hidden relative shadow-2xl h-[85vh] md:h-auto md:max-h-[90vh] max-w-4xl flex flex-col md:flex-row">
       <button onclick="closeUserModal()" class="absolute top-4 right-4 z-50 p-2 bg-black/50 rounded-full text-white/40 hover:text-white transition"><i data-lucide="x"></i></button>
       
-      <div class="w-full md:w-1/3 border-r border-white/10 p-6 flex flex-col gap-6 bg-black/20 overflow-y-auto">
+      <div class="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-white/10 p-6 flex flex-col gap-6 bg-black/20 overflow-y-auto shrink-0">
          <div class="flex flex-col items-center text-center">
-            <img id="modal-user-avatar" src="" class="h-28 w-28 rounded-full border-4 border-[var(--bg2)] shadow-xl object-cover mb-4" />
-            <h3 id="modal-user-name" class="text-2xl font-black leading-tight break-all">---</h3>
+            <img id="modal-user-avatar" src="" class="h-20 w-20 md:h-28 md:w-28 rounded-full border-4 border-[var(--bg2)] shadow-xl object-cover mb-4" />
+            <h3 id="modal-user-name" class="text-xl md:text-2xl font-black leading-tight break-all">---</h3>
             <p id="modal-user-email" class="text-white/40 text-xs mt-1 break-all">---</p>
             <div id="modal-discord-label" class="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-[#5865F2]/20 text-[#5865F2] text-[10px] font-bold rounded uppercase hidden">
                <i data-lucide="gamepad-2" class="h-3 w-3"></i> Discord
@@ -298,7 +307,7 @@
     </div>
   </div>
 
-  <div id="delete-confirm-modal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-black/95 backdrop-blur-sm">
+  <div id="delete-confirm-modal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-black/95 backdrop-blur-sm p-4">
     <div class="glass max-w-sm w-full p-8 rounded-3xl text-center">
       <i data-lucide="alert-triangle" class="h-12 w-12 text-red-500 mx-auto mb-4"></i>
       <h4 class="text-2xl font-black mb-2">Jesteś pewny?</h4>
@@ -315,6 +324,23 @@
 
     let allUsers = [];
     let selectedUserId = null;
+
+    // --- MOBILE MENU LOGIC ---
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      
+      // Sprawdzamy czy sidebar ma klasę translate-x-0 (otwarty na mobile)
+      if (sidebar.classList.contains('mobile-menu-enter')) {
+        // Zamknij
+        sidebar.classList.remove('mobile-menu-enter');
+        backdrop.classList.add('hidden');
+      } else {
+        // Otwórz
+        sidebar.classList.add('mobile-menu-enter');
+        backdrop.classList.remove('hidden');
+      }
+    }
 
     // 1. POBIERANIE Z MONGODB (API)
     async function fetchUsersFromDB() {
@@ -437,17 +463,14 @@
       const user = allUsers.find(u => u._id === id);
       if (!user) return;
 
-      // Wypełnianie danych podstawowych
       document.getElementById('modal-user-name').innerText = user.username || user.name || 'Użytkownik';
       document.getElementById('modal-user-email').innerText = user.email;
       document.getElementById('modal-user-balance').innerText = user.vpln || 0;
       document.getElementById('modal-user-avatar').src = user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user.username || user.email);
       
-      // Data rejestracji
       const regDate = new Date(user.createdAt);
       document.getElementById('modal-user-date').innerText = "Dołączył: " + regDate.toLocaleString('pl-PL');
 
-      // Badges
       const discLabel = document.getElementById('modal-discord-label');
       const formLabel = document.getElementById('modal-form-label');
       
@@ -459,10 +482,7 @@
           formLabel.classList.remove('hidden');
       }
 
-      // Wypełnianie ogłoszeń (Mockup - normalnie pobierałbyś to z API)
-      renderUserAds(user.listings || []); // Zakładamy, że user object ma listings, jeśli nie - pusta tablica
-      
-      // Wypełnianie transakcji (Mockup)
+      renderUserAds(user.listings || []); 
       renderUserTransactions(user.transactions || []); 
 
       document.getElementById('user-modal').classList.remove('hidden');
@@ -475,7 +495,6 @@
             container.innerHTML = '<div class="p-4 rounded-xl bg-white/5 border border-white/5 text-center text-white/30 text-xs">Brak aktywnych ogłoszeń lub profili.</div>';
             return;
         }
-        // Przykład renderowania, gdyby dane były dostępne
         container.innerHTML = ads.map(ad => `
             <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between group hover:bg-white/10 transition">
                 <div>
@@ -504,7 +523,6 @@
         `).join('');
     }
 
-    // Pomocnicza funkcja do wizualizacji dodania transakcji bez przeładowania strony (opcjonalne)
     function addMockTransaction(amount, type) {
         const container = document.getElementById('modal-user-transactions');
         const emptyMsg = container.querySelector('td[colspan="3"]');
@@ -538,6 +556,11 @@
       views.forEach(v => document.getElementById(`view-${v}`).classList.add('admin-view-hidden'));
       document.getElementById(`view-${tabName}`).classList.remove('admin-view-hidden');
       
+      // Na mobile: zamknij menu po wybraniu zakładki
+      if(window.innerWidth < 768) {
+          toggleSidebar();
+      }
+
       if(tabName === 'uzytkownicy') fetchUsersFromDB();
     }
 
