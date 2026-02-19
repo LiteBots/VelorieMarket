@@ -225,11 +225,25 @@
         </div>
       </div>
 
-      <form id="form-zlecenie" class="glass rounded-3xl p-6 sm:p-8 space-y-6" onsubmit="submitListing(event)">
+      <form id="form-zlecenie" class="glass rounded-3xl p-6 sm:p-8 space-y-6" onsubmit="submitListing(event, 'job')">
         <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-4 border-b border-white/10 pb-2">2. Szczegóły Twojego projektu</h2>
         <div class="space-y-5">
-          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Krótki, chwytliwy tytuł <span class="text-[var(--accent)]">*</span></label><input type="text" class="v-input font-medium" required /></div>
-          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Opis zlecenia <span class="text-[var(--accent)]">*</span></label><textarea class="v-input min-h-[140px]" required></textarea></div>
+          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Tytuł zlecenia <span class="text-[var(--accent)]">*</span></label><input type="text" id="job-title" class="v-input font-medium" required /></div>
+          
+          <div class="grid sm:grid-cols-3 gap-4">
+            <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Kategoria <span class="text-[var(--accent)]">*</span></label>
+              <select id="job-category" class="v-input" required>
+                <option value="Programowanie">Programowanie / IT</option>
+                <option value="Grafika">Grafika / Design</option>
+                <option value="Audio/Wideo">Audio / Wideo</option>
+                <option value="Inne">Inne</option>
+              </select>
+            </div>
+            <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Budżet (np. 500 PLN)</label><input type="text" id="job-budget" class="v-input" placeholder="Opcjonalnie" /></div>
+            <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Termin realizacji</label><input type="text" id="job-deadline" class="v-input" placeholder="np. do 14 dni" /></div>
+          </div>
+
+          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Opis zlecenia <span class="text-[var(--accent)]">*</span></label><textarea id="job-desc" class="v-input min-h-[140px]" required placeholder="Dokładnie opisz czego potrzebujesz..."></textarea></div>
         </div>
         <div class="border-t border-white/10 pt-6 flex justify-end gap-3">
           <button type="button" onclick="switchMainView('market')" class="btn-ghost lift px-6 py-3 rounded-xl text-sm font-bold">Anuluj</button>
@@ -237,11 +251,35 @@
         </div>
       </form>
 
-      <form id="form-profil" class="glass rounded-3xl p-6 sm:p-8 space-y-6 hidden" onsubmit="submitListing(event)">
+      <form id="form-profil" class="glass rounded-3xl p-6 sm:p-8 space-y-6 hidden" onsubmit="submitListing(event, 'freelancer')">
          <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-4 border-b border-white/10 pb-2">2. Twoja wizytówka profesjonalisty</h2>
          <div class="space-y-5">
-           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Twój Tytuł / Rola <span class="text-[var(--accent)]">*</span></label><input type="text" class="v-input" required /></div>
-           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Bio / Opis doświadczenia <span class="text-[var(--accent)]">*</span></label><textarea class="v-input min-h-[140px]" required></textarea></div>
+           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Twój Tytuł / Rola <span class="text-[var(--accent)]">*</span></label><input type="text" id="pro-title" class="v-input" placeholder="np. Senior Frontend Developer" required /></div>
+           
+           <div class="grid sm:grid-cols-3 gap-4">
+             <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Główna Kategoria <span class="text-[var(--accent)]">*</span></label>
+               <select id="pro-category" class="v-input" required>
+                 <option value="Programowanie">Programowanie / IT</option>
+                 <option value="Grafika">Grafika / Design</option>
+                 <option value="Marketing">Marketing / SEO</option>
+                 <option value="Inne">Inne</option>
+               </select>
+             </div>
+             <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Stawka za godzinę / projekt</label><input type="text" id="pro-rate" class="v-input" placeholder="np. 100 PLN/h" /></div>
+             <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Główne umiejętności (Tagi)</label><input type="text" id="pro-skills" class="v-input" placeholder="React, Node.js, Figma..." /></div>
+           </div>
+
+           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Bio / Opis doświadczenia <span class="text-[var(--accent)]">*</span></label><textarea id="pro-desc" class="v-input min-h-[120px]" required></textarea></div>
+
+           <div class="border-t border-white/10 pt-4">
+             <label class="block text-xs font-semibold uppercase text-white/70 mb-3">Twoje Social Media & Linki (Opcjonalne)</label>
+             <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+               <div class="relative"><i data-lucide="messages-square" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#5865F2]"></i><input type="text" id="pro-discord" placeholder="Discord ID / Link" class="v-input pl-10 text-sm" /></div>
+               <div class="relative"><i data-lucide="instagram" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#E1306C]"></i><input type="text" id="pro-instagram" placeholder="Instagram URL" class="v-input pl-10 text-sm" /></div>
+               <div class="relative"><i data-lucide="github" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white"></i><input type="text" id="pro-github" placeholder="GitHub URL" class="v-input pl-10 text-sm" /></div>
+               <div class="relative"><i data-lucide="link-2" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--accent2)]"></i><input type="text" id="pro-portfolio" placeholder="Twoje Portfolio URL" class="v-input pl-10 text-sm" /></div>
+             </div>
+           </div>
          </div>
          <div class="border-t border-white/10 pt-6 flex justify-end gap-3">
            <button type="button" onclick="switchMainView('market')" class="btn-ghost lift px-6 py-3 rounded-xl text-sm font-bold">Anuluj</button>
@@ -574,14 +612,145 @@
       fetchInfoBar();
       setInterval(fetchInfoBar, 3000);
       lucide.createIcons();
-      renderJobs();
+      renderJobs(); // Inicjalne załadowanie zleceń
       switchDashTab('profil');
       document.getElementById('tab-zlecenia').className = 'tab-active pb-2 px-1 transition-colors flex items-center gap-2';
       selectListingType('zlecenie');
     });
 
-    function renderJobs() { document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="briefcase" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Zlecenia załadowane</h3></div>`; lucide.createIcons(); }
-    function renderFreelancers() { document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="users" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Profile freelancerów załadowane</h3></div>`; lucide.createIcons(); }
+    // WYSYŁANIE FORMULARZA DO BAZY
+    async function submitListing(e, type) {
+      e.preventDefault();
+      const token = localStorage.getItem('token');
+      if (!token) return showToast("Zaloguj się, aby dodać ogłoszenie.", "error");
+
+      let payload = { type };
+
+      if (type === 'job') {
+        payload.title = document.getElementById('job-title').value;
+        payload.description = document.getElementById('job-desc').value;
+        payload.category = document.getElementById('job-category').value;
+        payload.budget = document.getElementById('job-budget').value;
+        payload.deadline = document.getElementById('job-deadline').value;
+      } else {
+        payload.title = document.getElementById('pro-title').value;
+        payload.description = document.getElementById('pro-desc').value;
+        payload.category = document.getElementById('pro-category').value;
+        payload.hourlyRate = document.getElementById('pro-rate').value;
+        payload.skills = document.getElementById('pro-skills').value;
+        payload.socialLinks = {
+          discord: document.getElementById('pro-discord').value,
+          instagram: document.getElementById('pro-instagram').value,
+          github: document.getElementById('pro-github').value,
+          portfolio: document.getElementById('pro-portfolio').value
+        };
+      }
+
+      try {
+        const res = await fetch('/api/listings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+          showToast(data.message, "success");
+          e.target.reset();
+          switchMainView('market');
+          // Odświeżenie aktualnej zakładki
+          if (type === 'job') switchMarketTab('zlecenia');
+          else switchMarketTab('freelancerzy');
+        } else {
+          showToast(data.error, "error");
+        }
+      } catch (err) {
+        showToast("Błąd serwera podczas wysyłania ogłoszenia.", "error");
+      }
+    }
+
+    // POBIERANIE ZLECEŃ Z BAZY
+    async function renderJobs() { 
+      const container = document.getElementById('market-list');
+      container.innerHTML = `<div class="col-span-full text-center py-10"><div class="animate-spin h-8 w-8 border-2 border-[var(--accent)] border-t-transparent rounded-full mx-auto"></div></div>`;
+      
+      try {
+        const res = await fetch('/api/listings?type=job');
+        const jobs = await res.json();
+        
+        if(jobs.length === 0) {
+            container.innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="briefcase" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg text-white/50">Brak aktywnych zleceń</h3></div>`;
+        } else {
+            container.innerHTML = jobs.map(job => `
+              <div class="glass rounded-2xl p-6 lift flex flex-col h-full border-t border-[var(--accent)]/30">
+                <div class="flex items-center gap-3 mb-4">
+                  <img src="${job.authorAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback'}" class="w-10 h-10 rounded-xl bg-black/50 border border-white/10" />
+                  <div>
+                    <div class="font-bold text-sm">${job.authorName}</div>
+                    <div class="text-[10px] text-[var(--accent)] font-semibold uppercase tracking-wider">${job.category}</div>
+                  </div>
+                  <div class="ml-auto text-xs text-white/40">${new Date(job.createdAt).toLocaleDateString()}</div>
+                </div>
+                <h3 class="text-lg font-black leading-tight mb-2">${job.title}</h3>
+                <p class="text-xs text-white/60 mb-4 line-clamp-3">${job.description}</p>
+                
+                <div class="mt-auto grid grid-cols-2 gap-2 mb-4">
+                  <div class="bg-white/5 rounded-lg p-2 text-center border border-white/5"><div class="text-[10px] text-white/40 uppercase">Budżet</div><div class="font-bold text-sm text-[#10b981]">${job.budget || 'Do negocjacji'}</div></div>
+                  <div class="bg-white/5 rounded-lg p-2 text-center border border-white/5"><div class="text-[10px] text-white/40 uppercase">Termin</div><div class="font-bold text-sm text-[#f59e0b]">${job.deadline || 'Brak'}</div></div>
+                </div>
+                
+                <button class="w-full btn-primary py-2.5 rounded-xl text-sm font-bold">Napisz Wiadomość</button>
+              </div>
+            `).join('');
+        }
+        lucide.createIcons(); 
+      } catch (err) {
+        container.innerHTML = `<div class="col-span-full text-center text-red-400">Błąd ładowania zleceń.</div>`;
+      }
+    }
+
+    // POBIERANIE FREELANCERÓW Z BAZY
+    async function renderFreelancers() { 
+      const container = document.getElementById('market-list');
+      container.innerHTML = `<div class="col-span-full text-center py-10"><div class="animate-spin h-8 w-8 border-2 border-[var(--accent2)] border-t-transparent rounded-full mx-auto"></div></div>`;
+      
+      try {
+        const res = await fetch('/api/listings?type=freelancer');
+        const profiles = await res.json();
+        
+        if(profiles.length === 0) {
+            container.innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="users" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg text-white/50">Brak dostępnych freelancerów</h3></div>`;
+        } else {
+            container.innerHTML = profiles.map(pro => `
+              <div class="glass rounded-2xl p-6 lift flex flex-col h-full border-t border-[var(--accent2)]/30 relative">
+                <div class="flex items-center gap-3 mb-4">
+                  <img src="${pro.authorAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback'}" class="w-12 h-12 rounded-xl bg-black/50 border border-white/10" />
+                  <div>
+                    <div class="font-bold text-sm">${pro.authorName}</div>
+                    <div class="text-[11px] text-[var(--accent2)] font-semibold uppercase tracking-wider">${pro.category}</div>
+                  </div>
+                </div>
+                <h3 class="text-lg font-black leading-tight mb-1">${pro.title}</h3>
+                <div class="text-xs text-white/40 mb-3">${pro.skills ? '🛠️ ' + pro.skills : 'Brak podanych technologii'}</div>
+                <p class="text-xs text-white/60 mb-5 line-clamp-3">${pro.description}</p>
+                
+                <div class="mt-auto border-t border-white/10 pt-4 flex items-center justify-between">
+                  <div class="text-xs"><span class="text-white/40 uppercase block text-[10px]">Stawka</span><span class="font-bold">${pro.hourlyRate || 'Do ustalenia'}</span></div>
+                  
+                  <div class="flex gap-2">
+                    ${pro.socialLinks?.discord ? \`<a href="\${pro.socialLinks.discord.includes('http') ? pro.socialLinks.discord : '#'}" title="\${pro.socialLinks.discord}" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#5865F2] hover:text-white transition flex items-center justify-center text-white/50"><i data-lucide="messages-square" class="w-4 h-4"></i></a>\` : ''}
+                    ${pro.socialLinks?.github ? \`<a href="\${pro.socialLinks.github}" target="_blank" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white hover:text-black transition flex items-center justify-center text-white/50"><i data-lucide="github" class="w-4 h-4"></i></a>\` : ''}
+                    ${pro.socialLinks?.portfolio ? \`<a href="\${pro.socialLinks.portfolio}" target="_blank" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-[var(--accent2)] hover:text-white transition flex items-center justify-center text-white/50"><i data-lucide="link-2" class="w-4 h-4"></i></a>\` : ''}
+                  </div>
+                </div>
+              </div>
+            `).join('');
+        }
+        lucide.createIcons(); 
+      } catch (err) {
+        container.innerHTML = `<div class="col-span-full text-center text-red-400">Błąd ładowania wizytówek.</div>`;
+      }
+    }
     
     function switchMainView(viewId) {
       document.getElementById('view-market').classList.add('view-hidden');
@@ -638,14 +807,6 @@
         btnProfil.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-[var(--accent2)] flex items-center justify-center text-white transition-colors shadow-lg shadow-[var(--accent2)]/20";
         formProfil.classList.remove('hidden');
       }
-    }
-
-    function submitListing(e) {
-      e.preventDefault();
-      switchMainView('dashboard');
-      switchDashTab('moje-ogloszenia');
-      showToast("Ogłoszenie zostało pomyślnie dodane!", "success");
-      e.target.reset();
     }
   </script>
 </body>
