@@ -1,400 +1,399 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Platforma – Velorie Market</title>
-  <meta name="theme-color" content="#0a1030" />
-  <link rel="icon" type="image/png" href="favicon.png" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Platforma – Velorie Market</title>
+  <meta name="theme-color" content="#0a1030" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap');
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap');
 
-    :root {
-      --accent: #ff0354;
-      --accent2: #7c3aed;
-      --bg1: #00010f;
-      --bg2: #0a1030;
-      --stroke: rgba(255, 255, 255, .12);
-      --success: #10b981;
-      --warning: #f59e0b;
-      --error: #ef4444;
-    }
+    :root {
+      --accent: #ff0354;
+      --accent2: #7c3aed;
+      --bg1: #00010f;
+      --bg2: #0a1030;
+      --stroke: rgba(255, 255, 255, .12);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+    }
 
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Outfit', sans-serif;
-      background:
-        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.18), transparent 60%),
-        radial-gradient(900px 600px at 85% 15%, rgba(255,3,84,.16), transparent 55%),
-        linear-gradient(160deg, var(--bg1), var(--bg2));
-      min-height: 100vh;
-      color: rgba(255,255,255,0.9);
-      overflow-x: hidden;
-    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.18), transparent 60%),
+        radial-gradient(900px 600px at 85% 15%, rgba(255,3,84,.16), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+      color: rgba(255,255,255,0.9);
+      overflow-x: hidden;
+    }
 
-    /* Background animations */
-    .grid-bg { position: fixed; inset: 0; pointer-events: none; opacity: .22; z-index: -2; background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 52px 52px; mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.95) 0%, rgba(0,0,0,.20) 55%, transparent 75%); animation: gridFloat 12s ease-in-out infinite; }
-    @keyframes gridFloat { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(0,-10px,0) scale(1.02); } }
-    .aurora { position: fixed; inset: -20%; pointer-events: none; filter: blur(46px) saturate(125%); opacity: .90; z-index: -3; }
-    .blob { position: absolute; width: clamp(320px, 40vw, 560px); height: clamp(320px, 40vw, 560px); border-radius: 999px; background: radial-gradient(circle at 30% 30%, rgba(255,3,84,.35), transparent 60%), radial-gradient(circle at 70% 70%, rgba(124,58,237,.35), transparent 60%); animation: blob 14s ease-in-out infinite; mix-blend-mode: screen; }
-    .blob.b1 { left: 8%; top: 8%; }
-    .blob.b2 { width: clamp(360px, 48vw, 680px); height: clamp(360px, 48vw, 680px); left: 62%; top: 18%; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.38), transparent 60%), radial-gradient(circle at 70% 70%, rgba(255,3,84,.28), transparent 60%); animation-duration: 18s; animation-delay: -3s; }
-    @keyframes blob { 0%,100% { transform: translate(0,0) scale(1); } 30% { transform: translate(40px, 18px) scale(1.08); } 60% { transform: translate(-28px, 34px) scale(0.98); } }
-    .noise { position: fixed; inset: 0; pointer-events: none; opacity: .09; z-index: -1; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"); mix-blend-mode: overlay; }
+    /* Background animations */
+    .grid-bg { position: fixed; inset: 0; pointer-events: none; opacity: .22; z-index: -2; background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 52px 52px; mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.95) 0%, rgba(0,0,0,.20) 55%, transparent 75%); animation: gridFloat 12s ease-in-out infinite; }
+    @keyframes gridFloat { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(0,-10px,0) scale(1.02); } }
+    .aurora { position: fixed; inset: -20%; pointer-events: none; filter: blur(46px) saturate(125%); opacity: .90; z-index: -3; }
+    .blob { position: absolute; width: clamp(320px, 40vw, 560px); height: clamp(320px, 40vw, 560px); border-radius: 999px; background: radial-gradient(circle at 30% 30%, rgba(255,3,84,.35), transparent 60%), radial-gradient(circle at 70% 70%, rgba(124,58,237,.35), transparent 60%); animation: blob 14s ease-in-out infinite; mix-blend-mode: screen; }
+    .blob.b1 { left: 8%; top: 8%; }
+    .blob.b2 { width: clamp(360px, 48vw, 680px); height: clamp(360px, 48vw, 680px); left: 62%; top: 18%; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.38), transparent 60%), radial-gradient(circle at 70% 70%, rgba(255,3,84,.28), transparent 60%); animation-duration: 18s; animation-delay: -3s; }
+    @keyframes blob { 0%,100% { transform: translate(0,0) scale(1); } 30% { transform: translate(40px, 18px) scale(1.08); } 60% { transform: translate(-28px, 34px) scale(0.98); } }
+    .noise { position: fixed; inset: 0; pointer-events: none; opacity: .09; z-index: -1; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"); mix-blend-mode: overlay; }
 
-    /* UI Elements */
-    .glass { background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05)); border: 1px solid var(--stroke); box-shadow: 0 18px 60px rgba(0,0,0,.50), inset 0 1px 0 rgba(255,255,255,.10); backdrop-filter: blur(18px); }
-    .glass-soft { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); backdrop-filter: blur(14px); }
-    .lift { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
-    .lift:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,.6); }
+    /* UI Elements */
+    .glass { background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05)); border: 1px solid var(--stroke); box-shadow: 0 18px 60px rgba(0,0,0,.50), inset 0 1px 0 rgba(255,255,255,.10); backdrop-filter: blur(18px); }
+    .glass-soft { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); backdrop-filter: blur(14px); }
+    .lift { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .lift:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,.6); }
 
-    .btn-primary { background: linear-gradient(135deg, rgba(255,3,84,1), rgba(124,58,237,1)); box-shadow: 0 12px 26px rgba(255,3,84,.18), 0 10px 32px rgba(124,58,237,.16); transition: all 0.2s; }
-    .btn-primary:hover { filter: brightness(1.15); box-shadow: 0 14px 30px rgba(255,3,84,.3); transform: translateY(-1px); }
-    .btn-ghost { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); transition: all 0.2s; }
-    .btn-ghost:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.2); }
+    .btn-primary { background: linear-gradient(135deg, rgba(255,3,84,1), rgba(124,58,237,1)); box-shadow: 0 12px 26px rgba(255,3,84,.18), 0 10px 32px rgba(124,58,237,.16); transition: all 0.2s; }
+    .btn-primary:hover { filter: brightness(1.15); box-shadow: 0 14px 30px rgba(255,3,84,.3); transform: translateY(-1px); }
+    .btn-ghost { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); transition: all 0.2s; }
+    .btn-ghost:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.2); }
 
-    .v-input { width: 100%; border-radius: 12px; padding: 10px 14px; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.14); color: white; outline: none; transition: all 0.2s; }
-    .v-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,3,84,.15); background: rgba(0,0,0,.6); }
-    
-    .brand-logo { height: 36px; width: auto; max-width: 140px; object-fit: contain; filter: drop-shadow(0 10px 22px rgba(255,3,84,.25)); }
+    .v-input { width: 100%; border-radius: 12px; padding: 10px 14px; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.14); color: white; outline: none; transition: all 0.2s; }
+    .v-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,3,84,.15); background: rgba(0,0,0,.6); }
+    
+    .brand-logo { height: 36px; width: auto; max-width: 140px; object-fit: contain; filter: drop-shadow(0 10px 22px rgba(255,3,84,.25)); }
 
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,3,84, 0.6); border-radius: 10px; }
-    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,3,84, 0.6); border-radius: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
 
-    .view-hidden { display: none !important; }
-    .tab-active { border-bottom: 2px solid var(--accent); color: white; }
-    .tab-inactive { color: rgba(255,255,255,0.5); border-bottom: 2px solid transparent; }
-    .tab-inactive:hover { color: rgba(255,255,255,0.9); }
+    .view-hidden { display: none !important; }
+    .tab-active { border-bottom: 2px solid var(--accent); color: white; }
+    .tab-inactive { color: rgba(255,255,255,0.5); border-bottom: 2px solid transparent; }
+    .tab-inactive:hover { color: rgba(255,255,255,0.9); }
 
-    .glow-card { position: relative; }
-    .glow-card::before {
-      content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
-    }
-    
-    .type-card { transition: all 0.3s; }
-    .type-card.active { border-color: var(--accent); background: rgba(255,3,84,0.05); box-shadow: 0 0 0 1px var(--accent), 0 10px 30px rgba(255,3,84,0.15); }
-    .type-card.active .icon-container { background: var(--accent); color: white; }
+    .glow-card { position: relative; }
+    .glow-card::before {
+      content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+    }
+    
+    .type-card { transition: all 0.3s; }
+    .type-card.active { border-color: var(--accent); background: rgba(255,3,84,0.05); box-shadow: 0 0 0 1px var(--accent), 0 10px 30px rgba(255,3,84,0.15); }
+    .type-card.active .icon-container { background: var(--accent); color: white; }
 
-    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-    .toast { background: rgba(10, 16, 48, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid var(--accent); color: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 12px; min-width: 300px; transform: translateX(100%); opacity: 0; animation: slideIn 0.4s forwards; }
-    .toast.success { border-left-color: var(--success); }
-    .toast.error { border-left-color: var(--error); }
-    @keyframes slideIn { to { transform: translateX(0); opacity: 1; } }
-    @keyframes fadeOut { to { transform: translateX(100%); opacity: 0; } }
-    
-    /* InfoBar Transition */
-    #info-bar-container { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: top; }
-    .bar-hidden { transform: translateY(-100%); opacity: 0; margin-bottom: -44px; }
-    .bar-visible { transform: translateY(0); opacity: 1; margin-bottom: 0; }
+    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+    .toast { background: rgba(10, 16, 48, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid var(--accent); color: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 12px; min-width: 300px; transform: translateX(100%); opacity: 0; animation: slideIn 0.4s forwards; }
+    .toast.success { border-left-color: var(--success); }
+    .toast.error { border-left-color: var(--error); }
+    @keyframes slideIn { to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeOut { to { transform: translateX(100%); opacity: 0; } }
+    
+    /* InfoBar Transition */
+    #info-bar-container { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: top; }
+    .bar-hidden { transform: translateY(-100%); opacity: 0; margin-bottom: -44px; }
+    .bar-visible { transform: translateY(0); opacity: 1; margin-bottom: 0; }
 
-    /* Store specific cards */
-    .shop-card { border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .shop-card:hover { border-color: var(--accent); background: rgba(255,255,255,0.06); }
-  </style>
+    /* Store specific cards */
+    .shop-card { border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .shop-card:hover { border-color: var(--accent); background: rgba(255,255,255,0.06); }
+  </style>
 </head>
 <body class="selection:bg-[#ff0354]/40 selection:text-white">
 
-  <div id="info-bar-container" class="bar-hidden relative z-[100] w-full px-4 py-3 text-center text-sm font-bold shadow-xl">
-      <span id="info-bar-text"></span>
-      <a id="info-bar-link" href="#" target="_blank" class="ml-3 underline decoration-white/30 hover:decoration-white underline-offset-2 opacity-80 hover:opacity-100 hidden"></a>
-  </div>
+  <div id="info-bar-container" class="bar-hidden relative z-[100] w-full px-4 py-3 text-center text-sm font-bold shadow-xl">
+      <span id="info-bar-text"></span>
+      <a id="info-bar-link" href="#" target="_blank" class="ml-3 underline decoration-white/30 hover:decoration-white underline-offset-2 opacity-80 hover:opacity-100 hidden"></a>
+  </div>
 
-  <div id="toast-container"></div>
+  <div id="toast-container"></div>
 
-  <div class="aurora" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div></div>
-  <div class="grid-bg" aria-hidden="true"></div>
-  <div class="noise" aria-hidden="true"></div>
+  <div class="aurora" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div></div>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
 
-  <header class="sticky top-0 z-40 glass-soft border-b border-white/10">
-    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
-      <a href="#" onclick="switchMainView('market')" class="flex items-center gap-3 shrink-0 lift group">
-        <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo group-hover:scale-105 transition-transform" />
-        <div class="hidden sm:block leading-tight min-w-0">
-          <div class="text-base sm:text-lg font-bold tracking-tight truncate">Velorie Market</div>
-          <div class="text-[11px] text-white/60 truncate">Platforma ogłoszeniowa</div>
-        </div>
-      </a>
+  <header class="sticky top-0 z-40 glass-soft border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
+      <a href="#" onclick="switchMainView('market')" class="flex items-center gap-3 shrink-0 lift group">
+        <img src="https://i.imgur.com/NDhlWyz.png" alt="Velorie" class="brand-logo group-hover:scale-105 transition-transform" />
+        <div class="hidden sm:block leading-tight min-w-0">
+          <div class="text-base sm:text-lg font-bold tracking-tight truncate">Velorie Market</div>
+          <div class="text-[11px] text-white/60 truncate">Platforma ogłoszeniowa</div>
+        </div>
+      </a>
 
-      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-        
-        <a href="wallet.html" title="Twój Portfel" class="flex items-center gap-2 rounded-xl glass-soft px-3 py-1.5 text-sm font-bold text-[#e2b714] border border-[#e2b714]/30 hover:bg-[#e2b714]/10 transition lift">
-          <i data-lucide="coins" class="h-4 w-4"></i>
-          <span><span id="header-vpln">...</span> <span class="text-[11px] text-[#e2b714]/70">vPLN</span></span>
-        </a>
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        
+        <a href="wallet.html" title="Twój Portfel" class="flex items-center gap-2 rounded-xl glass-soft px-3 py-1.5 text-sm font-bold text-[#e2b714] border border-[#e2b714]/30 hover:bg-[#e2b714]/10 transition lift">
+          <i data-lucide="coins" class="h-4 w-4"></i>
+          <span><span id="header-vpln">...</span> <span class="text-[11px] text-[#e2b714]/70">vPLN</span></span>
+        </a>
 
-        <button onclick="switchMainView('add-listing')" class="hidden sm:inline-flex items-center gap-2 rounded-xl btn-primary lift px-4 py-2 text-sm font-semibold">
-          <i data-lucide="plus" class="h-4 w-4"></i>
-          <span>Zleć pracę / Dodaj profil</span>
-        </button>
+        <button onclick="switchMainView('add-listing')" class="hidden sm:inline-flex items-center gap-2 rounded-xl btn-primary lift px-4 py-2 text-sm font-semibold">
+          <i data-lucide="plus" class="h-4 w-4"></i>
+          <span>Zleć pracę / Dodaj profil</span>
+        </button>
 
-        <button class="relative hidden sm:inline-flex items-center justify-center h-10 w-10 rounded-xl glass lift hover:text-[var(--accent)] transition text-white/70">
-          <i data-lucide="bell" class="h-5 w-5"></i>
-        </button>
+        <button class="relative hidden sm:inline-flex items-center justify-center h-10 w-10 rounded-xl glass lift hover:text-[var(--accent)] transition text-white/70">
+          <i data-lucide="bell" class="h-5 w-5"></i>
+        </button>
 
-        <button onclick="switchMainView('dashboard'); switchDashTab('profil')" class="relative inline-flex items-center justify-center h-10 w-10 rounded-xl glass lift border border-[var(--accent)]/50">
-          <img id="user-avatar-header" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="h-full w-full rounded-xl p-0.5 object-cover" />
-          <div class="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-green-500 border-2 border-[#0a1030]"></div>
-        </button>
-      </div>
-    </div>
-  </header>
+        <button onclick="switchMainView('dashboard'); switchDashTab('profil')" class="relative inline-flex items-center justify-center h-10 w-10 rounded-xl glass lift border border-[var(--accent)]/50">
+          <img id="user-avatar-header" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="h-full w-full rounded-xl p-0.5 object-cover" />
+          <div class="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-green-500 border-2 border-[#0a1030]"></div>
+        </button>
+      </div>
+    </div>
+  </header>
 
-  <main class="mx-auto max-w-7xl px-4 py-8 relative z-10 min-h-[80vh]">
+  <main class="mx-auto max-w-7xl px-4 py-8 relative z-10 min-h-[80vh]">
 
-    <div id="view-market" class="space-y-6">
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Eksploruj Rynek</h1>
-          <p class="text-white/60 text-sm mt-1 max-w-xl">Znajdź idealnego wykonawcę do swojego projektu lub przejrzyj tablicę ogłoszeń i zdobądź nowe zlecenia bez pośredników.</p>
-        </div>
-        
-        <div class="flex gap-6 border-b border-white/10 text-sm font-semibold pb-[1px] overflow-x-auto whitespace-nowrap">
-          <button onclick="switchMarketTab('zlecenia')" id="tab-zlecenia" class="tab-active pb-2 px-1 transition-colors flex items-center gap-2">
-            <i data-lucide="briefcase" class="h-4 w-4"></i> Szukam zlecenia
-          </button>
-          <button onclick="switchMarketTab('freelancerzy')" id="tab-freelancerzy" class="tab-inactive pb-2 px-1 transition-colors flex items-center gap-2">
-            <i data-lucide="users" class="h-4 w-4"></i> Szukam freelancera
-          </button>
-        </div>
-      </div>
+    <div id="view-market" class="space-y-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Eksploruj Rynek</h1>
+          <p class="text-white/60 text-sm mt-1 max-w-xl">Znajdź idealnego wykonawcę do swojego projektu lub przejrzyj tablicę ogłoszeń i zdobądź nowe zlecenia bez pośredników.</p>
+        </div>
+        
+        <div class="flex gap-6 border-b border-white/10 text-sm font-semibold pb-[1px] overflow-x-auto whitespace-nowrap">
+          <button onclick="switchMarketTab('zlecenia')" id="tab-zlecenia" class="tab-active pb-2 px-1 transition-colors flex items-center gap-2">
+            <i data-lucide="briefcase" class="h-4 w-4"></i> Szukam zlecenia
+          </button>
+          <button onclick="switchMarketTab('freelancerzy')" id="tab-freelancerzy" class="tab-inactive pb-2 px-1 transition-colors flex items-center gap-2">
+            <i data-lucide="users" class="h-4 w-4"></i> Szukam freelancera
+          </button>
+        </div>
+      </div>
 
-      <div class="glass rounded-2xl p-5 border-l-4 border-[var(--accent2)]">
-        <div class="flex items-center justify-between mb-4">
-          <div class="text-sm font-bold text-white flex items-center gap-2">
-            <i data-lucide="sliders-horizontal" class="h-4 w-4 text-[var(--accent2)]"></i> Zaawansowane filtry
-          </div>
-          <button class="text-xs text-white/50 hover:text-white flex items-center gap-1 transition">
-            <i data-lucide="rotate-ccw" class="h-3 w-3"></i> Resetuj
-          </button>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div class="lg:col-span-2 relative">
-            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40"></i>
-            <input type="text" placeholder="Wpisz słowo kluczowe, tag, technologię..." class="v-input pl-10 text-sm" />
-          </div>
-          <div><select class="v-input text-sm text-white/80"><option>Wszystkie kategorie</option></select></div>
-          <div><select class="v-input text-sm text-white/80"><option>Dowolny Budżet</option></select></div>
-          <div><select class="v-input text-sm text-white/80 bg-[var(--accent)]/10 border-[var(--accent)]/30 text-[var(--accent)]"><option>Sortuj: Najwięcej podbić 🔥</option></select></div>
-        </div>
-      </div>
+      <div class="glass rounded-2xl p-5 border-l-4 border-[var(--accent2)]">
+        <div class="flex items-center justify-between mb-4">
+          <div class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="h-4 w-4 text-[var(--accent2)]"></i> Zaawansowane filtry
+          </div>
+          <button class="text-xs text-white/50 hover:text-white flex items-center gap-1 transition">
+            <i data-lucide="rotate-ccw" class="h-3 w-3"></i> Resetuj
+          </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="lg:col-span-2 relative">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40"></i>
+            <input type="text" placeholder="Wpisz słowo kluczowe, tag, technologię..." class="v-input pl-10 text-sm" />
+          </div>
+          <div><select class="v-input text-sm text-white/80"><option>Wszystkie kategorie</option></select></div>
+          <div><select class="v-input text-sm text-white/80"><option>Dowolny Budżet</option></select></div>
+          <div><select class="v-input text-sm text-white/80 bg-[var(--accent)]/10 border-[var(--accent)]/30 text-[var(--accent)]"><option>Sortuj: Najwięcej podbić 🔥</option></select></div>
+        </div>
+      </div>
 
-      <div id="market-list" class="grid lg:grid-cols-2 xl:grid-cols-3 gap-6 pt-2"></div>
-    </div>
+      <div id="market-list" class="grid lg:grid-cols-2 xl:grid-cols-3 gap-6 pt-2"></div>
+    </div>
 
-    <div id="view-add-listing" class="view-hidden max-w-4xl mx-auto space-y-8">
-      
-      <div class="flex items-center gap-3">
-        <button onclick="switchMainView('market')" class="btn-ghost p-2 rounded-xl lift group">
-          <i data-lucide="arrow-left" class="h-5 w-5 group-hover:-translate-x-1 transition-transform"></i>
-        </button>
-        <div>
-          <h1 class="text-3xl font-black tracking-tight">Kreator Ogłoszenia</h1>
-          <p class="text-white/50 text-sm mt-1">Sprecyzuj czego potrzebujesz i pojaw się na rynku głównym Velorie.</p>
-        </div>
-      </div>
+    <div id="view-add-listing" class="view-hidden max-w-4xl mx-auto space-y-8">
+      
+      <div class="flex items-center gap-3">
+        <button onclick="switchMainView('market')" class="btn-ghost p-2 rounded-xl lift group">
+          <i data-lucide="arrow-left" class="h-5 w-5 group-hover:-translate-x-1 transition-transform"></i>
+        </button>
+        <div>
+          <h1 class="text-3xl font-black tracking-tight">Kreator Ogłoszenia</h1>
+          <p class="text-white/50 text-sm mt-1">Sprecyzuj czego potrzebujesz i pojaw się na rynku głównym Velorie.</p>
+        </div>
+      </div>
 
-      <div>
-        <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-4">1. Kim jesteś i czego szukasz?</h2>
-        <div class="grid sm:grid-cols-2 gap-5">
-          <div id="type-btn-zlecenie" onclick="selectListingType('zlecenie')" class="type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 active">
-            <div class="icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors">
-              <i data-lucide="briefcase" class="h-6 w-6"></i>
-            </div>
-            <div>
-              <h3 class="text-lg font-bold mb-1 text-white">Zleceniodawca</h3>
-              <p class="text-xs text-white/50 leading-relaxed">Mam projekt do zrobienia, ustalam budżet i szukam wykonawcy.</p>
-            </div>
-          </div>
+      <div>
+        <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-4">1. Kim jesteś i czego szukasz?</h2>
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div id="type-btn-zlecenie" onclick="selectListingType('zlecenie')" class="type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 active">
+            <div class="icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors">
+              <i data-lucide="briefcase" class="h-6 w-6"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold mb-1 text-white">Zleceniodawca</h3>
+              <p class="text-xs text-white/50 leading-relaxed">Mam projekt do zrobienia, ustalam budżet i szukam wykonawcy.</p>
+            </div>
+          </div>
 
-          <div id="type-btn-profil" onclick="selectListingType('profil')" class="type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 border-white/10 hover:border-white/20 hover:bg-white/5">
-            <div class="icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors">
-              <i data-lucide="user-check" class="h-6 w-6"></i>
-            </div>
-            <div>
-              <h3 class="text-lg font-bold mb-1 text-white">Freelancer</h3>
-              <p class="text-xs text-white/50 leading-relaxed">Chcę wystawić profil ze swoimi umiejętnościami i przyjmować zlecenia.</p>
-            </div>
-          </div>
-        </div>
-      </div>
+          <div id="type-btn-profil" onclick="selectListingType('profil')" class="type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 border-white/10 hover:border-white/20 hover:bg-white/5">
+            <div class="icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors">
+              <i data-lucide="user-check" class="h-6 w-6"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold mb-1 text-white">Freelancer</h3>
+              <p class="text-xs text-white/50 leading-relaxed">Chcę wystawić profil ze swoimi umiejętnościami i przyjmować zlecenia.</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <form id="form-zlecenie" class="glass rounded-3xl p-6 sm:p-8 space-y-6" onsubmit="submitListing(event)">
-        <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-4 border-b border-white/10 pb-2">2. Szczegóły Twojego projektu</h2>
-        <div class="space-y-5">
-          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Krótki, chwytliwy tytuł <span class="text-[var(--accent)]">*</span></label><input type="text" class="v-input font-medium" required /></div>
-          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Opis zlecenia <span class="text-[var(--accent)]">*</span></label><textarea class="v-input min-h-[140px]" required></textarea></div>
-        </div>
-        <div class="border-t border-white/10 pt-6 flex justify-end gap-3">
-          <button type="button" onclick="switchMainView('market')" class="btn-ghost lift px-6 py-3 rounded-xl text-sm font-bold">Anuluj</button>
-          <button type="submit" class="btn-primary lift px-8 py-3 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-[var(--accent)]/20">Opublikuj zlecenie <i data-lucide="check-circle" class="h-4 w-4"></i></button>
-        </div>
-      </form>
+      <form id="form-zlecenie" class="glass rounded-3xl p-6 sm:p-8 space-y-6" onsubmit="submitListing(event)">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-4 border-b border-white/10 pb-2">2. Szczegóły Twojego projektu</h2>
+        <div class="space-y-5">
+          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Krótki, chwytliwy tytuł <span class="text-[var(--accent)]">*</span></label><input type="text" class="v-input font-medium" required /></div>
+          <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Opis zlecenia <span class="text-[var(--accent)]">*</span></label><textarea class="v-input min-h-[140px]" required></textarea></div>
+        </div>
+        <div class="border-t border-white/10 pt-6 flex justify-end gap-3">
+          <button type="button" onclick="switchMainView('market')" class="btn-ghost lift px-6 py-3 rounded-xl text-sm font-bold">Anuluj</button>
+          <button type="submit" class="btn-primary lift px-8 py-3 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-[var(--accent)]/20">Opublikuj zlecenie <i data-lucide="check-circle" class="h-4 w-4"></i></button>
+        </div>
+      </form>
 
-      <form id="form-profil" class="glass rounded-3xl p-6 sm:p-8 space-y-6 hidden" onsubmit="submitListing(event)">
-         <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-4 border-b border-white/10 pb-2">2. Twoja wizytówka profesjonalisty</h2>
-         <div class="space-y-5">
-           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Twój Tytuł / Rola <span class="text-[var(--accent)]">*</span></label><input type="text" class="v-input" required /></div>
-           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Bio / Opis doświadczenia <span class="text-[var(--accent)]">*</span></label><textarea class="v-input min-h-[140px]" required></textarea></div>
-         </div>
-         <div class="border-t border-white/10 pt-6 flex justify-end gap-3">
-           <button type="button" onclick="switchMainView('market')" class="btn-ghost lift px-6 py-3 rounded-xl text-sm font-bold">Anuluj</button>
-           <button type="submit" class="bg-gradient-to-r from-[var(--accent2)] to-[#5b21b6] hover:brightness-110 shadow-lg shadow-[var(--accent2)]/20 transition-all lift px-8 py-3 rounded-xl text-sm font-bold text-white flex items-center gap-2 border border-white/10">Wystaw profil <i data-lucide="sparkles" class="h-4 w-4"></i></button>
-         </div>
-      </form>
+      <form id="form-profil" class="glass rounded-3xl p-6 sm:p-8 space-y-6 hidden" onsubmit="submitListing(event)">
+         <h2 class="text-sm font-bold uppercase tracking-wider text-white/50 mb-4 border-b border-white/10 pb-2">2. Twoja wizytówka profesjonalisty</h2>
+         <div class="space-y-5">
+           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Twój Tytuł / Rola <span class="text-[var(--accent)]">*</span></label><input type="text" class="v-input" required /></div>
+           <div><label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Bio / Opis doświadczenia <span class="text-[var(--accent)]">*</span></label><textarea class="v-input min-h-[140px]" required></textarea></div>
+         </div>
+         <div class="border-t border-white/10 pt-6 flex justify-end gap-3">
+           <button type="button" onclick="switchMainView('market')" class="btn-ghost lift px-6 py-3 rounded-xl text-sm font-bold">Anuluj</button>
+           <button type="submit" class="bg-gradient-to-r from-[var(--accent2)] to-[#5b21b6] hover:brightness-110 shadow-lg shadow-[var(--accent2)]/20 transition-all lift px-8 py-3 rounded-xl text-sm font-bold text-white flex items-center gap-2 border border-white/10">Wystaw profil <i data-lucide="sparkles" class="h-4 w-4"></i></button>
+         </div>
+      </form>
 
-    </div>
+    </div>
 
-    <div id="view-dashboard" class="view-hidden">
-      <div class="flex items-center gap-3 mb-8">
-        <button onclick="switchMainView('market')" class="btn-ghost p-2 rounded-xl lift group">
-          <i data-lucide="arrow-left" class="h-5 w-5 group-hover:-translate-x-1 transition-transform"></i>
-        </button>
-        <h1 class="text-3xl font-black tracking-tight">Panel Użytkownika</h1>
-      </div>
+    <div id="view-dashboard" class="view-hidden">
+      <div class="flex items-center gap-3 mb-8">
+        <button onclick="switchMainView('market')" class="btn-ghost p-2 rounded-xl lift group">
+          <i data-lucide="arrow-left" class="h-5 w-5 group-hover:-translate-x-1 transition-transform"></i>
+        </button>
+        <h1 class="text-3xl font-black tracking-tight">Panel Użytkownika</h1>
+      </div>
 
-      <div class="grid lg:grid-cols-12 gap-8 items-start">
-        
-        <div class="lg:col-span-3 glass rounded-2xl p-3 flex flex-col gap-1 sticky top-24">
-          <div class="p-4 flex items-center gap-3 border-b border-white/10 mb-2">
-            <img id="user-avatar-dash" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="h-12 w-12 rounded-full border border-white/20 bg-black/50" />
-            <div>
-              <div class="font-bold flex items-center gap-1 text-sm">
-                <span id="user-display-name">...</span>
-                <i id="user-verified-badge" data-lucide="badge-check" class="h-4 w-4 text-green-400 hidden" title="Zweryfikowany użytkownik"></i>
-              </div>
-              <div class="text-[11px] text-white/50">Plan: <span id="user-role-display">Użytkownik</span></div>
-            </div>
-          </div>
-          
-          <button onclick="switchDashTab('profil')" id="dash-btn-profil" class="text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-sm font-medium text-white/70"><i data-lucide="user-cog" class="h-4 w-4"></i> Ustawienia konta</button>
-          
-          <button onclick="switchDashTab('sklep')" id="dash-btn-sklep" class="text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-sm font-medium text-white/70"><i data-lucide="shopping-cart" class="h-4 w-4"></i> Sklep & Subskrypcje</button>
-          
-          <button onclick="switchDashTab('moje-ogloszenia')" id="dash-btn-moje-ogloszenia" class="text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-sm font-medium text-white/70"><i data-lucide="layers" class="h-4 w-4"></i> Moje ogłoszenia</button>
+      <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <div class="lg:col-span-3 glass rounded-2xl p-3 flex flex-col gap-1 sticky top-24">
+          <div class="p-4 flex items-center gap-3 border-b border-white/10 mb-2">
+            <img id="user-avatar-dash" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="h-12 w-12 rounded-full border border-white/20 bg-black/50" />
+            <div>
+              <div class="font-bold flex items-center gap-1 text-sm">
+                <span id="user-display-name">...</span>
+                <i id="user-verified-badge" data-lucide="badge-check" class="h-4 w-4 text-green-400 hidden" title="Zweryfikowany użytkownik"></i>
+              </div>
+              <div class="text-[11px] text-white/50">Plan: <span id="user-role-display">Użytkownik</span></div>
+            </div>
+          </div>
+          
+          <button onclick="switchDashTab('profil')" id="dash-btn-profil" class="text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-sm font-medium text-white/70"><i data-lucide="user-cog" class="h-4 w-4"></i> Ustawienia konta</button>
+          
+          <button onclick="switchDashTab('sklep')" id="dash-btn-sklep" class="text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-sm font-medium text-white/70"><i data-lucide="shopping-cart" class="h-4 w-4"></i> Sklep & Subskrypcje</button>
+          
+          <button onclick="switchDashTab('moje-ogloszenia')" id="dash-btn-moje-ogloszenia" class="text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-sm font-medium text-white/70"><i data-lucide="layers" class="h-4 w-4"></i> Moje ogłoszenia</button>
 
-          <button onclick="logoutUser()" class="text-left px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-400 transition flex items-center gap-3 text-sm font-medium mt-auto border-t border-white/5 pt-3"><i data-lucide="log-out" class="h-4 w-4"></i> Wyloguj się</button>
-        </div>
+          <button onclick="logoutUser()" class="text-left px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-400 transition flex items-center gap-3 text-sm font-medium mt-auto border-t border-white/5 pt-3"><i data-lucide="log-out" class="h-4 w-4"></i> Wyloguj się</button>
+        </div>
 
-        <div class="lg:col-span-9">
-          
-          <div id="dash-profil" class="space-y-6 hidden">
-            <div class="flex justify-between items-center mb-2">
-              <div>
-                <h2 class="text-2xl font-bold">Ustawienia Konta</h2>
-                <p class="text-sm text-white/50">Zarządzaj swoimi danymi i preferencjami.</p>
-              </div>
-              <a href="wallet.html" class="btn-primary lift px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 border border-[#e2b714]/50 shadow-[0_0_15px_rgba(226,183,20,0.3)] bg-gradient-to-br from-[#e2b714] to-[#c79a0b] text-black">
-                <i data-lucide="wallet" class="h-4 w-4"></i> Doładuj vPLN
-              </a>
-            </div>
+        <div class="lg:col-span-9">
+          
+          <div id="dash-profil" class="space-y-6 hidden">
+            <div class="flex justify-between items-center mb-2">
+              <div>
+                <h2 class="text-2xl font-bold">Ustawienia Konta</h2>
+                <p class="text-sm text-white/50">Zarządzaj swoimi danymi i preferencjami.</p>
+              </div>
+              <a href="wallet.html" class="btn-primary lift px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 border border-[#e2b714]/50 shadow-[0_0_15px_rgba(226,183,20,0.3)] bg-gradient-to-br from-[#e2b714] to-[#c79a0b] text-black">
+                <i data-lucide="wallet" class="h-4 w-4"></i> Doładuj vPLN
+              </a>
+            </div>
 
-            <div class="glass rounded-3xl p-6 sm:p-8 space-y-6">
-              <div class="grid sm:grid-cols-2 gap-5">
-                <div>
-                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Nazwa użytkownika</label>
-                  <input type="text" id="setting-username" class="v-input text-white/50 cursor-not-allowed" value="..." readonly title="Nie można zmienić nazwy" />
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Adres E-mail</label>
-                  <input type="email" id="setting-email" class="v-input text-white/50 cursor-not-allowed" value="..." readonly title="Nie można zmienić emaila" />
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Discord ID (Pobrano z Autoryzacji)</label>
-                  <input type="text" id="setting-discord" class="v-input text-white/50 cursor-not-allowed" readonly placeholder="Brak połączenia" />
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Link do Portfolio / GitHub</label>
-                  <input type="url" id="setting-portfolio" class="v-input" placeholder="https://" />
-                </div>
-              </div>
-              <div class="flex justify-end pt-4 border-t border-white/10">
-                <button type="button" onclick="showToast('Funkcja edycji dostępna wkrótce!', 'info')" class="btn-ghost lift px-6 py-2.5 rounded-xl text-sm font-bold">Zapisz zmiany</button>
-              </div>
-            </div>
-          </div>
+            <div class="glass rounded-3xl p-6 sm:p-8 space-y-6">
+              <div class="grid sm:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Nazwa użytkownika</label>
+                  <input type="text" id="setting-username" class="v-input text-white/50 cursor-not-allowed" value="..." readonly title="Nie można zmienić nazwy" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Adres E-mail</label>
+                  <input type="email" id="setting-email" class="v-input text-white/50 cursor-not-allowed" value="..." readonly title="Nie można zmienić emaila" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Discord ID (Pobrano z Autoryzacji)</label>
+                  <input type="text" id="setting-discord" class="v-input text-white/50 cursor-not-allowed" readonly placeholder="Brak połączenia" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-white/70 mb-1.5">Link do Portfolio / GitHub</label>
+                  <input type="url" id="setting-portfolio" class="v-input" placeholder="https://" />
+                </div>
+              </div>
+              <div class="flex justify-end pt-4 border-t border-white/10">
+                <button type="button" onclick="showToast('Funkcja edycji dostępna wkrótce!', 'info')" class="btn-ghost lift px-6 py-2.5 rounded-xl text-sm font-bold">Zapisz zmiany</button>
+              </div>
+            </div>
+          </div>
 
-          <div id="dash-sklep" class="space-y-6 hidden">
-             <div>
-               <h2 class="text-2xl font-bold">Sklep & Subskrypcje</h2>
-               <p class="text-sm text-white/50">Wzmocnij swoją obecność na rynku i zdobądź zaufanie klientów.</p>
-             </div>
+          <div id="dash-sklep" class="space-y-6 hidden">
+             <div>
+               <h2 class="text-2xl font-bold">Sklep & Subskrypcje</h2>
+               <p class="text-sm text-white/50">Wzmocnij swoją obecność na rynku i zdobądź zaufanie klientów.</p>
+             </div>
 
-             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-               
-               <div class="shop-card rounded-3xl p-6 flex flex-col h-full">
-                 <div class="mb-4 flex items-center justify-between">
-                   <div class="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-400">
-                     <i data-lucide="shield-check" class="w-7 h-7"></i>
-                   </div>
-                   <span class="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-lg">TRUSTED</span>
-                 </div>
-                 <h3 class="text-lg font-bold mb-2">Weryfikacja Profilu</h3>
-                 <div class="text-2xl font-black mb-4">29.99 <span class="text-xs text-white/40 font-normal">vPLN / mies.</span></div>
-                 <p class="text-xs text-white/60 mb-6 leading-relaxed">
-                   Zyskaj plakietkę "Zweryfikowany", która buduje ogromne zaufanie wśród zleceniodawców. 
-                   <br><br>
-                   <span class="text-amber-400/80 font-semibold italic">⚠️ Uwaga: Kupno subskrypcji to tylko pierwszy krok. Profil musi zostać ręcznie zweryfikowany przez administrację VelorieMarket (czas oczekiwania do 48h). Sam znaczek bez weryfikacji nie zostanie nadany.</span>
-                 </p>
-                 <button onclick="buyVerification()" id="btn-buy-verification" class="mt-auto btn-ghost w-full py-3 rounded-xl font-bold text-sm">Złóż wniosek (29.99 vPLN)</button>
-               </div>
+             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+               
+               <div class="shop-card rounded-3xl p-6 flex flex-col h-full">
+                 <div class="mb-4 flex items-center justify-between">
+                   <div class="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-400">
+                     <i data-lucide="shield-check" class="w-7 h-7"></i>
+                   </div>
+                   <span class="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-lg">TRUSTED</span>
+                 </div>
+                 <h3 class="text-lg font-bold mb-2">Weryfikacja Profilu</h3>
+                 <div class="text-2xl font-black mb-4">29.99 <span class="text-xs text-white/40 font-normal">vPLN / mies.</span></div>
+                 <p class="text-xs text-white/60 mb-6 leading-relaxed">
+                   Zyskaj plakietkę "Zweryfikowany", która buduje ogromne zaufanie wśród zleceniodawców. 
+                   <br><br>
+                   <span class="text-amber-400/80 font-semibold italic">⚠️ Uwaga: Kupno subskrypcji to tylko pierwszy krok. Profil musi zostać ręcznie zweryfikowany przez administrację VelorieMarket (czas oczekiwania do 48h). Sam znaczek bez weryfikacji nie zostanie nadany.</span>
+                 </p>
+                 <button onclick="buyVerification()" id="btn-buy-verification" class="mt-auto btn-ghost w-full py-3 rounded-xl font-bold text-sm">Złóż wniosek (29.99 vPLN)</button>
+               </div>
 
-               <div class="shop-card rounded-3xl p-6 flex flex-col h-full border-[var(--accent)]/20 relative overflow-hidden">
-                 <div class="absolute -right-4 -top-4 opacity-10 rotate-12"><i data-lucide="megaphone" class="w-24 h-24 text-[var(--accent)]"></i></div>
-                 <div class="mb-4">
-                   <div class="w-12 h-12 rounded-2xl bg-[var(--accent)]/10 flex items-center justify-center text-[var(--accent)]">
-                     <i data-lucide="layout-template" class="w-7 h-7"></i>
-                   </div>
-                 </div>
-                 <h3 class="text-lg font-bold mb-2">Banner Reklamowy</h3>
-                 <div class="text-2xl font-black mb-4">80.00 <span class="text-xs text-white/40 font-normal">vPLN / mies.</span></div>
-                 <ul class="text-xs text-white/60 space-y-2 mb-6 leading-relaxed">
-                   <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-[var(--accent)]"></i> Reklama serwera Minecraft/Discord inne</li>
-                   <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-[var(--accent)]"></i> Banner na samej górze marketu</li>
-                   <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-[var(--accent)]"></i> Maksymalne promowanie (1600x400)</li>
-                   <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-[var(--accent)]"></i> Widoczność Banneru przez pełne 30 Dni</li>
-                   <li class="mt-3 text-[10px] italic border-t border-white/5 pt-2">Banner musi być zgodny z regulaminem. Weryfikacja grafiki trwa do 24h.</li>
-                 </ul>
-                 <button onclick="showToast('Prześlij grafikę do panelu...', 'info')" class="mt-auto btn-primary w-full py-3 rounded-xl font-bold text-sm">Zarezerwuj miejsce</button>
-               </div>
+               <div class="shop-card rounded-3xl p-6 flex flex-col h-full border-[var(--accent)]/20 relative overflow-hidden">
+                 <div class="absolute -right-4 -top-4 opacity-10 rotate-12"><i data-lucide="megaphone" class="w-24 h-24 text-[var(--accent)]"></i></div>
+                 <div class="mb-4">
+                   <div class="w-12 h-12 rounded-2xl bg-[var(--accent)]/10 flex items-center justify-center text-[var(--accent)]">
+                     <i data-lucide="layout-template" class="w-7 h-7"></i>
+                   </div>
+                 </div>
+                 <h3 class="text-lg font-bold mb-2">Banner Reklamowy</h3>
+                 <div class="text-2xl font-black mb-4">80.00 <span class="text-xs text-white/40 font-normal">vPLN / mies.</span></div>
+                 <ul class="text-xs text-white/60 space-y-2 mb-6 leading-relaxed">
+                   <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-[var(--accent)]"></i> Reklama serwera Minecraft/Discord inne</li>
+                   <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-[var(--accent)]"></i> Banner na samej górze marketu</li>
+                   <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-[var(--accent)]"></i> Maksymalne promowanie (1600x400)</li>
+                   <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-[var(--accent)]"></i> Widoczność Banneru przez pełne 30 Dni</li>
+                   <li class="mt-3 text-[10px] italic border-t border-white/5 pt-2">Banner musi być zgodny z regulaminem. Weryfikacja grafiki trwa do 24h.</li>
+                 </ul>
+                 <button onclick="showToast('Prześlij grafikę do panelu...', 'info')" class="mt-auto btn-primary w-full py-3 rounded-xl font-bold text-sm">Zarezerwuj miejsce</button>
+               </div>
 
-               <div class="shop-card rounded-3xl p-6 flex flex-col h-full border-[var(--accent2)]/20">
-                 <div class="mb-4">
-                   <div class="w-12 h-12 rounded-2xl bg-[var(--accent2)]/10 flex items-center justify-center text-[var(--accent2)]">
-                     <i data-lucide="palette" class="w-7 h-7"></i>
-                   </div>
-                 </div>
-                 <h3 class="text-lg font-bold mb-2">Portfolio Hub</h3>
-                 <div class="text-2xl font-black mb-4">49.99 <span class="text-xs text-white/40 font-normal">vPLN / 3 mies.</span></div>
-                 <ul class="text-xs text-white/60 space-y-2 mb-6">
-                   <li class="flex items-center gap-2"><i data-lucide="plus" class="w-3 h-3 text-[var(--accent2)]"></i> Stwórz własne portfolio</li>
-                   <li class="flex items-center gap-2"><i data-lucide="plus" class="w-3 h-3 text-[var(--accent2)]"></i> Podepnij własną domenę</li>
-                   <li class="flex items-center gap-2"><i data-lucide="plus" class="w-3 h-3 text-[var(--accent2)]"></i> Personalizacja pod Twój styl</li>
-                 </ul>
-                 <button onclick="showToast('Kreator portfolio wkrótce!', 'info')" class="mt-auto btn-ghost w-full py-3 rounded-xl font-bold text-sm text-[var(--accent2)]">Rozpocznij projekt</button>
-               </div>
+               <div class="shop-card rounded-3xl p-6 flex flex-col h-full border-[var(--accent2)]/20">
+                 <div class="mb-4">
+                   <div class="w-12 h-12 rounded-2xl bg-[var(--accent2)]/10 flex items-center justify-center text-[var(--accent2)]">
+                     <i data-lucide="palette" class="w-7 h-7"></i>
+                   </div>
+                 </div>
+                 <h3 class="text-lg font-bold mb-2">Portfolio Hub</h3>
+                 <div class="text-2xl font-black mb-4">49.99 <span class="text-xs text-white/40 font-normal">vPLN / 3 mies.</span></div>
+                 <ul class="text-xs text-white/60 space-y-2 mb-6">
+                   <li class="flex items-center gap-2"><i data-lucide="plus" class="w-3 h-3 text-[var(--accent2)]"></i> Stwórz własne portfolio</li>
+                   <li class="flex items-center gap-2"><i data-lucide="plus" class="w-3 h-3 text-[var(--accent2)]"></i> Podepnij własną domenę</li>
+                   <li class="flex items-center gap-2"><i data-lucide="plus" class="w-3 h-3 text-[var(--accent2)]"></i> Personalizacja pod Twój styl</li>
+                 </ul>
+                 <button onclick="showToast('Kreator portfolio wkrótce!', 'info')" class="mt-auto btn-ghost w-full py-3 rounded-xl font-bold text-sm text-[var(--accent2)]">Rozpocznij projekt</button>
+               </div>
 
-             </div>
-          </div>
+             </div>
+          </div>
 
-          <div id="dash-moje-ogloszenia" class="space-y-6 hidden">
-             <div><h2 class="text-2xl font-bold">Zarządzaj Ogłoszeniami</h2><p class="text-sm text-white/50">W przygotowaniu...</p></div>
-          </div>
+          <div id="dash-moje-ogloszenia" class="space-y-6 hidden">
+             <div><h2 class="text-2xl font-bold">Zarządzaj Ogłoszeniami</h2><p class="text-sm text-white/50">W przygotowaniu...</p></div>
+          </div>
 
-        </div>
-      </div>
-    </div>
+        </div>
+      </div>
+    </div>
 
-  </main>
+  </main>
 
- <script>
-    // === PRZECHWYTYWANIE TOKENA (OAUTH2 DISCORD) ===
+  <script>
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
     if (token) {
@@ -425,15 +424,14 @@
         }, 4000);
     }
 
-    // === POBIERANIE DANYCH (ZMODYFIKOWANE DO TESTÓW FRONTENDU) ===
     async function fetchUserData() {
-        // Symulacja danych z serwera, aby strona działała bez backendu
+        // Zmodyfikowane do testów frontendu
         const mockUserData = {
             username: "VelorieUser",
             role: "freelancer",
             vpln: 150.50,
             isVerified: true,
-            verificationStatus: "none", // może być 'none', 'pending', 'active'
+            verificationStatus: "none",
             avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
             email: "kontakt@velorie.pl",
             discordId: "123456789012345678",
@@ -441,15 +439,6 @@
         };
 
         try {
-            // Zakomentowałem prawdziwe odpytywanie API, żeby nie wywalało strony
-            /*
-            const token = localStorage.getItem('token');
-            if (!token) { window.location.href = '/login'; return; }
-            const response = await fetch('/api/me', { headers: { 'Authorization': `Bearer ${token}` } });
-            if (!response.ok) throw new Error('Sesja wygasła');
-            const userData = await response.json();
-            */
-
             const userData = mockUserData; // Używamy sztucznych danych
 
             document.getElementById('user-display-name').textContent = userData.username;
@@ -490,14 +479,11 @@
 
         } catch (error) {
             console.error("Błąd autoryzacji:", error);
-            // Wyłączyłem wymuszony redirect na czas kodowania:
-            // window.location.href = '/login';
         }
     }
 
     async function buyVerification() {
         if(!confirm("Czy na pewno chcesz złożyć wniosek o weryfikację konta za 29.99 vPLN? Upewnij się, że Twój profil nie narusza regulaminu.")) return;
-        // Symulacja udanego zakupu
         showToast("Wniosek został złożony pomyślnie!", "success");
         document.getElementById('btn-buy-verification').textContent = 'Oczekuje na akceptację...';
         document.getElementById('btn-buy-verification').classList.add('cursor-not-allowed', 'opacity-50');
@@ -506,7 +492,6 @@
 
     let lastBarData = null;
     async function fetchInfoBar() {
-        // Symulacja Paska Informacyjnego bez odpytywania serwera
         const mockBarData = {
             isActive: true,
             text: "🔥 Witaj na nowej platformie Velorie Market! Odbierz bonus na start.",
@@ -549,15 +534,12 @@
         localStorage.removeItem('token');
         setTimeout(() => {
             showToast("Wylogowano! (Symulacja)", "success");
-            // window.location.href = '/login';
         }, 1200);
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       fetchUserData();
       fetchInfoBar();
-      // Wyłączyłem irytujący interval z błędami:
-      // setInterval(fetchInfoBar, 3000); 
       
       renderJobs();
       switchDashTab('profil');
