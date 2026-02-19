@@ -88,11 +88,16 @@
     .toast.error { border-left-color: var(--error); }
     @keyframes slideIn { to { transform: translateX(0); opacity: 1; } }
     @keyframes fadeOut { to { transform: translateX(100%); opacity: 0; } }
+    
+    /* InfoBar Transition */
+    #info-bar-container { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: top; }
+    .bar-hidden { transform: translateY(-100%); opacity: 0; margin-bottom: -44px; /* Approximate height to collapse layout */ }
+    .bar-visible { transform: translateY(0); opacity: 1; margin-bottom: 0; }
   </style>
 </head>
 <body class="selection:bg-[#ff0354]/40 selection:text-white">
 
-  <div id="info-bar-container" class="hidden relative z-[100] w-full px-4 py-3 text-center text-sm font-bold shadow-xl transition-all">
+  <div id="info-bar-container" class="bar-hidden relative z-[100] w-full px-4 py-3 text-center text-sm font-bold shadow-xl">
       <span id="info-bar-text"></span>
       <a id="info-bar-link" href="#" target="_blank" class="ml-3 underline decoration-white/30 hover:decoration-white underline-offset-2 opacity-80 hover:opacity-100 hidden"></a>
   </div>
@@ -400,7 +405,10 @@
         }
     }
 
-    // --- NOWA FUNKCJA: POBIERANIE PASKA INFORMACYJNEGO ---
+    // --- REAL-TIME INFO BAR (Short Polling) ---
+    // Zapamiętujemy ostatnie dane, żeby nie odświeżać DOM bez potrzeby (brak mrugania)
+    let lastBarData = null;
+
     async function fetchInfoBar() {
         try {
             // Pobieramy pasek specyficzny dla marketu
@@ -408,27 +416,42 @@
             if (!response.ok) return;
             const data = await response.json();
 
-            if (data.isActive) {
-                const bar = document.getElementById('info-bar-container');
-                const text = document.getElementById('info-bar-text');
-                const link = document.getElementById('info-bar-link');
-
-                bar.style.backgroundColor = data.bgColor || '#ff0354';
-                bar.style.color = data.textColor || '#ffffff';
-                text.innerText = data.text;
-
-                if (data.linkText && data.linkUrl) {
-                    link.innerText = data.linkText;
-                    link.href = data.linkUrl;
-                    link.classList.remove('hidden');
-                } else {
-                    link.classList.add('hidden');
-                }
-
-                bar.classList.remove('hidden');
+            // Sprawdzamy czy dane się zmieniły (proste porównanie JSON)
+            if (JSON.stringify(data) !== JSON.stringify(lastBarData)) {
+                lastBarData = data; // Aktualizujemy cache
+                updateInfoBarUI(data); // Aktualizujemy wygląd
             }
         } catch (err) {
             console.error('Błąd paska info:', err);
+        }
+    }
+
+    function updateInfoBarUI(data) {
+        const bar = document.getElementById('info-bar-container');
+        const text = document.getElementById('info-bar-text');
+        const link = document.getElementById('info-bar-link');
+
+        if (data.isActive) {
+            // Aktualizacja treści
+            bar.style.backgroundColor = data.bgColor || '#ff0354';
+            bar.style.color = data.textColor || '#ffffff';
+            text.innerText = data.text;
+
+            if (data.linkText && data.linkUrl) {
+                link.innerText = data.linkText;
+                link.href = data.linkUrl;
+                link.classList.remove('hidden');
+            } else {
+                link.classList.add('hidden');
+            }
+
+            // Pokaż pasek (animacja CSS)
+            bar.classList.remove('bar-hidden');
+            bar.classList.add('bar-visible');
+        } else {
+            // Ukryj pasek
+            bar.classList.remove('bar-visible');
+            bar.classList.add('bar-hidden');
         }
     }
 
@@ -442,7 +465,11 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       fetchUserData();
-      fetchInfoBar(); // Wywołanie pobierania paska
+      fetchInfoBar(); // Pierwsze pobranie
+      
+      // REAL-TIME: Sprawdzaj co 3 sekundy w tle
+      setInterval(fetchInfoBar, 3000);
+
       lucide.createIcons();
       renderJobs();
       switchDashTab('profil');
