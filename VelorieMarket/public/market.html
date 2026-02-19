@@ -393,260 +393,252 @@
 
   </main>
 
-  <script>
-    // === PRZECHWYTYWANIE TOKENA (OAUTH2 DISCORD) ===
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    if (token) {
-        localStorage.setItem('token', token);
-        window.history.replaceState({}, document.title, "/market"); 
-    }
+ <script>
+    // === PRZECHWYTYWANIE TOKENA (OAUTH2 DISCORD) ===
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+        localStorage.setItem('token', token);
+        window.history.replaceState({}, document.title, "/market"); 
+    }
 
-    lucide.createIcons();
+    lucide.createIcons();
 
-    function showToast(message, type = 'info') {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        
-        let typeClass = '';
-        let iconName = 'info';
-        
-        if (type === 'success') { typeClass = 'success'; iconName = 'check-circle'; } 
-        else if (type === 'error') { typeClass = 'error'; iconName = 'alert-octagon'; }
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        
+        let typeClass = '';
+        let iconName = 'info';
+        
+        if (type === 'success') { typeClass = 'success'; iconName = 'check-circle'; } 
+        else if (type === 'error') { typeClass = 'error'; iconName = 'alert-octagon'; }
 
-        toast.className = `toast ${typeClass}`;
-        toast.innerHTML = `<i data-lucide="${iconName}" class="w-6 h-6"></i><span class="font-medium text-sm">${message}</span>`;
-        container.appendChild(toast);
-        lucide.createIcons(); 
+        toast.className = `toast ${typeClass}`;
+        toast.innerHTML = `<i data-lucide="${iconName}" class="w-6 h-6"></i><span class="font-medium text-sm">${message}</span>`;
+        container.appendChild(toast);
+        lucide.createIcons(); 
 
-        setTimeout(() => {
-            toast.style.animation = 'fadeOut 0.4s forwards';
-            setTimeout(() => toast.remove(), 400);
-        }, 4000);
-    }
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.4s forwards';
+            setTimeout(() => toast.remove(), 400);
+        }, 4000);
+    }
 
-    // === POBIERANIE DANYCH Z SERWERA ===
-    async function fetchUserData() {
-        const token = localStorage.getItem('token');
-        
-        if (!token) {
-            window.location.href = '/login';
-            return;
-        }
+    // === POBIERANIE DANYCH (ZMODYFIKOWANE DO TESTÓW FRONTENDU) ===
+    async function fetchUserData() {
+        // Symulacja danych z serwera, aby strona działała bez backendu
+        const mockUserData = {
+            username: "VelorieUser",
+            role: "freelancer",
+            vpln: 150.50,
+            isVerified: true,
+            verificationStatus: "none", // może być 'none', 'pending', 'active'
+            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+            email: "kontakt@velorie.pl",
+            discordId: "123456789012345678",
+            portfolioLink: "https://github.com/velorie"
+        };
 
-        try {
-            const response = await fetch('/api/me', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+        try {
+            // Zakomentowałem prawdziwe odpytywanie API, żeby nie wywalało strony
+            /*
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = '/login'; return; }
+            const response = await fetch('/api/me', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error('Sesja wygasła');
+            const userData = await response.json();
+            */
 
-            if (!response.ok) {
-                throw new Error('Sesja wygasła');
-            }
+            const userData = mockUserData; // Używamy sztucznych danych
 
-            const userData = await response.json();
+            document.getElementById('user-display-name').textContent = userData.username;
+            document.getElementById('user-role-display').textContent = userData.role === 'freelancer' ? 'Freelancer' : 'Zleceniodawca';
+            document.getElementById('header-vpln').textContent = parseFloat(userData.vpln).toFixed(2);
+            
+            const verifiedBadge = document.getElementById('user-verified-badge');
+            if (userData.isVerified) {
+                verifiedBadge.classList.remove('hidden');
+            } else {
+                verifiedBadge.classList.add('hidden');
+            }
 
-            document.getElementById('user-display-name').textContent = userData.username;
-            document.getElementById('user-role-display').textContent = userData.role === 'freelancer' ? 'Freelancer' : 'Zleceniodawca';
-            document.getElementById('header-vpln').textContent = parseFloat(userData.vpln).toFixed(2);
-            
-            // Znaczek weryfikacji obok nicku
-            const verifiedBadge = document.getElementById('user-verified-badge');
-            if (userData.isVerified) {
-                verifiedBadge.classList.remove('hidden');
-            } else {
-                verifiedBadge.classList.add('hidden');
-            }
+            const buyVerBtn = document.getElementById('btn-buy-verification');
+            if (userData.verificationStatus === 'pending') {
+                buyVerBtn.textContent = 'Oczekuje na akceptację...';
+                buyVerBtn.classList.add('cursor-not-allowed', 'opacity-50');
+                buyVerBtn.onclick = null;
+            } else if (userData.verificationStatus === 'active' || userData.isVerified) {
+                buyVerBtn.textContent = 'Usługa aktywna';
+                buyVerBtn.classList.add('cursor-not-allowed', 'opacity-50', 'text-green-400');
+                buyVerBtn.onclick = null;
+            } else {
+                buyVerBtn.textContent = 'Złóż wniosek (29.99 vPLN)';
+                buyVerBtn.classList.remove('cursor-not-allowed', 'opacity-50', 'text-green-400');
+                buyVerBtn.onclick = buyVerification;
+            }
 
-            // Obsługa przycisku kupowania w sklepie
-            const buyVerBtn = document.getElementById('btn-buy-verification');
-            if (userData.verificationStatus === 'pending') {
-                buyVerBtn.textContent = 'Oczekuje na akceptację...';
-                buyVerBtn.classList.add('cursor-not-allowed', 'opacity-50');
-                buyVerBtn.onclick = null;
-            } else if (userData.verificationStatus === 'active' || userData.isVerified) {
-                buyVerBtn.textContent = 'Usługa aktywna';
-                buyVerBtn.classList.add('cursor-not-allowed', 'opacity-50', 'text-green-400');
-                buyVerBtn.onclick = null;
-            } else {
-                buyVerBtn.textContent = 'Złóż wniosek (29.99 vPLN)';
-                buyVerBtn.classList.remove('cursor-not-allowed', 'opacity-50', 'text-green-400');
-                buyVerBtn.onclick = buyVerification;
-            }
+            if (userData.avatar) {
+                document.getElementById('user-avatar-header').src = userData.avatar;
+                document.getElementById('user-avatar-dash').src = userData.avatar;
+            }
 
-            if (userData.avatar) {
-                document.getElementById('user-avatar-header').src = userData.avatar;
-                document.getElementById('user-avatar-dash').src = userData.avatar;
-            }
+            document.getElementById('setting-username').value = userData.username;
+            document.getElementById('setting-email').value = userData.email;
+            document.getElementById('setting-discord').value = userData.discordId || 'Niepodpięty';
+            document.getElementById('setting-portfolio').value = userData.portfolioLink || '';
 
-            document.getElementById('setting-username').value = userData.username;
-            document.getElementById('setting-email').value = userData.email;
-            document.getElementById('setting-discord').value = userData.discordId || 'Niepodpięty';
-            document.getElementById('setting-portfolio').value = userData.portfolioLink || '';
+        } catch (error) {
+            console.error("Błąd autoryzacji:", error);
+            // Wyłączyłem wymuszony redirect na czas kodowania:
+            // window.location.href = '/login';
+        }
+    }
 
-        } catch (error) {
-            console.error("Błąd autoryzacji:", error);
-            localStorage.removeItem('token');
-            window.location.href = '/login';
-        }
-    }
+    async function buyVerification() {
+        if(!confirm("Czy na pewno chcesz złożyć wniosek o weryfikację konta za 29.99 vPLN? Upewnij się, że Twój profil nie narusza regulaminu.")) return;
+        // Symulacja udanego zakupu
+        showToast("Wniosek został złożony pomyślnie!", "success");
+        document.getElementById('btn-buy-verification').textContent = 'Oczekuje na akceptację...';
+        document.getElementById('btn-buy-verification').classList.add('cursor-not-allowed', 'opacity-50');
+        document.getElementById('btn-buy-verification').onclick = null;
+    }
 
-    // === ZAKUP WERYFIKACJI W SKLEPIE ===
-    async function buyVerification() {
-        const token = localStorage.getItem('token');
-        if(!confirm("Czy na pewno chcesz złożyć wniosek o weryfikację konta za 29.99 vPLN? Upewnij się, że Twój profil nie narusza regulaminu.")) return;
+    let lastBarData = null;
+    async function fetchInfoBar() {
+        // Symulacja Paska Informacyjnego bez odpytywania serwera
+        const mockBarData = {
+            isActive: true,
+            text: "🔥 Witaj na nowej platformie Velorie Market! Odbierz bonus na start.",
+            linkText: "Sprawdź szczegóły",
+            linkUrl: "#",
+            bgColor: "#ff0354",
+            textColor: "#ffffff"
+        };
+        updateInfoBarUI(mockBarData);
+    }
 
-        try {
-            const response = await fetch('/api/shop/buy-verification', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+    function updateInfoBarUI(data) {
+        const bar = document.getElementById('info-bar-container');
+        const text = document.getElementById('info-bar-text');
+        const link = document.getElementById('info-bar-link');
 
-            const data = await response.json();
+        if (data.isActive) {
+            bar.style.backgroundColor = data.bgColor || '#ff0354';
+            bar.style.color = data.textColor || '#ffffff';
+            text.innerText = data.text;
 
-            if (response.ok) {
-                showToast(data.message, "success");
-                fetchUserData(); // Odśwież dane by przycisk zablokować
-            } else {
-                showToast(data.error, "error");
-            }
-        } catch (error) {
-            showToast("Błąd połączenia z serwerem.", "error");
-        }
-    }
+            if (data.linkText && data.linkUrl) {
+                link.innerText = data.linkText;
+                link.href = data.linkUrl;
+                link.classList.remove('hidden');
+            } else {
+                link.classList.add('hidden');
+            }
 
-    let lastBarData = null;
-    async function fetchInfoBar() {
-        try {
-            const response = await fetch('/api/infobar?page=market');
-            if (!response.ok) return;
-            const data = await response.json();
+            bar.classList.remove('bar-hidden');
+            bar.classList.add('bar-visible');
+        } else {
+            bar.classList.remove('bar-visible');
+            bar.classList.add('bar-hidden');
+        }
+    }
 
-            if (JSON.stringify(data) !== JSON.stringify(lastBarData)) {
-                lastBarData = data;
-                updateInfoBarUI(data);
-            }
-        } catch (err) {
-            console.error('Błąd paska info:', err);
-        }
-    }
+    function logoutUser() {
+        showToast("Wylogowywanie...", "info");
+        localStorage.removeItem('token');
+        setTimeout(() => {
+            showToast("Wylogowano! (Symulacja)", "success");
+            // window.location.href = '/login';
+        }, 1200);
+    }
 
-    function updateInfoBarUI(data) {
-        const bar = document.getElementById('info-bar-container');
-        const text = document.getElementById('info-bar-text');
-        const link = document.getElementById('info-bar-link');
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchUserData();
+      fetchInfoBar();
+      // Wyłączyłem irytujący interval z błędami:
+      // setInterval(fetchInfoBar, 3000); 
+      
+      renderJobs();
+      switchDashTab('profil');
+      document.getElementById('tab-zlecenia').className = 'tab-active pb-2 px-1 transition-colors flex items-center gap-2';
+      selectListingType('zlecenie');
+    });
 
-        if (data.isActive) {
-            bar.style.backgroundColor = data.bgColor || '#ff0354';
-            bar.style.color = data.textColor || '#ffffff';
-            text.innerText = data.text;
+    function renderJobs() { 
+        document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="briefcase" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Zlecenia załadowane (Brak danych API)</h3></div>`; 
+        lucide.createIcons(); 
+    }
+    
+    function renderFreelancers() { 
+        document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="users" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Profile freelancerów załadowane (Brak danych API)</h3></div>`; 
+        lucide.createIcons(); 
+    }
+    
+    function switchMainView(viewId) {
+      document.getElementById('view-market').classList.add('view-hidden');
+      document.getElementById('view-dashboard').classList.add('view-hidden');
+      document.getElementById('view-add-listing').classList.add('view-hidden');
+      document.getElementById(`view-${viewId}`).classList.remove('view-hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-            if (data.linkText && data.linkUrl) {
-                link.innerText = data.linkText;
-                link.href = data.linkUrl;
-                link.classList.remove('hidden');
-            } else {
-                link.classList.add('hidden');
-            }
+    function switchMarketTab(tab) {
+      document.getElementById('tab-zlecenia').className = 'tab-inactive pb-2 px-1 transition-colors flex items-center gap-2';
+      document.getElementById('tab-freelancerzy').className = 'tab-inactive pb-2 px-1 transition-colors flex items-center gap-2';
+      document.getElementById(`tab-${tab}`).className = 'tab-active pb-2 px-1 transition-colors flex items-center gap-2';
+      if(tab === 'zlecenia') renderJobs();
+      if(tab === 'freelancerzy') renderFreelancers();
+    }
 
-            bar.classList.remove('bar-hidden');
-            bar.classList.add('bar-visible');
-        } else {
-            bar.classList.remove('bar-visible');
-            bar.classList.add('bar-hidden');
-        }
-    }
+    function switchDashTab(tab) {
+      const btns = document.querySelectorAll('[id^="dash-btn-"]');
+      btns.forEach(btn => {
+        btn.classList.remove('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
+        btn.classList.add('hover:bg-white/5', 'text-white/70');
+      });
+      const activeBtn = document.getElementById(`dash-btn-${tab}`);
+      if(activeBtn) {
+        activeBtn.classList.remove('hover:bg-white/5', 'text-white/70');
+        activeBtn.classList.add('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
+      }
+      ['profil', 'sklep', 'moje-ogloszenia'].forEach(v => {
+        const el = document.getElementById(`dash-${v}`);
+        if(el) el.classList.add('hidden');
+      });
+      const activeView = document.getElementById(`dash-${tab}`);
+      if(activeView) activeView.classList.remove('hidden');
+    }
 
-    function logoutUser() {
-        showToast("Wylogowywanie...", "info");
-        localStorage.removeItem('token');
-        setTimeout(() => {
-            window.location.href = '/login';
-        }, 1200);
-    }
+    function selectListingType(type) {
+      const btnZlecenie = document.getElementById('type-btn-zlecenie'), btnProfil = document.getElementById('type-btn-profil');
+      const formZlecenie = document.getElementById('form-zlecenie'), formProfil = document.getElementById('form-profil');
 
-    document.addEventListener("DOMContentLoaded", () => {
-      fetchUserData();
-      fetchInfoBar();
-      setInterval(fetchInfoBar, 3000);
-      lucide.createIcons();
-      renderJobs();
-      switchDashTab('profil');
-      document.getElementById('tab-zlecenia').className = 'tab-active pb-2 px-1 transition-colors flex items-center gap-2';
-      selectListingType('zlecenie');
-    });
+      btnZlecenie.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 border-white/10 hover:border-white/20 hover:bg-white/5";
+      btnZlecenie.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors";
+      btnProfil.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 border-white/10 hover:border-white/20 hover:bg-white/5";
+      btnProfil.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors";
 
-    function renderJobs() { document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="briefcase" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Zlecenia załadowane</h3></div>`; lucide.createIcons(); }
-    function renderFreelancers() { document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="users" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Profile freelancerów załadowane</h3></div>`; lucide.createIcons(); }
-    
-    function switchMainView(viewId) {
-      document.getElementById('view-market').classList.add('view-hidden');
-      document.getElementById('view-dashboard').classList.add('view-hidden');
-      document.getElementById('view-add-listing').classList.add('view-hidden');
-      document.getElementById(`view-${viewId}`).classList.remove('view-hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+      formZlecenie.classList.add('hidden'); formProfil.classList.add('hidden');
 
-    function switchMarketTab(tab) {
-      document.getElementById('tab-zlecenia').className = 'tab-inactive pb-2 px-1 transition-colors flex items-center gap-2';
-      document.getElementById('tab-freelancerzy').className = 'tab-inactive pb-2 px-1 transition-colors flex items-center gap-2';
-      document.getElementById(`tab-${tab}`).className = 'tab-active pb-2 px-1 transition-colors flex items-center gap-2';
-      if(tab === 'zlecenia') renderJobs();
-      if(tab === 'freelancerzy') renderFreelancers();
-    }
+      if(type === 'zlecenie') {
+        btnZlecenie.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 active";
+        btnZlecenie.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-[var(--accent)] flex items-center justify-center text-white transition-colors shadow-lg shadow-[var(--accent)]/20";
+        formZlecenie.classList.remove('hidden');
+      } else {
+        btnProfil.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 active border-[var(--accent2)] bg-[var(--accent2)]/5 shadow-[0_0_0_1px_var(--accent2),_0_10px_30px_rgba(124,58,237,0.15)]";
+        btnProfil.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-[var(--accent2)] flex items-center justify-center text-white transition-colors shadow-lg shadow-[var(--accent2)]/20";
+        formProfil.classList.remove('hidden');
+      }
+    }
 
-    function switchDashTab(tab) {
-      const btns = document.querySelectorAll('[id^="dash-btn-"]');
-      btns.forEach(btn => {
-        btn.classList.remove('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
-        btn.classList.add('hover:bg-white/5', 'text-white/70');
-      });
-      const activeBtn = document.getElementById(`dash-btn-${tab}`);
-      if(activeBtn) {
-        activeBtn.classList.remove('hover:bg-white/5', 'text-white/70');
-        activeBtn.classList.add('bg-[var(--accent)]/10', 'text-[var(--accent)]', 'glow-card');
-      }
-      ['profil', 'sklep', 'moje-ogloszenia'].forEach(v => {
-        const el = document.getElementById(`dash-${v}`);
-        if(el) el.classList.add('hidden');
-      });
-      const activeView = document.getElementById(`dash-${tab}`);
-      if(activeView) activeView.classList.remove('hidden');
-    }
-
-    function selectListingType(type) {
-      const btnZlecenie = document.getElementById('type-btn-zlecenie'), btnProfil = document.getElementById('type-btn-profil');
-      const formZlecenie = document.getElementById('form-zlecenie'), formProfil = document.getElementById('form-profil');
-
-      btnZlecenie.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 border-white/10 hover:border-white/20 hover:bg-white/5";
-      btnZlecenie.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors";
-      btnProfil.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 border-white/10 hover:border-white/20 hover:bg-white/5";
-      btnProfil.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/50 transition-colors";
-
-      formZlecenie.classList.add('hidden'); formProfil.classList.add('hidden');
-
-      if(type === 'zlecenie') {
-        btnZlecenie.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 active";
-        btnZlecenie.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-[var(--accent)] flex items-center justify-center text-white transition-colors shadow-lg shadow-[var(--accent)]/20";
-        formZlecenie.classList.remove('hidden');
-      } else {
-        btnProfil.className = "type-card glass rounded-3xl p-6 cursor-pointer flex gap-4 active border-[var(--accent2)] bg-[var(--accent2)]/5 shadow-[0_0_0_1px_var(--accent2),_0_10px_30px_rgba(124,58,237,0.15)]";
-        btnProfil.querySelector('.icon-container').className = "icon-container shrink-0 w-12 h-12 rounded-2xl bg-[var(--accent2)] flex items-center justify-center text-white transition-colors shadow-lg shadow-[var(--accent2)]/20";
-        formProfil.classList.remove('hidden');
-      }
-    }
-
-    function submitListing(e) {
-      e.preventDefault();
-      switchMainView('dashboard');
-      switchDashTab('moje-ogloszenia');
-      showToast("Ogłoszenie zostało pomyślnie dodane!", "success");
-      e.target.reset();
-    }
-  </script>
+    function submitListing(e) {
+      e.preventDefault();
+      switchMainView('dashboard');
+      switchDashTab('moje-ogloszenia');
+      showToast("Ogłoszenie zostało pomyślnie dodane!", "success");
+      e.target.reset();
+    }
+  </script>
 </body>
 </html>
