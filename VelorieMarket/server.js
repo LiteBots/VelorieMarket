@@ -139,6 +139,68 @@ app.post('/api/shop/buy-verification', authenticateToken, async (req, res) => {
 // SEKCJ ADMIN API (Obsługa Panelu)
 // ---------------------------------------------------------
 
+// --- DASHBOARD STATYSTYKI ---
+app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
+    try {
+        // 1. Użytkownicy w bazie
+        const totalUsers = await User.countDocuments();
+
+        // 2. Konta zweryfikowane (isVerified: true)
+        const verifiedUsers = await User.countDocuments({ isVerified: true });
+
+        // 3. Profile Freelancerów
+        const freelancerProfiles = await User.countDocuments({ role: 'freelancer' });
+
+        // 4. Posiadane vPLN (Suma w portfelach wszystkich użytkowników)
+        const vplnAggregate = await User.aggregate([
+            { $group: { _id: null, totalVpln: { $sum: "$vpln" } } }
+        ]);
+        const vplnOwned = vplnAggregate.length > 0 ? vplnAggregate[0].totalVpln : 0;
+
+        // -------------------------------------------------------------
+        // TODO: Poniższe wartości wymagają dodatkowych Modeli w Mongoose.
+        // Jeśli masz już modele na transakcje/ogłoszenia, odkomentuj i dostosuj logikę:
+        // -------------------------------------------------------------
+
+        // 5. Zarobek PLN (np. z modelu Transaction/Payments)
+        // const plnAggregate = await Transaction.aggregate([{ $match: { currency: 'PLN', status: 'success' } }, { $group: { _id: null, total: { $sum: "$amount" } } }]);
+        const plnEarned = 0; // Tymczasowe 0
+        
+        // 6. Wydane vPLN (Suma z historii transakcji wewnętrznych vPLN)
+        // const spentAggregate = await Transaction.aggregate([{ $match: { currency: 'vPLN', type: 'spent' } }, { $group: { _id: null, total: { $sum: "$amount" } } }]);
+        const vplnSpent = 0; // Tymczasowe 0
+
+        // 7. Aktywne Bannery
+        // const activeBanners = await Banner.countDocuments({ status: 'active' });
+        const activeBanners = 0; // Tymczasowe 0
+
+        // 8. Aktywne Portfolia (np. sprawdzamy czy user ma wykupione pole hasPortfolioHub)
+        // const activePortfolios = await User.countDocuments({ hasPortfolioHub: true });
+        const activePortfolios = 0; // Tymczasowe 0
+
+        // 9. Ogłoszenia zleceń
+        // const jobAds = await Ad.countDocuments({ type: 'job' });
+        const jobAds = 0; // Tymczasowe 0
+
+        res.json({
+            totalUsers,
+            plnEarned,
+            vplnSpent,
+            vplnOwned,
+            verifiedUsers,
+            activeBanners,
+            activePortfolios,
+            jobAds,
+            freelancerProfiles
+        });
+
+    } catch (err) {
+        console.error('Błąd pobierania statystyk:', err);
+        res.status(500).json({ error: 'Błąd podczas liczenia statystyk.' });
+    }
+});
+
+
 // --- ZARZĄDZANIE WERYFIKACJAMI PROFILI ---
 
 // A. Pobieranie listy osób do weryfikacji i już zweryfikowanych
