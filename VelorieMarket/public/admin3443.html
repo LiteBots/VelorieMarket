@@ -406,7 +406,7 @@
 
          <div class="glass-soft p-5 rounded-2xl">
             <label class="text-[10px] uppercase font-bold text-white/40 block mb-2">Saldo Portfela</label>
-            <div class="text-3xl font-black text-[#e2b714] mb-4 text-center"><span id="modal-user-balance">0</span> vPLN</div>
+            <div class="text-3xl font-black text-[#e2b714] mb-4 text-center"><span id="modal-user-balance">0.00</span> vPLN</div>
             <div class="flex flex-col gap-2">
                <input type="number" id="vpln-amount" class="v-input text-center text-sm" placeholder="Kwota" />
                <div class="flex gap-2">
@@ -567,9 +567,9 @@
             const stats = await res.json();
             
             document.getElementById('stat-users').innerText = stats.totalUsers || 0;
-            document.getElementById('stat-pln').innerHTML = `${(stats.plnEarned || 0).toFixed(2)} <span class="text-sm text-white/40 font-medium">PLN</span>`;
-            document.getElementById('stat-spent-vpln').innerText = stats.vplnSpent || 0;
-            document.getElementById('stat-owned-vpln').innerText = stats.vplnOwned || 0;
+            document.getElementById('stat-pln').innerHTML = `${Number(stats.plnEarned || 0).toFixed(2)} <span class="text-sm text-white/40 font-medium">PLN</span>`;
+            document.getElementById('stat-spent-vpln').innerText = Number(stats.vplnSpent || 0).toFixed(2);
+            document.getElementById('stat-owned-vpln').innerText = Number(stats.vplnOwned || 0).toFixed(2);
             document.getElementById('stat-verified').innerText = stats.verifiedUsers || 0;
             document.getElementById('stat-banners').innerText = stats.activeBanners || 0;
             document.getElementById('stat-portfolios').innerText = stats.activePortfolios || 0;
@@ -617,7 +617,7 @@
              <div class="text-sm font-medium text-white/80">${dateStr}</div>
              <div class="text-xs text-white/30">${timeStr}</div>
           </td>
-          <td class="px-6 py-4 text-center font-bold text-[#e2b714] tracking-wide">${user.vpln || 0} vPLN</td>
+          <td class="px-6 py-4 text-center font-bold text-[#e2b714] tracking-wide">${Number(user.vpln || 0).toFixed(2)} vPLN</td>
           <td class="px-6 py-4 text-right">
             <button class="btn-ghost p-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition hover:bg-white/10 text-white">
               <i data-lucide="settings-2" class="h-4 w-4"></i>
@@ -658,7 +658,7 @@
           await fetchUsersFromDB(); 
           const updatedUser = allUsers.find(u => u._id === selectedUserId);
           if(updatedUser) {
-             document.getElementById('modal-user-balance').innerText = updatedUser.vpln;
+             document.getElementById('modal-user-balance').innerText = Number(updatedUser.vpln || 0).toFixed(2);
              addMockTransaction(type === 'add' ? amount : -amount, "Korekta Admina");
           }
           document.getElementById('vpln-amount').value = '';
@@ -692,7 +692,7 @@
 
       document.getElementById('modal-user-name').innerText = user.username || user.name || 'Użytkownik';
       document.getElementById('modal-user-email').innerText = user.email;
-      document.getElementById('modal-user-balance').innerText = user.vpln || 0;
+      document.getElementById('modal-user-balance').innerText = Number(user.vpln || 0).toFixed(2);
       document.getElementById('modal-user-avatar').src = user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user.username || user.email);
       
       const regDate = new Date(user.createdAt);
@@ -728,7 +728,7 @@
                     <div class="font-bold text-sm text-white">${ad.title || 'Ogłoszenie bez tytułu'}</div>
                     <div class="text-[10px] text-white/50">${ad.category || 'Ogólne'}</div>
                 </div>
-                <div class="text-[#e2b714] font-bold text-xs">${ad.price || 0} vPLN</div>
+                <div class="text-[#e2b714] font-bold text-xs">${Number(ad.price || 0).toFixed(2)} vPLN</div>
             </div>
         `).join('');
     }
@@ -744,7 +744,7 @@
                 <td class="p-3 text-white/60">${new Date(t.date).toLocaleDateString()}</td>
                 <td class="p-3 text-white">${t.type}</td>
                 <td class="p-3 text-right font-bold ${t.amount > 0 ? 'text-green-400' : 'text-red-400'}">
-                    ${t.amount > 0 ? '+' : ''}${t.amount} vPLN
+                    ${t.amount > 0 ? '+' : ''}${Number(t.amount || 0).toFixed(2)} vPLN
                 </td>
             </tr>
         `).join('');
@@ -761,7 +761,7 @@
             <td class="p-3 text-white/60">Teraz</td>
             <td class="p-3 text-white">${type}</td>
             <td class="p-3 text-right font-bold ${amount > 0 ? 'text-green-400' : 'text-red-400'}">
-                ${amount > 0 ? '+' : ''}${amount} vPLN
+                ${amount > 0 ? '+' : ''}${Number(amount || 0).toFixed(2)} vPLN
             </td>
         `;
         container.insertBefore(row, container.firstChild);
@@ -1019,4 +1019,4 @@
     }
   </script>
 </body>
-</html>
+</html>s
