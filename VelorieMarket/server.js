@@ -9,6 +9,7 @@ require('dotenv').config();
 
 // === IMPORTY WŁASNE ===
 const User = require('./models/User');
+const InfoBar = require('./models/InfoBar'); // <--- NOWY IMPORT
 const { initDiscordBot, updateDiscordStats, sendWelcomeDM, sendAdminOTP, sendAdminSecurityAlert } = require('./discordBot'); 
 
 const app = express();
@@ -99,11 +100,49 @@ app.get('/admin3443', (req, res) => res.sendFile(path.join(__dirname, 'public', 
 // SEKCJ ADMIN API (NOWA - Obsługa Panelu)
 // ---------------------------------------------------------
 
+// --- ZARZĄDZANIE PASKIEM INFORMACYJNYM (NOWE) ---
+
+// 1. Publiczne pobieranie paska (dla strony głównej)
+app.get('/api/infobar', async (req, res) => {
+  try {
+    // Pobierz pierwszy znaleziony pasek lub stwórz domyślny, jeśli pusto
+    let infoBar = await InfoBar.findOne();
+    if (!infoBar) {
+      infoBar = new InfoBar({ text: 'Witamy w Velorie Market!', isActive: false });
+      await infoBar.save();
+    }
+    res.json(infoBar);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Błąd pobierania paska' });
+  }
+});
+
+// 2. Admin: Aktualizacja paska (wymaga logowania admina)
+app.post('/api/admin/infobar', authenticateAdmin, async (req, res) => {
+  try {
+    const { isActive, text, bgColor, textColor, linkUrl, linkText } = req.body;
+    
+    // Używamy findOneAndUpdate z upsert: true, żeby zawsze był tylko jeden pasek w bazie
+    const updatedBar = await InfoBar.findOneAndUpdate(
+      {}, 
+      { isActive, text, bgColor, textColor, linkUrl, linkText },
+      { new: true, upsert: true } // Zwraca nowy dokument, tworzy jeśli nie ma
+    );
+    
+    res.json({ success: true, bar: updatedBar });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Błąd zapisu paska' });
+  }
+});
+
+// --- ZARZĄDZANIE UŻYTKOWNIKAMI ---
+
 // A. Pobieranie listy użytkowników
 app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
     try {
         // Pobierz wszystkich użytkowników, posortuj od najnowszych
-        // select('-password') ukrywa zahashowane hasła dla bezpieczeństwa, choć admin mógłby je widzieć
         const users = await User.find().select('-password').sort({ createdAt: -1 });
         res.json(users);
     } catch (err) {
@@ -122,7 +161,6 @@ app.post('/api/admin/users/:id/balance', authenticateAdmin, async (req, res) => 
         if (!user) return res.status(404).json({ error: 'Użytkownik nie istnieje.' });
 
         // Aktualizacja salda
-        // Używamy (user.vpln || 0) na wypadek gdyby pole nie istniało
         user.vpln = (user.vpln || 0) + Number(amount);
         
         await user.save();
@@ -177,7 +215,7 @@ app.post('/api/admin/login', async (req, res) => {
 
   // Generowanie kodu OTP
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-  
+   
   activeOTPs.set(foundAdmin.discordId, { code: otpCode, expires: Date.now() + 5 * 60 * 1000 });
 
   // Wysyłamy kod na Discorda
@@ -203,12 +241,12 @@ app.post('/api/admin/verify', async (req, res) => {
 
   // Pomyślna weryfikacja! 
   activeOTPs.delete(discordId); 
-  
+   
   await sendAdminSecurityAlert(discordId, 'success');
 
   // Token ADMINA posiada { role: 'admin' }
   const adminToken = jwt.sign({ discordId, role: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
-  
+   
   res.json({ token: adminToken });
 });
 
