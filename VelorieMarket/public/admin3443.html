@@ -129,6 +129,9 @@
       <button onclick="switchAdminTab('pasek')" id="nav-pasek" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
         <i data-lucide="megaphone" class="h-4 w-4"></i> Pasek informacyjny
       </button>
+      <button onclick="switchAdminTab('weryfikacje')" id="nav-weryfikacje" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
+        <i data-lucide="check-circle" class="h-4 w-4"></i> Weryfikacje Profili
+      </button>
       <button onclick="switchAdminTab('blokada')" id="nav-blokada" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
         <i data-lucide="shield-alert" class="h-4 w-4"></i> Blokada płatności
       </button>
@@ -172,6 +175,35 @@
             <div class="text-3xl font-black text-white mb-1">4,281</div>
             <div class="text-sm font-medium text-white/50 uppercase tracking-wider">Użytkownicy</div>
         </div>
+        </div>
+    </div>
+
+    <div id="view-weryfikacje" class="admin-view-hidden space-y-6">
+        <div class="flex flex-col md:flex-row justify-between items-end gap-4">
+          <div>
+              <h2 class="text-3xl font-black tracking-tight">Weryfikacje Profili</h2>
+              <p class="text-sm text-white/50">Zarządzaj statusem "Zweryfikowany" i obsługuj zgłoszenia.</p>
+          </div>
+          <div class="glass p-4 rounded-2xl flex flex-wrap gap-2 items-center border border-[var(--accent2)]/30">
+            <input type="email" id="manual-v-email" placeholder="E-mail użytkownika" class="v-input text-xs w-48" />
+            <input type="number" id="manual-v-days" placeholder="Dni" class="v-input text-xs w-20" value="30" />
+            <button onclick="adminManualVerify()" class="btn-primary px-4 py-2.5 rounded-xl text-xs font-bold">Dodaj Ręcznie</button>
+          </div>
+        </div>
+      
+        <div class="glass rounded-3xl overflow-hidden">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="bg-white/5 text-[10px] uppercase font-bold text-white/40 tracking-widest">
+                <th class="px-6 py-4">Użytkownik</th>
+                <th class="px-6 py-4">Status</th>
+                <th class="px-6 py-4">Wygasa</th>
+                <th class="px-6 py-4 text-right">Akcje</th>
+              </tr>
+            </thead>
+            <tbody id="v-table-body" class="divide-y divide-white/5">
+              </tbody>
+          </table>
         </div>
     </div>
 
@@ -471,10 +503,13 @@
             <div class="flex items-center gap-3">
               <img src="${user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user.username || user.email)}" class="h-10 w-10 rounded-xl object-cover bg-white/5" />
               <div>
-                <div class="font-bold text-sm text-white">${user.username || user.name || 'Brak nazwy'}</div>
+                <div class="font-bold text-sm text-white flex items-center gap-1">
+                    ${user.username || user.name || 'Brak nazwy'}
+                    ${user.isVerified ? '<i data-lucide="badge-check" class="h-4 w-4 text-green-400"></i>' : ''}
+                </div>
                 ${user.discordId 
-                    ? '<div class="inline-flex items-center gap-1 text-[9px] font-black text-[#5865F2] uppercase bg-[#5865F2]/10 px-1.5 py-0.5 rounded"><i data-lucide="gamepad-2" class="h-2 w-2"></i> Discord</div>' 
-                    : '<div class="inline-flex items-center gap-1 text-[9px] font-bold text-white/40 uppercase bg-white/5 px-1.5 py-0.5 rounded"><i data-lucide="mail" class="h-2 w-2"></i> Formularz</div>'}
+                    ? '<div class="inline-flex items-center gap-1 text-[9px] font-black text-[#5865F2] uppercase bg-[#5865F2]/10 px-1.5 py-0.5 rounded mt-1"><i data-lucide="gamepad-2" class="h-2 w-2"></i> Discord</div>' 
+                    : '<div class="inline-flex items-center gap-1 text-[9px] font-bold text-white/40 uppercase bg-white/5 px-1.5 py-0.5 rounded mt-1"><i data-lucide="mail" class="h-2 w-2"></i> Formularz</div>'}
               </div>
             </div>
           </td>
@@ -528,8 +563,9 @@
              addMockTransaction(type === 'add' ? amount : -amount, "Korekta Admina");
           }
           document.getElementById('vpln-amount').value = '';
+          showToast(type === 'add' ? "Dodano środki!" : "Odjęto środki!");
         }
-      } catch (err) { alert("Błąd zapisu salda"); }
+      } catch (err) { showToast("Błąd zapisu salda", true); }
     }
 
     // 5. USUWANIE (API)
@@ -543,12 +579,13 @@
         if (res.ok) {
           closeDeleteConfirm();
           closeUserModal();
+          showToast("Użytkownik usunięty pomyślnie.");
           await fetchUsersFromDB();
         }
-      } catch (err) { alert("Błąd usuwania użytkownika"); }
+      } catch (err) { showToast("Błąd usuwania użytkownika", true); }
     }
 
-    // --- MODALE ---
+    // --- MODALE UŻYTKOWNIKA ---
     function openUserModal(id) {
       selectedUserId = id;
       const user = allUsers.find(u => u._id === id);
@@ -635,6 +672,97 @@
     function openDeleteConfirm() { document.getElementById('delete-confirm-modal').classList.remove('hidden'); document.getElementById('delete-confirm-modal').classList.add('flex'); }
     function closeDeleteConfirm() { document.getElementById('delete-confirm-modal').classList.add('hidden'); }
 
+    // --- ZAKŁADKA: WERYFIKACJE PROFILI ---
+    async function fetchVerifications() {
+        const token = localStorage.getItem('adminToken');
+        try {
+            const res = await fetch('/api/admin/verifications', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if(!res.ok) throw new Error("Błąd pobierania");
+            const users = await res.json();
+            const tbody = document.getElementById('v-table-body');
+            
+            tbody.innerHTML = users.length ? users.map(user => `
+                <tr class="hover:bg-white/[0.02] transition">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <img src="${user.avatar}" class="h-9 w-9 rounded-full bg-black/20" />
+                            <div>
+                                <div class="text-sm font-bold text-white">${user.username}</div>
+                                <div class="text-[10px] text-white/40">${user.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded text-[10px] font-black uppercase ${user.verificationStatus === 'pending' ? 'bg-amber-500/20 text-amber-500' : 'bg-green-500/20 text-green-500'}">
+                            ${user.verificationStatus === 'pending' ? 'OCZEKUJE' : 'AKTYWNY'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-xs text-white/60">
+                        ${user.verifiedUntil ? new Date(user.verifiedUntil).toLocaleDateString() : 'Brak danych'}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex justify-end gap-2">
+                            ${user.verificationStatus === 'pending' ? 
+                                `<button onclick="verifyAction('${user._id}', 'approve')" class="p-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-400 hover:text-black transition" title="Akceptuj"><i data-lucide="check" class="h-4 w-4"></i></button>` : ''
+                            }
+                            <button onclick="verifyAction('${user._id}', 'revoke')" class="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition" title="Usuń weryfikację"><i data-lucide="shield-off" class="h-4 w-4"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('') : '<tr><td colspan="4" class="p-10 text-center text-white/20">Brak aktywnych zgłoszeń.</td></tr>';
+            lucide.createIcons();
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function verifyAction(id, action) {
+        const token = localStorage.getItem('adminToken');
+        try {
+            const res = await fetch(`/api/admin/verifications/${action}/${id}`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if(res.ok) {
+                showToast(action === 'approve' ? "Weryfikacja przyznana!" : "Weryfikacja odebrana!");
+                fetchVerifications();
+            } else {
+                showToast("Błąd podczas akcji.", true);
+            }
+        } catch(err) {
+            showToast("Błąd sieci.", true);
+        }
+    }
+
+    async function adminManualVerify() {
+        const email = document.getElementById('manual-v-email').value;
+        const days = document.getElementById('manual-v-days').value;
+        const token = localStorage.getItem('adminToken');
+        
+        if(!email || !days) return showToast("Wypełnij wszystkie pola", true);
+
+        try {
+            const res = await fetch('/api/admin/verifications/manual', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, days })
+            });
+            
+            if(res.ok) {
+                showToast("Weryfikacja dodana ręcznie!");
+                document.getElementById('manual-v-email').value = '';
+                fetchVerifications();
+            } else {
+                showToast("Nie znaleziono użytkownika.", true);
+            }
+        } catch (err) {
+            showToast("Błąd sieci.", true);
+        }
+    }
+
+
     // --- SYSTEMOWE ---
     function switchAdminTab(tabName) {
       document.querySelectorAll('button[id^="nav-"]').forEach(btn => {
@@ -643,7 +771,7 @@
       const activeBtn = document.getElementById(`nav-${tabName}`);
       activeBtn.className = "w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium bg-[var(--accent)]/10 text-[var(--accent)] glow-card";
 
-      const views = ['dashboard', 'pasek', 'blokada', 'uzytkownicy', 'finanse', 'ogloszenia'];
+      const views = ['dashboard', 'pasek', 'weryfikacje', 'blokada', 'uzytkownicy', 'finanse', 'ogloszenia'];
       views.forEach(v => document.getElementById(`view-${v}`).classList.add('admin-view-hidden'));
       document.getElementById(`view-${tabName}`).classList.remove('admin-view-hidden');
       
@@ -652,10 +780,11 @@
       }
 
       if(tabName === 'uzytkownicy') fetchUsersFromDB();
+      if(tabName === 'weryfikacje') fetchVerifications();
       if(tabName === 'pasek') loadInfoBarData();
     }
 
-    // --- LOGIKA PASKA INFORMACYJNEGO (ZAKTUALIZOWANA) ---
+    // --- LOGIKA PASKA INFORMACYJNEGO ---
     let currentBarPage = 'home'; // Domyślnie edytujemy Home
 
     function setInfoBarPage(page) {
@@ -679,13 +808,11 @@
             editor.style.borderColor = "var(--accent2)";
         }
 
-        // Ładujemy dane dla wybranej strony
         loadInfoBarData();
     }
 
     async function loadInfoBarData() {
         try {
-            // Dodajemy parametr ?page=...
             const res = await fetch(`/api/infobar?page=${currentBarPage}`); 
             const data = await res.json();
             
@@ -701,7 +828,7 @@
     async function saveInfoBar() {
         const token = localStorage.getItem('adminToken');
         const payload = {
-            page: currentBarPage, // Kluczowe: wysyłamy którą stronę edytujemy
+            page: currentBarPage, 
             isActive: document.getElementById('bar-active').checked,
             text: document.getElementById('bar-text').value,
             linkText: document.getElementById('bar-link-text').value,
