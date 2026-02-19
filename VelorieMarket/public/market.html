@@ -91,8 +91,12 @@
     
     /* InfoBar Transition */
     #info-bar-container { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: top; }
-    .bar-hidden { transform: translateY(-100%); opacity: 0; margin-bottom: -44px; /* Approximate height to collapse layout */ }
+    .bar-hidden { transform: translateY(-100%); opacity: 0; margin-bottom: -44px; }
     .bar-visible { transform: translateY(0); opacity: 1; margin-bottom: 0; }
+
+    /* Store specific cards */
+    .shop-card { border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .shop-card:hover { border-color: var(--accent); background: rgba(255,255,255,0.06); }
   </style>
 </head>
 <body class="selection:bg-[#ff0354]/40 selection:text-white">
@@ -314,8 +318,67 @@
           </div>
 
           <div id="dash-sklep" class="space-y-6 hidden">
-             <div><h2 class="text-2xl font-bold">Sklep Velorie</h2><p class="text-sm text-white/50">W przygotowaniu...</p></div>
+             <div>
+               <h2 class="text-2xl font-bold">Sklep & Subskrypcje</h2>
+               <p class="text-sm text-white/50">Wzmocnij swoją obecność na rynku i zdobądź zaufanie klientów.</p>
+             </div>
+
+             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+               
+               <div class="shop-card rounded-3xl p-6 flex flex-col h-full">
+                 <div class="mb-4 flex items-center justify-between">
+                   <div class="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-400">
+                     <i data-lucide="shield-check" class="w-7 h-7"></i>
+                   </div>
+                   <span class="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-lg">TRUSTED</span>
+                 </div>
+                 <h3 class="text-lg font-bold mb-2">Weryfikacja Profilu</h3>
+                 <div class="text-2xl font-black mb-4">19.99 <span class="text-xs text-white/40 font-normal">vPLN / mies.</span></div>
+                 <p class="text-xs text-white/60 mb-6 leading-relaxed">
+                   Zyskaj plakietkę "Zweryfikowany", która buduje ogromne zaufanie wśród zleceniodawców. 
+                   <br><br>
+                   <span class="text-amber-400/80 font-semibold italic">⚠️ Uwaga: Kupno subskrypcji to tylko pierwszy krok. Profil musi zostać ręcznie zweryfikowany przez administrację VelorieMarket (czas oczekiwania do 48h). Sam znaczek bez weryfikacji nie zostanie nadany.</span>
+                 </p>
+                 <button onclick="showToast('Trwa łączenie z bramką...', 'info')" class="mt-auto btn-ghost w-full py-3 rounded-xl font-bold text-sm">Aktywuj usługę</button>
+               </div>
+
+               <div class="shop-card rounded-3xl p-6 flex flex-col h-full border-[var(--accent)]/20 relative overflow-hidden">
+                 <div class="absolute -right-4 -top-4 opacity-10 rotate-12"><i data-lucide="megaphone" class="w-24 h-24 text-[var(--accent)]"></i></div>
+                 <div class="mb-4">
+                   <div class="w-12 h-12 rounded-2xl bg-[var(--accent)]/10 flex items-center justify-center text-[var(--accent)]">
+                     <i data-lucide="layout-template" class="w-7 h-7"></i>
+                   </div>
+                 </div>
+                 <h3 class="text-lg font-bold mb-2">Banner Reklamowy</h3>
+                 <div class="text-2xl font-black mb-4">84.50 <span class="text-xs text-white/40 font-normal">vPLN / mies.</span></div>
+                 <ul class="text-xs text-white/60 space-y-2 mb-6 leading-relaxed">
+                   <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-[var(--accent)]"></i> Reklama serwera Minecraft/Discord</li>
+                   <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-[var(--accent)]"></i> Banner na samej górze marketu</li>
+                   <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-[var(--accent)]"></i> Maksymalne promowanie (1600x400)</li>
+                   <li class="mt-3 text-[10px] italic border-t border-white/5 pt-2">Banner musi być zgodny z regulaminem. Weryfikacja grafiki trwa do 24h.</li>
+                 </ul>
+                 <button onclick="showToast('Prześlij grafikę do panelu...', 'info')" class="mt-auto btn-primary w-full py-3 rounded-xl font-bold text-sm">Zarezerwuj miejsce</button>
+               </div>
+
+               <div class="shop-card rounded-3xl p-6 flex flex-col h-full border-[var(--accent2)]/20">
+                 <div class="mb-4">
+                   <div class="w-12 h-12 rounded-2xl bg-[var(--accent2)]/10 flex items-center justify-center text-[var(--accent2)]">
+                     <i data-lucide="palette" class="w-7 h-7"></i>
+                   </div>
+                 </div>
+                 <h3 class="text-lg font-bold mb-2">Portfolio Hub</h3>
+                 <div class="text-2xl font-black mb-4">49.99 <span class="text-xs text-white/40 font-normal">vPLN / 3 mies.</span></div>
+                 <ul class="text-xs text-white/60 space-y-2 mb-6">
+                   <li class="flex items-center gap-2"><i data-lucide="plus" class="w-3 h-3 text-[var(--accent2)]"></i> Stwórz własne portfolio</li>
+                   <li class="flex items-center gap-2"><i data-lucide="plus" class="w-3 h-3 text-[var(--accent2)]"></i> Podepnij własną domenę</li>
+                   <li class="flex items-center gap-2"><i data-lucide="plus" class="w-3 h-3 text-[var(--accent2)]"></i> Personalizacja pod Twój styl</li>
+                 </ul>
+                 <button onclick="showToast('Kreator portfolio wkrótce!', 'info')" class="mt-auto btn-ghost w-full py-3 rounded-xl font-bold text-sm text-[var(--accent2)]">Rozpocznij projekt</button>
+               </div>
+
+             </div>
           </div>
+
           <div id="dash-moje-ogloszenia" class="space-y-6 hidden">
              <div><h2 class="text-2xl font-bold">Zarządzaj Ogłoszeniami</h2><p class="text-sm text-white/50">W przygotowaniu...</p></div>
           </div>
@@ -332,7 +395,7 @@
     const token = params.get('token');
     if (token) {
         localStorage.setItem('token', token);
-        window.history.replaceState({}, document.title, "/market"); // Czyścimy URL
+        window.history.replaceState({}, document.title, "/market"); 
     }
 
     lucide.createIcons();
@@ -381,18 +444,15 @@
 
             const userData = await response.json();
 
-            // Podmiana tekstów
             document.getElementById('user-display-name').textContent = userData.username;
             document.getElementById('user-role-display').textContent = userData.role === 'freelancer' ? 'Freelancer' : 'Zleceniodawca';
             document.getElementById('header-vpln').textContent = parseFloat(userData.vpln).toFixed(2);
             
-            // Podmiana Avatara (Nagłówek i Dashboard)
             if (userData.avatar) {
                 document.getElementById('user-avatar-header').src = userData.avatar;
                 document.getElementById('user-avatar-dash').src = userData.avatar;
             }
 
-            // Wypełnienie ustawień
             document.getElementById('setting-username').value = userData.username;
             document.getElementById('setting-email').value = userData.email;
             document.getElementById('setting-discord').value = userData.discordId || 'Niepodpięty';
@@ -405,21 +465,16 @@
         }
     }
 
-    // --- REAL-TIME INFO BAR (Short Polling) ---
-    // Zapamiętujemy ostatnie dane, żeby nie odświeżać DOM bez potrzeby (brak mrugania)
     let lastBarData = null;
-
     async function fetchInfoBar() {
         try {
-            // Pobieramy pasek specyficzny dla marketu
             const response = await fetch('/api/infobar?page=market');
             if (!response.ok) return;
             const data = await response.json();
 
-            // Sprawdzamy czy dane się zmieniły (proste porównanie JSON)
             if (JSON.stringify(data) !== JSON.stringify(lastBarData)) {
-                lastBarData = data; // Aktualizujemy cache
-                updateInfoBarUI(data); // Aktualizujemy wygląd
+                lastBarData = data;
+                updateInfoBarUI(data);
             }
         } catch (err) {
             console.error('Błąd paska info:', err);
@@ -432,7 +487,6 @@
         const link = document.getElementById('info-bar-link');
 
         if (data.isActive) {
-            // Aktualizacja treści
             bar.style.backgroundColor = data.bgColor || '#ff0354';
             bar.style.color = data.textColor || '#ffffff';
             text.innerText = data.text;
@@ -445,11 +499,9 @@
                 link.classList.add('hidden');
             }
 
-            // Pokaż pasek (animacja CSS)
             bar.classList.remove('bar-hidden');
             bar.classList.add('bar-visible');
         } else {
-            // Ukryj pasek
             bar.classList.remove('bar-visible');
             bar.classList.add('bar-hidden');
         }
@@ -465,11 +517,8 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       fetchUserData();
-      fetchInfoBar(); // Pierwsze pobranie
-      
-      // REAL-TIME: Sprawdzaj co 3 sekundy w tle
+      fetchInfoBar();
       setInterval(fetchInfoBar, 3000);
-
       lucide.createIcons();
       renderJobs();
       switchDashTab('profil');
@@ -477,7 +526,6 @@
       selectListingType('zlecenie');
     });
 
-    /* --- Nawigacja i UI --- */
     function renderJobs() { document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="briefcase" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Zlecenia załadowane</h3></div>`; lucide.createIcons(); }
     function renderFreelancers() { document.getElementById('market-list').innerHTML = `<div class="glass p-8 text-center rounded-3xl col-span-full border-dashed"><i data-lucide="users" class="w-10 h-10 text-white/30 mx-auto mb-2"></i><h3 class="font-bold text-lg">Profile freelancerów załadowane</h3></div>`; lucide.createIcons(); }
     
