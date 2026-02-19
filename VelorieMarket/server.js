@@ -9,7 +9,7 @@ require('dotenv').config();
 
 // === IMPORTY WŁASNE ===
 const User = require('./models/User');
-const InfoBar = require('./models/InfoBar'); // <--- NOWY IMPORT
+const InfoBar = require('./models/InfoBar'); // <--- Zaktualizowany model (z polem page)
 const { initDiscordBot, updateDiscordStats, sendWelcomeDM, sendAdminOTP, sendAdminSecurityAlert } = require('./discordBot'); 
 
 const app = express();
@@ -97,18 +97,27 @@ app.get('/admin3443', (req, res) => res.sendFile(path.join(__dirname, 'public', 
 // === 4. ROUTING API (BACKEND) ===
 
 // ---------------------------------------------------------
-// SEKCJ ADMIN API (NOWA - Obsługa Panelu)
+// SEKCJ ADMIN API (Obsługa Panelu)
 // ---------------------------------------------------------
 
-// --- ZARZĄDZANIE PASKIEM INFORMACYJNYM (NOWE) ---
+// --- ZARZĄDZANIE PASKIEM INFORMACYJNYM (ZAKTUALIZOWANE DLA WIELU STRON) ---
 
-// 1. Publiczne pobieranie paska (dla strony głównej)
+// 1. Publiczne pobieranie paska (dla konkretnej strony)
+// Przykład użycia: /api/infobar?page=home LUB /api/infobar?page=market
 app.get('/api/infobar', async (req, res) => {
   try {
-    // Pobierz pierwszy znaleziony pasek lub stwórz domyślny, jeśli pusto
-    let infoBar = await InfoBar.findOne();
+    const pageType = req.query.page || 'home'; // Domyślnie 'home'
+
+    // Szukamy paska dedykowanego dla danej strony
+    let infoBar = await InfoBar.findOne({ page: pageType });
+    
+    // Jeśli nie ma paska dla tej strony, tworzymy domyślny
     if (!infoBar) {
-      infoBar = new InfoBar({ text: 'Witamy w Velorie Market!', isActive: false });
+      infoBar = new InfoBar({ 
+        page: pageType, 
+        text: pageType === 'market' ? 'Witamy w Markecie Velorie!' : 'Witamy w Velorie!', 
+        isActive: false 
+      });
       await infoBar.save();
     }
     res.json(infoBar);
@@ -121,11 +130,13 @@ app.get('/api/infobar', async (req, res) => {
 // 2. Admin: Aktualizacja paska (wymaga logowania admina)
 app.post('/api/admin/infobar', authenticateAdmin, async (req, res) => {
   try {
-    const { isActive, text, bgColor, textColor, linkUrl, linkText } = req.body;
-    
-    // Używamy findOneAndUpdate z upsert: true, żeby zawsze był tylko jeden pasek w bazie
+    // Pobieramy "page" z body, żeby wiedzieć który pasek edytujemy
+    const { page, isActive, text, bgColor, textColor, linkUrl, linkText } = req.body;
+    const targetPage = page || 'home';
+
+    // Używamy findOneAndUpdate z upsert: true
     const updatedBar = await InfoBar.findOneAndUpdate(
-      {}, 
+      { page: targetPage }, 
       { isActive, text, bgColor, textColor, linkUrl, linkText },
       { new: true, upsert: true } // Zwraca nowy dokument, tworzy jeśli nie ma
     );
@@ -215,7 +226,7 @@ app.post('/api/admin/login', async (req, res) => {
 
   // Generowanie kodu OTP
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-   
+    
   activeOTPs.set(foundAdmin.discordId, { code: otpCode, expires: Date.now() + 5 * 60 * 1000 });
 
   // Wysyłamy kod na Discorda
@@ -241,12 +252,12 @@ app.post('/api/admin/verify', async (req, res) => {
 
   // Pomyślna weryfikacja! 
   activeOTPs.delete(discordId); 
-   
+    
   await sendAdminSecurityAlert(discordId, 'success');
 
   // Token ADMINA posiada { role: 'admin' }
   const adminToken = jwt.sign({ discordId, role: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
-   
+    
   res.json({ token: adminToken });
 });
 
