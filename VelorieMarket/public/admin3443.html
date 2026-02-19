@@ -165,19 +165,89 @@
   </aside>
 
   <main class="flex-1 p-4 md:p-8 relative z-10 w-full overflow-x-hidden pt-20 md:pt-8">
+    
     <div id="view-dashboard" class="space-y-8">
       <div>
         <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Przegląd Systemu</h1>
-        <p class="text-white/50 text-sm mt-1">Bieżące statystyki Velorie.</p>
+        <p class="text-white/50 text-sm mt-1">Bieżące statystyki Velorie Market.</p>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div class="glass rounded-3xl p-6 lift">
-            <div class="text-3xl font-black text-white mb-1">4,281</div>
-            <div class="text-sm font-medium text-white/50 uppercase tracking-wider">Użytkownicy</div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+        
+        <div class="glass rounded-3xl p-6 lift relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <div class="text-[11px] font-bold text-white/50 uppercase tracking-widest">Użytkownicy (Total)</div>
+                <div class="p-2.5 bg-white/5 text-white/80 rounded-xl group-hover:scale-110 transition-transform"><i data-lucide="users" class="h-5 w-5"></i></div>
+            </div>
+            <div class="text-4xl font-black text-white" id="stat-users">...</div>
         </div>
-        </div>
-    </div>
 
+        <div class="glass rounded-3xl p-6 lift relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <div class="text-[11px] font-bold text-green-400/70 uppercase tracking-widest">Zarobek PLN</div>
+                <div class="p-2.5 bg-green-500/10 text-green-400 rounded-xl group-hover:scale-110 transition-transform"><i data-lucide="banknote" class="h-5 w-5"></i></div>
+            </div>
+            <div class="text-4xl font-black text-white" id="stat-pln">... <span class="text-sm text-white/40 font-medium">PLN</span></div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 lift relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <div class="text-[11px] font-bold text-red-400/70 uppercase tracking-widest">Wydane vPLN</div>
+                <div class="p-2.5 bg-red-500/10 text-red-400 rounded-xl group-hover:scale-110 transition-transform"><i data-lucide="shopping-cart" class="h-5 w-5"></i></div>
+            </div>
+            <div class="text-4xl font-black text-white" id="stat-spent-vpln">...</div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 lift relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <div class="text-[11px] font-bold text-[#e2b714]/70 uppercase tracking-widest">Posiadane vPLN (Rynek)</div>
+                <div class="p-2.5 bg-[#e2b714]/10 text-[#e2b714] rounded-xl group-hover:scale-110 transition-transform"><i data-lucide="wallet" class="h-5 w-5"></i></div>
+            </div>
+            <div class="text-4xl font-black text-white" id="stat-owned-vpln">...</div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 lift relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <div class="text-[11px] font-bold text-blue-400/70 uppercase tracking-widest">Konta Zweryfikowane</div>
+                <div class="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl group-hover:scale-110 transition-transform"><i data-lucide="badge-check" class="h-5 w-5"></i></div>
+            </div>
+            <div class="text-4xl font-black text-white" id="stat-verified">...</div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 lift relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <div class="text-[11px] font-bold text-[var(--accent)]/70 uppercase tracking-widest">Aktywne Bannery</div>
+                <div class="p-2.5 bg-[var(--accent)]/10 text-[var(--accent)] rounded-xl group-hover:scale-110 transition-transform"><i data-lucide="image" class="h-5 w-5"></i></div>
+            </div>
+            <div class="text-4xl font-black text-white" id="stat-banners">...</div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 lift relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <div class="text-[11px] font-bold text-[var(--accent2)]/70 uppercase tracking-widest">Aktywne Portfolia</div>
+                <div class="p-2.5 bg-[var(--accent2)]/10 text-[var(--accent2)] rounded-xl group-hover:scale-110 transition-transform"><i data-lucide="briefcase" class="h-5 w-5"></i></div>
+            </div>
+            <div class="text-4xl font-black text-white" id="stat-portfolios">...</div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 lift relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <div class="text-[11px] font-bold text-white/50 uppercase tracking-widest">Ogłoszenia Zleceń</div>
+                <div class="p-2.5 bg-white/5 text-white/80 rounded-xl group-hover:scale-110 transition-transform"><i data-lucide="clipboard-list" class="h-5 w-5"></i></div>
+            </div>
+            <div class="text-4xl font-black text-white" id="stat-jobs">...</div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 lift relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <div class="text-[11px] font-bold text-white/50 uppercase tracking-widest">Profile Freelancerów</div>
+                <div class="p-2.5 bg-white/5 text-white/80 rounded-xl group-hover:scale-110 transition-transform"><i data-lucide="contact" class="h-5 w-5"></i></div>
+            </div>
+            <div class="text-4xl font-black text-white" id="stat-freelancers">...</div>
+        </div>
+
+      </div>
+    </div>
     <div id="view-weryfikacje" class="admin-view-hidden space-y-6">
         <div class="flex flex-col md:flex-row justify-between items-end gap-4">
           <div>
@@ -483,6 +553,35 @@
       }
     }
 
+    // --- POBIERANIE STATYSTYK DASHBOARDU ---
+    async function fetchDashboardStats() {
+        const token = localStorage.getItem('adminToken');
+        if (!token) return;
+
+        try {
+            const res = await fetch('/api/admin/stats', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error("Błąd pobierania statystyk");
+            
+            const stats = await res.json();
+            
+            document.getElementById('stat-users').innerText = stats.totalUsers || 0;
+            document.getElementById('stat-pln').innerHTML = `${(stats.plnEarned || 0).toFixed(2)} <span class="text-sm text-white/40 font-medium">PLN</span>`;
+            document.getElementById('stat-spent-vpln').innerText = stats.vplnSpent || 0;
+            document.getElementById('stat-owned-vpln').innerText = stats.vplnOwned || 0;
+            document.getElementById('stat-verified').innerText = stats.verifiedUsers || 0;
+            document.getElementById('stat-banners').innerText = stats.activeBanners || 0;
+            document.getElementById('stat-portfolios').innerText = stats.activePortfolios || 0;
+            document.getElementById('stat-jobs').innerText = stats.jobAds || 0;
+            document.getElementById('stat-freelancers').innerText = stats.freelancerProfiles || 0;
+            
+        } catch (err) {
+            console.error("Dashboard Stats Error:", err);
+            showToast("Błąd ładowania statystyk", true);
+        }
+    }
+
     // 2. RENDEROWANIE TABELI - WSZYSCY UŻYTKOWNICY
     function renderUsersTable(users) {
       const tbody = document.getElementById('users-table-body');
@@ -762,7 +861,6 @@
         }
     }
 
-
     // --- SYSTEMOWE ---
     function switchAdminTab(tabName) {
       document.querySelectorAll('button[id^="nav-"]').forEach(btn => {
@@ -779,18 +877,19 @@
           toggleSidebar();
       }
 
+      // Wywoływanie odpowiednich funkcji ładujących dane po zmianie karty
+      if(tabName === 'dashboard') fetchDashboardStats();
       if(tabName === 'uzytkownicy') fetchUsersFromDB();
       if(tabName === 'weryfikacje') fetchVerifications();
       if(tabName === 'pasek') loadInfoBarData();
     }
 
     // --- LOGIKA PASKA INFORMACYJNEGO ---
-    let currentBarPage = 'home'; // Domyślnie edytujemy Home
+    let currentBarPage = 'home'; 
 
     function setInfoBarPage(page) {
         currentBarPage = page;
         
-        // UI Updates for Tabs
         const tabHome = document.getElementById('bar-tab-home');
         const tabMarket = document.getElementById('bar-tab-market');
         const label = document.getElementById('current-bar-label');
@@ -863,6 +962,7 @@
         document.getElementById('admin-login-overlay').style.display = 'none';
         setAdminProfile(token);
         fetchUsersFromDB();
+        fetchDashboardStats(); // Ładujemy statystyki od razu po zalogowaniu
       }
     };
 
