@@ -21,6 +21,8 @@ const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || '1473749778302111856'
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET; 
 const DISCORD_REDIRECT_URI = 'https://www.velorie.pl/api/auth/discord/callback';
 
+const VERIFICATION_PRICE = 29.99; // Cena za weryfikację profilu w vPLN
+
 // === DANE ADMINISTRATORÓW ===
 const adminUsers = {
   'zxq0': {
@@ -97,13 +99,122 @@ app.get('/admin3443', (req, res) => res.sendFile(path.join(__dirname, 'public', 
 // === 4. ROUTING API (BACKEND) ===
 
 // ---------------------------------------------------------
+// SEKCJ SKLEP UŻYTKOWNIKA (Market)
+// ---------------------------------------------------------
+
+// --- ZAKUP WERYFIKACJI ---
+app.post('/api/shop/buy-verification', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ error: 'Użytkownik nie istnieje.' });
+        
+        if (user.vpln < VERIFICATION_PRICE) {
+            return res.status(400).json({ error: 'Niewystarczające środki vPLN.' });
+        }
+        
+        if (user.verificationStatus === 'pending') {
+            return res.status(400).json({ error: 'Twoje zgłoszenie jest już przetwarzane.' });
+        }
+        
+        if (user.verificationStatus === 'active') {
+            return res.status(400).json({ error: 'Posiadasz już aktywną weryfikację.' });
+        }
+
+        // Pobranie opłaty
+        user.vpln -= VERIFICATION_PRICE;
+        // Zmiana statusu na oczekujący
+        user.verificationStatus = 'pending';
+        
+        await user.save();
+
+        res.json({ success: true, message: 'Zakupiono pomyślnie. Oczekiwanie na akceptację admina.' });
+    } catch (err) {
+        console.error('Błąd zakupu weryfikacji:', err);
+        res.status(500).json({ error: 'Błąd serwera podczas zakupu.' });
+    }
+});
+
+
+// ---------------------------------------------------------
 // SEKCJ ADMIN API (Obsługa Panelu)
 // ---------------------------------------------------------
 
-// --- ZARZĄDZANIE PASKIEM INFORMACYJNYM (ZAKTUALIZOWANE DLA WIELU STRON) ---
+// --- ZARZĄDZANIE WERYFIKACJAMI PROFILI ---
+
+// A. Pobieranie listy osób do weryfikacji i już zweryfikowanych
+app.get('/api/admin/verifications', authenticateAdmin, async (req, res) => {
+    try {
+        const users = await User.find({ 
+            verificationStatus: { $in: ['pending', 'active'] } 
+        }).select('username email avatar verificationStatus verifiedUntil vpln discordId');
+        res.json(users);
+    } catch (err) {
+        console.error('Błąd pobierania weryfikacji:', err);
+        res.status(500).json({ error: 'Błąd bazy danych.' });
+    }
+});
+
+// B. Akceptacja zgłoszenia (Przyznaj weryfikację)
+app.post('/api/admin/verifications/approve/:id', authenticateAdmin, async (req, res) => {
+    try {
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 30); // Ustawienie na 30 dni od teraz
+
+        await User.findByIdAndUpdate(req.params.id, {
+            isVerified: true,
+            verificationStatus: 'active',
+            verifiedUntil: expiryDate
+        });
+        
+        res.json({ success: true, message: 'Weryfikacja przyznana.' });
+    } catch (err) {
+        console.error('Błąd akceptacji weryfikacji:', err);
+        res.status(500).json({ error: 'Błąd podczas akceptacji.' });
+    }
+});
+
+// C. Zdjęcie / Odebranie weryfikacji
+app.post('/api/admin/verifications/revoke/:id', authenticateAdmin, async (req, res) => {
+    try {
+        await User.findByIdAndUpdate(req.params.id, {
+            isVerified: false,
+            verificationStatus: 'none',
+            verifiedUntil: null
+        });
+        
+        res.json({ success: true, message: 'Weryfikacja została cofnięta.' });
+    } catch (err) {
+        console.error('Błąd usuwania weryfikacji:', err);
+        res.status(500).json({ error: 'Błąd podczas odbierania weryfikacji.' });
+    }
+});
+
+// D. Ręczne dodanie weryfikacji (Email + Dni)
+app.post('/api/admin/verifications/manual', authenticateAdmin, async (req, res) => {
+    const { email, days } = req.body;
+    try {
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + parseInt(days));
+
+        const user = await User.findOneAndUpdate(
+            { email: email.toLowerCase() },
+            { isVerified: true, verificationStatus: 'active', verifiedUntil: expiryDate },
+            { new: true }
+        );
+
+        if (!user) return res.status(404).json({ error: 'Nie znaleziono użytkownika o tym adresie email.' });
+        
+        res.json({ success: true, message: 'Ręcznie dodano weryfikację.', user });
+    } catch (err) {
+        console.error('Błąd ręcznego dodawania weryfikacji:', err);
+        res.status(500).json({ error: 'Błąd przy ręcznym dodawaniu.' });
+    }
+});
+
+
+// --- ZARZĄDZANIE PASKIEM INFORMACYJNYM ---
 
 // 1. Publiczne pobieranie paska (dla konkretnej strony)
-// Przykład użycia: /api/infobar?page=home LUB /api/infobar?page=market
 app.get('/api/infobar', async (req, res) => {
   try {
     const pageType = req.query.page || 'home'; // Domyślnie 'home'
