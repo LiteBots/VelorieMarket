@@ -265,7 +265,10 @@
           <div class="p-4 flex items-center gap-3 border-b border-white/10 mb-2">
             <img id="user-avatar-dash" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="h-12 w-12 rounded-full border border-white/20 bg-black/50" />
             <div>
-              <div class="font-bold flex items-center gap-1 text-sm"><span id="user-display-name">...</span></div>
+              <div class="font-bold flex items-center gap-1 text-sm">
+                <span id="user-display-name">...</span>
+                <i id="user-verified-badge" data-lucide="badge-check" class="h-4 w-4 text-green-400 hidden" title="Zweryfikowany użytkownik"></i>
+              </div>
               <div class="text-[11px] text-white/50">Plan: <span id="user-role-display">Użytkownik</span></div>
             </div>
           </div>
@@ -339,7 +342,7 @@
                    <br><br>
                    <span class="text-amber-400/80 font-semibold italic">⚠️ Uwaga: Kupno subskrypcji to tylko pierwszy krok. Profil musi zostać ręcznie zweryfikowany przez administrację VelorieMarket (czas oczekiwania do 48h). Sam znaczek bez weryfikacji nie zostanie nadany.</span>
                  </p>
-                 <button onclick="showToast('Trwa łączenie z bramką...', 'info')" class="mt-auto btn-ghost w-full py-3 rounded-xl font-bold text-sm">Aktywuj usługę</button>
+                 <button onclick="buyVerification()" id="btn-buy-verification" class="mt-auto btn-ghost w-full py-3 rounded-xl font-bold text-sm">Złóż wniosek (29.99 vPLN)</button>
                </div>
 
                <div class="shop-card rounded-3xl p-6 flex flex-col h-full border-[var(--accent)]/20 relative overflow-hidden">
@@ -449,6 +452,30 @@
             document.getElementById('user-role-display').textContent = userData.role === 'freelancer' ? 'Freelancer' : 'Zleceniodawca';
             document.getElementById('header-vpln').textContent = parseFloat(userData.vpln).toFixed(2);
             
+            // Znaczek weryfikacji obok nicku
+            const verifiedBadge = document.getElementById('user-verified-badge');
+            if (userData.isVerified) {
+                verifiedBadge.classList.remove('hidden');
+            } else {
+                verifiedBadge.classList.add('hidden');
+            }
+
+            // Obsługa przycisku kupowania w sklepie
+            const buyVerBtn = document.getElementById('btn-buy-verification');
+            if (userData.verificationStatus === 'pending') {
+                buyVerBtn.textContent = 'Oczekuje na akceptację...';
+                buyVerBtn.classList.add('cursor-not-allowed', 'opacity-50');
+                buyVerBtn.onclick = null;
+            } else if (userData.verificationStatus === 'active' || userData.isVerified) {
+                buyVerBtn.textContent = 'Usługa aktywna';
+                buyVerBtn.classList.add('cursor-not-allowed', 'opacity-50', 'text-green-400');
+                buyVerBtn.onclick = null;
+            } else {
+                buyVerBtn.textContent = 'Złóż wniosek (29.99 vPLN)';
+                buyVerBtn.classList.remove('cursor-not-allowed', 'opacity-50', 'text-green-400');
+                buyVerBtn.onclick = buyVerification;
+            }
+
             if (userData.avatar) {
                 document.getElementById('user-avatar-header').src = userData.avatar;
                 document.getElementById('user-avatar-dash').src = userData.avatar;
@@ -463,6 +490,32 @@
             console.error("Błąd autoryzacji:", error);
             localStorage.removeItem('token');
             window.location.href = '/login';
+        }
+    }
+
+    // === ZAKUP WERYFIKACJI W SKLEPIE ===
+    async function buyVerification() {
+        const token = localStorage.getItem('token');
+        if(!confirm("Czy na pewno chcesz złożyć wniosek o weryfikację konta za 29.99 vPLN? Upewnij się, że Twój profil nie narusza regulaminu.")) return;
+
+        try {
+            const response = await fetch('/api/shop/buy-verification', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showToast(data.message, "success");
+                fetchUserData(); // Odśwież dane by przycisk zablokować
+            } else {
+                showToast(data.error, "error");
+            }
+        } catch (error) {
+            showToast("Błąd połączenia z serwerem.", "error");
         }
     }
 
