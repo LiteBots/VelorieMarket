@@ -176,14 +176,57 @@
     </div>
 
     <div id="view-pasek" class="admin-view-hidden space-y-6 max-w-4xl">
-      <h2 class="text-3xl font-black tracking-tight">Pasek Informacyjny</h2>
-      <div class="glass rounded-3xl p-8 border-l-4 border-blue-500">
-        <input type="text" class="v-input mb-4" placeholder="Treść komunikatu..." />
-        <button class="btn-primary px-6 py-2.5 rounded-xl font-bold">Publikuj</button>
+        <h2 class="text-3xl font-black tracking-tight">Pasek Informacyjny</h2>
+        
+        <div class="glass rounded-3xl p-8 border-l-4 border-[var(--accent)]">
+          
+          <div class="flex items-center justify-between mb-6">
+              <span class="text-sm font-bold uppercase tracking-widest text-white/60">Status paska</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="bar-active" class="sr-only peer">
+                <div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                <span class="ml-3 text-sm font-medium text-white">Widoczny na stronie</span>
+              </label>
+          </div>
+  
+          <div class="mb-4">
+              <label class="block text-xs uppercase font-bold text-white/40 mb-2">Treść komunikatu</label>
+              <input type="text" id="bar-text" class="v-input" placeholder="Np. Przerwa techniczna o 22:00..." />
+          </div>
+  
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                  <label class="block text-xs uppercase font-bold text-white/40 mb-2">Nazwa Linku (opcjonalne)</label>
+                  <input type="text" id="bar-link-text" class="v-input" placeholder="Np. Dołącz do Discord" />
+              </div>
+              <div>
+                  <label class="block text-xs uppercase font-bold text-white/40 mb-2">Adres URL (opcjonalne)</label>
+                  <input type="text" id="bar-link-url" class="v-input" placeholder="https://..." />
+              </div>
+          </div>
+  
+          <div class="grid grid-cols-2 gap-4 mb-8">
+              <div>
+                  <label class="block text-xs uppercase font-bold text-white/40 mb-2">Kolor tła</label>
+                  <div class="flex items-center gap-3">
+                      <input type="color" id="bar-bg-color" value="#ff0354" class="h-10 w-10 rounded cursor-pointer bg-transparent border-0" />
+                      <span class="text-xs text-white/50">Kliknij, aby wybrać</span>
+                  </div>
+              </div>
+              <div>
+                  <label class="block text-xs uppercase font-bold text-white/40 mb-2">Kolor tekstu</label>
+                  <div class="flex items-center gap-3">
+                      <input type="color" id="bar-text-color" value="#ffffff" class="h-10 w-10 rounded cursor-pointer bg-transparent border-0" />
+                  </div>
+              </div>
+          </div>
+  
+          <button onclick="saveInfoBar()" class="btn-primary w-full py-3 rounded-xl font-bold transition flex items-center justify-center gap-2">
+              <i data-lucide="save" class="h-4 w-4"></i> Zapisz zmiany
+          </button>
+        </div>
       </div>
-    </div>
-
-    <div id="view-blokada" class="admin-view-hidden space-y-6 max-w-4xl">
+      <div id="view-blokada" class="admin-view-hidden space-y-6 max-w-4xl">
       <h2 class="text-3xl font-black tracking-tight text-red-400">Bezpieczeństwo</h2>
       <div class="glass rounded-3xl p-8 text-center border border-red-500/30">
         <button class="btn-danger px-8 py-4 rounded-xl font-bold">ZABLOKUJ PŁATNOŚCI</button>
@@ -562,6 +605,53 @@
       }
 
       if(tabName === 'uzytkownicy') fetchUsersFromDB();
+      if(tabName === 'pasek') loadInfoBarData(); // <--- DODANE ŁADOWANIE PASKA
+    }
+
+    // --- LOGIKA PASKA INFORMACYJNEGO ---
+    async function loadInfoBarData() {
+        try {
+            const res = await fetch('/api/infobar'); 
+            const data = await res.json();
+            
+            document.getElementById('bar-active').checked = data.isActive;
+            document.getElementById('bar-text').value = data.text || '';
+            document.getElementById('bar-link-text').value = data.linkText || '';
+            document.getElementById('bar-link-url').value = data.linkUrl || '';
+            document.getElementById('bar-bg-color').value = data.bgColor || '#ff0354';
+            document.getElementById('bar-text-color').value = data.textColor || '#ffffff';
+        } catch (err) { console.error("Błąd ładowania paska", err); }
+    }
+
+    async function saveInfoBar() {
+        const token = localStorage.getItem('adminToken');
+        const payload = {
+            isActive: document.getElementById('bar-active').checked,
+            text: document.getElementById('bar-text').value,
+            linkText: document.getElementById('bar-link-text').value,
+            linkUrl: document.getElementById('bar-link-url').value,
+            bgColor: document.getElementById('bar-bg-color').value,
+            textColor: document.getElementById('bar-text-color').value
+        };
+
+        try {
+            const res = await fetch('/api/admin/infobar', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if(res.ok) {
+                alert("Pasek zaktualizowany!");
+            } else {
+                alert("Błąd zapisu.");
+            }
+        } catch(err) {
+            alert("Błąd połączenia z serwerem.");
+        }
     }
 
     window.onload = () => {
