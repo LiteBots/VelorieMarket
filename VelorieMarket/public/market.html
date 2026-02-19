@@ -92,6 +92,11 @@
 </head>
 <body class="selection:bg-[#ff0354]/40 selection:text-white">
 
+  <div id="info-bar-container" class="hidden relative z-[100] w-full px-4 py-3 text-center text-sm font-bold shadow-xl transition-all">
+      <span id="info-bar-text"></span>
+      <a id="info-bar-link" href="#" target="_blank" class="ml-3 underline decoration-white/30 hover:decoration-white underline-offset-2 opacity-80 hover:opacity-100 hidden"></a>
+  </div>
+
   <div id="toast-container"></div>
 
   <div class="aurora" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div></div>
@@ -395,6 +400,38 @@
         }
     }
 
+    // --- NOWA FUNKCJA: POBIERANIE PASKA INFORMACYJNEGO ---
+    async function fetchInfoBar() {
+        try {
+            // Pobieramy pasek specyficzny dla marketu
+            const response = await fetch('/api/infobar?page=market');
+            if (!response.ok) return;
+            const data = await response.json();
+
+            if (data.isActive) {
+                const bar = document.getElementById('info-bar-container');
+                const text = document.getElementById('info-bar-text');
+                const link = document.getElementById('info-bar-link');
+
+                bar.style.backgroundColor = data.bgColor || '#ff0354';
+                bar.style.color = data.textColor || '#ffffff';
+                text.innerText = data.text;
+
+                if (data.linkText && data.linkUrl) {
+                    link.innerText = data.linkText;
+                    link.href = data.linkUrl;
+                    link.classList.remove('hidden');
+                } else {
+                    link.classList.add('hidden');
+                }
+
+                bar.classList.remove('hidden');
+            }
+        } catch (err) {
+            console.error('Błąd paska info:', err);
+        }
+    }
+
     function logoutUser() {
         showToast("Wylogowywanie...", "info");
         localStorage.removeItem('token');
@@ -405,6 +442,7 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       fetchUserData();
+      fetchInfoBar(); // Wywołanie pobierania paska
       lucide.createIcons();
       renderJobs();
       switchDashTab('profil');
