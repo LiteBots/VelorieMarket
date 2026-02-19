@@ -9,7 +9,8 @@ require('dotenv').config();
 
 // === IMPORTY WŁASNE ===
 const User = require('./models/User');
-const InfoBar = require('./models/InfoBar'); // <--- Zaktualizowany model (z polem page)
+const InfoBar = require('./models/InfoBar'); 
+const Transaction = require('./models/Transaction'); // <--- DODANO MODEL TRANSAKCJI
 const { initDiscordBot, updateDiscordStats, sendWelcomeDM, sendAdminOTP, sendAdminSecurityAlert } = require('./discordBot'); 
 
 const app = express();
@@ -122,10 +123,19 @@ app.post('/api/shop/buy-verification', authenticateToken, async (req, res) => {
 
         // Pobranie opłaty
         user.vpln -= VERIFICATION_PRICE;
-        // Zmiana statusu na oczekujący
         user.verificationStatus = 'pending';
-        
+
+        // ZAPIS TRANSAKCJI DO HISTORII
+        const transaction = new Transaction({
+            userId: user._id,
+            type: 'spent',
+            currency: 'vPLN',
+            amount: VERIFICATION_PRICE,
+            description: 'Zakup znaczka weryfikacji'
+        });
+
         await user.save();
+        await transaction.save(); // Zapisujemy ślad po wydatku!
 
         res.json({ success: true, message: 'Zakupiono pomyślnie. Oczekiwanie na akceptację admina.' });
     } catch (err) {
@@ -157,29 +167,23 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
         ]);
         const vplnOwned = vplnAggregate.length > 0 ? vplnAggregate[0].totalVpln : 0;
 
-        // -------------------------------------------------------------
-        // TODO: Poniższe wartości wymagają dodatkowych Modeli w Mongoose.
-        // Jeśli masz już modele na transakcje/ogłoszenia, odkomentuj i dostosuj logikę:
-        // -------------------------------------------------------------
-
-        // 5. Zarobek PLN (np. z modelu Transaction/Payments)
-        // const plnAggregate = await Transaction.aggregate([{ $match: { currency: 'PLN', status: 'success' } }, { $group: { _id: null, total: { $sum: "$amount" } } }]);
-        const plnEarned = 0; // Tymczasowe 0
+        // 5. Zarobek PLN (Tymczasowe 0, do zrobienia w przyszłości)
+        const plnEarned = 0; 
         
-        // 6. Wydane vPLN (Suma z historii transakcji wewnętrznych vPLN)
-        // const spentAggregate = await Transaction.aggregate([{ $match: { currency: 'vPLN', type: 'spent' } }, { $group: { _id: null, total: { $sum: "$amount" } } }]);
-        const vplnSpent = 0; // Tymczasowe 0
+        // 6. Wydane vPLN (Zliczanie z modelu Transaction)
+        const spentAggregate = await Transaction.aggregate([
+            { $match: { currency: 'vPLN', type: 'spent' } },
+            { $group: { _id: null, total: { $sum: "$amount" } } }
+        ]);
+        const vplnSpent = spentAggregate.length > 0 ? spentAggregate[0].total : 0;
 
         // 7. Aktywne Bannery
-        // const activeBanners = await Banner.countDocuments({ status: 'active' });
         const activeBanners = 0; // Tymczasowe 0
 
-        // 8. Aktywne Portfolia (np. sprawdzamy czy user ma wykupione pole hasPortfolioHub)
-        // const activePortfolios = await User.countDocuments({ hasPortfolioHub: true });
+        // 8. Aktywne Portfolia
         const activePortfolios = 0; // Tymczasowe 0
 
         // 9. Ogłoszenia zleceń
-        // const jobAds = await Ad.countDocuments({ type: 'job' });
         const jobAds = 0; // Tymczasowe 0
 
         res.json({
