@@ -10,7 +10,8 @@ require('dotenv').config();
 // === IMPORTY WŁASNE ===
 const User = require('./models/User');
 const InfoBar = require('./models/InfoBar'); 
-const Transaction = require('./models/Transaction'); // <--- DODANO MODEL TRANSAKCJI
+const Transaction = require('./models/Transaction'); 
+const Listing = require('./models/Listing'); // <--- DODANO MODEL OGŁOSZEŃ
 const { initDiscordBot, updateDiscordStats, sendWelcomeDM, sendAdminOTP, sendAdminSecurityAlert } = require('./discordBot'); 
 
 const app = express();
@@ -100,7 +101,7 @@ app.get('/admin3443', (req, res) => res.sendFile(path.join(__dirname, 'public', 
 // === 4. ROUTING API (BACKEND) ===
 
 // ---------------------------------------------------------
-// SEKCJ SKLEP UŻYTKOWNIKA (Market)
+// SEKCJA SKLEP UŻYTKOWNIKA (Market)
 // ---------------------------------------------------------
 
 // --- ZAKUP WERYFIKACJI ---
@@ -146,7 +147,48 @@ app.post('/api/shop/buy-verification', authenticateToken, async (req, res) => {
 
 
 // ---------------------------------------------------------
-// SEKCJ ADMIN API (Obsługa Panelu)
+// SEKCJA OGŁOSZEŃ (Listings - Zlecenia i Freelancerzy)
+// ---------------------------------------------------------
+
+// --- DODAWANIE OGŁOSZENIA (Zlecenie lub Profil) ---
+app.post('/api/listings', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ error: 'Użytkownik nie istnieje.' });
+
+        const newListing = new Listing({
+            authorId: user._id,
+            authorName: user.username,
+            authorAvatar: user.avatar,
+            ...req.body // spread operator ładuje wszystkie dane z formularza (title, type, budget itp.)
+        });
+
+        await newListing.save();
+        res.status(201).json({ success: true, message: 'Ogłoszenie dodane pomyślnie!', listing: newListing });
+    } catch (err) {
+        console.error('Błąd dodawania ogłoszenia:', err);
+        res.status(500).json({ error: 'Wystąpił błąd serwera podczas zapisywania ogłoszenia.' });
+    }
+});
+
+// --- POBIERANIE OGŁOSZEŃ ---
+app.get('/api/listings', async (req, res) => {
+    try {
+        const { type } = req.query; // 'job' lub 'freelancer'
+        const query = type ? { type } : {};
+        
+        // Pobieramy od najnowszych
+        const listings = await Listing.find(query).sort({ createdAt: -1 });
+        res.json(listings);
+    } catch (err) {
+        console.error('Błąd pobierania ogłoszeń:', err);
+        res.status(500).json({ error: 'Wystąpił błąd serwera podczas pobierania ogłoszeń.' });
+    }
+});
+
+
+// ---------------------------------------------------------
+// SEKCJA ADMIN API (Obsługa Panelu)
 // ---------------------------------------------------------
 
 // --- DASHBOARD STATYSTYKI ---
@@ -184,7 +226,7 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
         const activePortfolios = 0; // Tymczasowe 0
 
         // 9. Ogłoszenia zleceń
-        const jobAds = 0; // Tymczasowe 0
+        const jobAds = await Listing.countDocuments({ type: 'job' }); // <-- Zaktualizowano!
 
         res.json({
             totalUsers,
