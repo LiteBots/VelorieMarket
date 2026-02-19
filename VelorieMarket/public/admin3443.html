@@ -226,7 +226,8 @@
           </button>
         </div>
       </div>
-      <div id="view-blokada" class="admin-view-hidden space-y-6 max-w-4xl">
+
+    <div id="view-blokada" class="admin-view-hidden space-y-6 max-w-4xl">
       <h2 class="text-3xl font-black tracking-tight text-red-400">Bezpieczeństwo</h2>
       <div class="glass rounded-3xl p-8 text-center border border-red-500/30">
         <button class="btn-danger px-8 py-4 rounded-xl font-bold">ZABLOKUJ PŁATNOŚCI</button>
@@ -362,24 +363,65 @@
     </div>
   </div>
 
+  <div id="toast-notification" class="fixed top-6 right-6 z-[150] translate-x-full opacity-0 transition-all duration-500 flex items-center gap-3 px-6 py-4 rounded-2xl bg-green-500/20 border border-green-500/50 backdrop-blur-md shadow-2xl pointer-events-none">
+    <div id="toast-icon-container" class="h-6 w-6 flex items-center justify-center">
+        <svg id="toast-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+    </div>
+    <div>
+        <h4 id="toast-title" class="font-bold text-green-400 text-sm">Sukces</h4>
+        <p id="toast-message" class="text-xs text-green-200">Operacja zakończona pomyślnie.</p>
+    </div>
+  </div>
+
   <script>
     lucide.createIcons();
 
     let allUsers = [];
     let selectedUserId = null;
 
+    // --- TOAST NOTIFICATION SYSTEM ---
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toast-notification');
+        const msg = document.getElementById('toast-message');
+        const title = document.getElementById('toast-title');
+        const icon = document.getElementById('toast-icon');
+
+        msg.innerText = message;
+
+        if (isError) {
+            toast.classList.replace('bg-green-500/20', 'bg-red-500/20');
+            toast.classList.replace('border-green-500/50', 'border-red-500/50');
+            title.classList.replace('text-green-400', 'text-red-400');
+            title.innerText = "Błąd";
+            icon.innerHTML = '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'; 
+            icon.classList.replace('text-green-400', 'text-red-400');
+        } else {
+            toast.classList.replace('bg-red-500/20', 'bg-green-500/20');
+            toast.classList.replace('border-red-500/50', 'border-green-500/50');
+            title.classList.replace('text-red-400', 'text-green-400');
+            title.innerText = "Sukces";
+            icon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>';
+            icon.classList.replace('text-red-400', 'text-green-400');
+        }
+
+        // Show
+        toast.classList.remove('translate-x-full', 'opacity-0');
+
+        // Hide after 3s
+        setTimeout(() => {
+            toast.classList.add('translate-x-full', 'opacity-0');
+        }, 3000);
+    }
+
     // --- MOBILE MENU LOGIC ---
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
       const backdrop = document.getElementById('mobile-backdrop');
       
-      // Sprawdzamy czy sidebar ma klasę translate-x-0 (otwarty na mobile)
       if (sidebar.classList.contains('mobile-menu-enter')) {
-        // Zamknij
         sidebar.classList.remove('mobile-menu-enter');
         backdrop.classList.add('hidden');
       } else {
-        // Otwórz
         sidebar.classList.add('mobile-menu-enter');
         backdrop.classList.remove('hidden');
       }
@@ -410,7 +452,6 @@
       }
 
       tbody.innerHTML = users.map(user => {
-        // Logika wyświetlania daty i godziny
         const dateObj = new Date(user.createdAt);
         const dateStr = dateObj.toLocaleDateString('pl-PL');
         const timeStr = dateObj.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
@@ -471,12 +512,10 @@
         });
         
         if (res.ok) {
-          await fetchUsersFromDB(); // Odśwież dane w tabeli
-          // Odśwież dane w modalu
+          await fetchUsersFromDB(); 
           const updatedUser = allUsers.find(u => u._id === selectedUserId);
           if(updatedUser) {
              document.getElementById('modal-user-balance').innerText = updatedUser.vpln;
-             // Dodaj wpis do historii transakcji lokalnie (symulacja)
              addMockTransaction(type === 'add' ? amount : -amount, "Korekta Admina");
           }
           document.getElementById('vpln-amount').value = '';
@@ -599,13 +638,12 @@
       views.forEach(v => document.getElementById(`view-${v}`).classList.add('admin-view-hidden'));
       document.getElementById(`view-${tabName}`).classList.remove('admin-view-hidden');
       
-      // Na mobile: zamknij menu po wybraniu zakładki
       if(window.innerWidth < 768) {
           toggleSidebar();
       }
 
       if(tabName === 'uzytkownicy') fetchUsersFromDB();
-      if(tabName === 'pasek') loadInfoBarData(); // <--- DODANE ŁADOWANIE PASKA
+      if(tabName === 'pasek') loadInfoBarData();
     }
 
     // --- LOGIKA PASKA INFORMACYJNEGO ---
@@ -645,12 +683,13 @@
             });
             
             if(res.ok) {
-                alert("Pasek zaktualizowany!");
+                // ZMIANA: Zamiast alert(), wywołujemy własny toast
+                showToast("Pasek został pomyślnie zaktualizowany!", false);
             } else {
-                alert("Błąd zapisu.");
+                showToast("Wystąpił błąd podczas zapisu.", true);
             }
         } catch(err) {
-            alert("Błąd połączenia z serwerem.");
+            showToast("Błąd połączenia z serwerem.", true);
         }
     }
 
