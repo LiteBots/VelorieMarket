@@ -178,7 +178,17 @@
     <div id="view-pasek" class="admin-view-hidden space-y-6 max-w-4xl">
         <h2 class="text-3xl font-black tracking-tight">Pasek Informacyjny</h2>
         
-        <div class="glass rounded-3xl p-8 border-l-4 border-[var(--accent)]">
+        <div class="flex p-1 bg-white/5 rounded-xl w-fit border border-white/10 mb-2">
+            <button onclick="setInfoBarPage('home')" id="bar-tab-home" class="px-6 py-2 rounded-lg text-sm font-bold transition bg-[var(--accent)] text-white shadow-lg">
+                Strona Główna
+            </button>
+            <button onclick="setInfoBarPage('market')" id="bar-tab-market" class="px-6 py-2 rounded-lg text-sm font-bold transition text-white/50 hover:text-white hover:bg-white/5">
+                Market
+            </button>
+        </div>
+        <p class="text-white/40 text-xs mb-4">Edytujesz pasek dla: <span id="current-bar-label" class="text-[var(--accent)] font-bold uppercase">Strona Główna</span></p>
+
+        <div class="glass rounded-3xl p-8 border-l-4 border-[var(--accent)] transition-all duration-300" id="bar-editor-container">
           
           <div class="flex items-center justify-between mb-6">
               <span class="text-sm font-bold uppercase tracking-widest text-white/60">Status paska</span>
@@ -226,7 +236,6 @@
           </button>
         </div>
       </div>
-
     <div id="view-blokada" class="admin-view-hidden space-y-6 max-w-4xl">
       <h2 class="text-3xl font-black tracking-tight text-red-400">Bezpieczeństwo</h2>
       <div class="glass rounded-3xl p-8 text-center border border-red-500/30">
@@ -646,10 +655,38 @@
       if(tabName === 'pasek') loadInfoBarData();
     }
 
-    // --- LOGIKA PASKA INFORMACYJNEGO ---
+    // --- LOGIKA PASKA INFORMACYJNEGO (ZAKTUALIZOWANA) ---
+    let currentBarPage = 'home'; // Domyślnie edytujemy Home
+
+    function setInfoBarPage(page) {
+        currentBarPage = page;
+        
+        // UI Updates for Tabs
+        const tabHome = document.getElementById('bar-tab-home');
+        const tabMarket = document.getElementById('bar-tab-market');
+        const label = document.getElementById('current-bar-label');
+        const editor = document.getElementById('bar-editor-container');
+
+        if (page === 'home') {
+            tabHome.className = "px-6 py-2 rounded-lg text-sm font-bold transition bg-[var(--accent)] text-white shadow-lg";
+            tabMarket.className = "px-6 py-2 rounded-lg text-sm font-bold transition text-white/50 hover:text-white hover:bg-white/5";
+            label.innerText = "STRONA GŁÓWNA";
+            editor.style.borderColor = "var(--accent)";
+        } else {
+            tabMarket.className = "px-6 py-2 rounded-lg text-sm font-bold transition bg-[var(--accent2)] text-white shadow-lg";
+            tabHome.className = "px-6 py-2 rounded-lg text-sm font-bold transition text-white/50 hover:text-white hover:bg-white/5";
+            label.innerText = "MARKET";
+            editor.style.borderColor = "var(--accent2)";
+        }
+
+        // Ładujemy dane dla wybranej strony
+        loadInfoBarData();
+    }
+
     async function loadInfoBarData() {
         try {
-            const res = await fetch('/api/infobar'); 
+            // Dodajemy parametr ?page=...
+            const res = await fetch(`/api/infobar?page=${currentBarPage}`); 
             const data = await res.json();
             
             document.getElementById('bar-active').checked = data.isActive;
@@ -664,6 +701,7 @@
     async function saveInfoBar() {
         const token = localStorage.getItem('adminToken');
         const payload = {
+            page: currentBarPage, // Kluczowe: wysyłamy którą stronę edytujemy
             isActive: document.getElementById('bar-active').checked,
             text: document.getElementById('bar-text').value,
             linkText: document.getElementById('bar-link-text').value,
@@ -683,8 +721,7 @@
             });
             
             if(res.ok) {
-                // ZMIANA: Zamiast alert(), wywołujemy własny toast
-                showToast("Pasek został pomyślnie zaktualizowany!", false);
+                showToast(`Pasek (${currentBarPage}) zaktualizowany!`, false);
             } else {
                 showToast("Wystąpił błąd podczas zapisu.", true);
             }
