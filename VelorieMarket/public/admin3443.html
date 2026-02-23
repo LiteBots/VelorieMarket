@@ -248,6 +248,7 @@
 
       </div>
     </div>
+    
     <div id="view-weryfikacje" class="admin-view-hidden space-y-6">
         <div class="flex flex-col md:flex-row justify-between items-end gap-4">
           <div>
@@ -338,6 +339,7 @@
           </button>
         </div>
       </div>
+      
     <div id="view-blokada" class="admin-view-hidden space-y-6 max-w-4xl">
       <h2 class="text-3xl font-black tracking-tight text-red-400">Bezpieczeństwo</h2>
       <div class="glass rounded-3xl p-8 text-center border border-red-500/30">
@@ -376,8 +378,35 @@
       </div>
     </div>
 
-    <div id="view-finanse" class="admin-view-hidden">
-        <h2 class="text-3xl font-black tracking-tight mb-6">Finanse</h2>
+    <div id="view-finanse" class="admin-view-hidden space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-3xl font-black tracking-tight">Finanse i Transakcje</h2>
+          <p class="text-white/50 text-sm mt-1">Historia wszystkich operacji w systemie (Sklep, Admin, Doładowania).</p>
+        </div>
+        <div class="relative">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40"></i>
+          <input type="text" oninput="filterTransactions(this.value)" placeholder="Szukaj (użytkownik, opis)..." class="v-input pl-10 w-full md:w-64 text-sm" />
+        </div>
+      </div>
+
+      <div class="glass rounded-3xl overflow-hidden border border-white/5">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse whitespace-nowrap">
+            <thead>
+              <tr class="bg-white/5 text-[10px] uppercase tracking-widest font-bold text-white/40">
+                <th class="px-6 py-4">Data</th>
+                <th class="px-6 py-4">Użytkownik</th>
+                <th class="px-6 py-4">Typ Operacji</th>
+                <th class="px-6 py-4">Opis</th>
+                <th class="px-6 py-4 text-right">Kwota</th>
+              </tr>
+            </thead>
+            <tbody id="transactions-table-body" class="divide-y divide-white/5">
+              </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <div id="view-ogloszenia" class="admin-view-hidden">
@@ -882,6 +911,7 @@
       if(tabName === 'uzytkownicy') fetchUsersFromDB();
       if(tabName === 'weryfikacje') fetchVerifications();
       if(tabName === 'pasek') loadInfoBarData();
+      if(tabName === 'finanse') fetchTransactions();
     }
 
     // --- LOGIKA PASKA INFORMACYJNEGO ---
@@ -956,6 +986,99 @@
         }
     }
 
+    // --- ZAKŁADKA: FINANSE I TRANSAKCJE ---
+    let allTransactions = [];
+
+    async function fetchTransactions() {
+      const token = localStorage.getItem('adminToken');
+      try {
+        const res = await fetch('/api/admin/transactions', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("Błąd pobierania");
+        allTransactions = await res.json();
+        renderTransactionsTable(allTransactions);
+      } catch (err) {
+        console.error(err);
+        showToast("Błąd pobierania historii transakcji", true);
+      }
+    }
+
+    function renderTransactionsTable(transactions) {
+      const tbody = document.getElementById('transactions-table-body');
+      
+      if(transactions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-white/30">Brak historii transakcji w bazie.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = transactions.map(tx => {
+        // Obsługa daty (sprawdza format pola z MongoDB)
+        const dateObj = new Date(tx.createdAt || tx.date);
+        const dateStr = dateObj.toLocaleDateString('pl-PL');
+        const timeStr = dateObj.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+
+        // Obsługa użytkownika (jeśli został usunięty z bazy, tx.userId może być nullem)
+        const userName = tx.userId ? (tx.userId.username || tx.userId.email) : 'Usunięty użytkownik';
+        const userAvatar = tx.userId ? tx.userId.avatar : 'https://api.dicebear.com/7.x/avataaars/svg?seed=Deleted';
+
+        // Odznaki typu operacji
+        let typeBadge = '';
+        switch(tx.type) {
+          case 'spent': 
+            typeBadge = '<span class="px-2 py-1 bg-amber-500/20 text-amber-500 rounded text-[10px] font-bold uppercase">Sklep</span>'; break;
+          case 'admin_add': 
+          case 'admin_sub': 
+            typeBadge = '<span class="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-[10px] font-bold uppercase">Admin</span>'; break;
+          case 'topup': 
+            typeBadge = '<span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-[10px] font-bold uppercase">Doładowanie</span>'; break;
+          case 'subscription': 
+            typeBadge = '<span class="px-2 py-1 bg-pink-500/20 text-pink-400 rounded text-[10px] font-bold uppercase">Subskrypcja</span>'; break;
+          default: 
+            typeBadge = `<span class="px-2 py-1 bg-white/10 text-white/60 rounded text-[10px] font-bold uppercase">${tx.type || 'Inne'}</span>`;
+        }
+
+        // Kwoty i kolory
+        const isPositive = Number(tx.amount) > 0;
+        const isNegativeOperation = tx.type === 'spent' || tx.type === 'admin_sub' || Number(tx.amount) < 0;
+        
+        const amountColor = isNegativeOperation ? 'text-red-400' : 'text-green-400';
+        const amountPrefix = isNegativeOperation && !String(tx.amount).includes('-') ? '-' : (isPositive && !isNegativeOperation ? '+' : '');
+
+        return `
+          <tr class="hover:bg-white/[0.02] transition">
+            <td class="px-6 py-4">
+               <div class="text-sm font-medium text-white/80">${dateStr}</div>
+               <div class="text-xs text-white/30">${timeStr}</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <img src="${userAvatar}" class="h-8 w-8 rounded-full object-cover bg-white/5" />
+                <div class="font-bold text-sm text-white">${userName}</div>
+              </div>
+            </td>
+            <td class="px-6 py-4">${typeBadge}</td>
+            <td class="px-6 py-4 text-xs text-white/70 max-w-xs truncate" title="${tx.description}">${tx.description || '-'}</td>
+            <td class="px-6 py-4 text-right font-black tracking-wide ${amountColor}">
+              ${amountPrefix}${Math.abs(Number(tx.amount)).toFixed(2)} ${tx.currency || 'vPLN'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function filterTransactions(query) {
+      const lowerQ = query.toLowerCase();
+      const filtered = allTransactions.filter(tx => {
+        const userName = tx.userId ? (tx.userId.username || tx.userId.email).toLowerCase() : '';
+        const desc = (tx.description || '').toLowerCase();
+        const type = (tx.type || '').toLowerCase();
+        return userName.includes(lowerQ) || desc.includes(lowerQ) || type.includes(lowerQ);
+      });
+      renderTransactionsTable(filtered);
+    }
+
     window.onload = () => {
       const token = localStorage.getItem('adminToken');
       if (token) {
@@ -1019,4 +1142,4 @@
     }
   </script>
 </body>
-</html>s
+</html>
