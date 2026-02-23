@@ -131,7 +131,7 @@ app.post('/api/shop/buy-verification', authenticateToken, async (req, res) => {
             userId: user._id,
             type: 'spent',
             currency: 'vPLN',
-            amount: VERIFICATION_PRICE,
+            amount: -VERIFICATION_PRICE, // zapis na minusie dla wydatku w sklepie
             description: 'Zakup znaczka weryfikacji'
         });
 
@@ -215,7 +215,7 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
         // 6. Wydane vPLN (Zliczanie z modelu Transaction)
         const spentAggregate = await Transaction.aggregate([
             { $match: { currency: 'vPLN', type: 'spent' } },
-            { $group: { _id: null, total: { $sum: "$amount" } } }
+            { $group: { _id: null, total: { $sum: { $abs: "$amount" } } } } // Użyto $abs dla ujemnych
         ]);
         const vplnSpent = spentAggregate.length > 0 ? spentAggregate[0].total : 0;
 
@@ -381,7 +381,7 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
     }
 });
 
-// B. Zmiana salda użytkownika (vPLN)
+// B. Zmiana salda użytkownika (vPLN) - ZAKTUALIZOWANE O ZAPIS TRANSAKCJI
 app.post('/api/admin/users/:id/balance', authenticateAdmin, async (req, res) => {
     try {
         const { amount } = req.body; // amount może być dodatnie lub ujemne
@@ -392,8 +392,18 @@ app.post('/api/admin/users/:id/balance', authenticateAdmin, async (req, res) => 
 
         // Aktualizacja salda
         user.vpln = (user.vpln || 0) + Number(amount);
-        
         await user.save();
+
+        // ZAPIS TRANSAKCJI DO BAZY
+        const isAddition = Number(amount) > 0;
+        const transaction = new Transaction({
+            userId: user._id,
+            type: isAddition ? 'admin_add' : 'admin_sub',
+            currency: 'vPLN',
+            amount: Number(amount), // zapisujemy z minusem lub plusem
+            description: `Korekta salda przez Administratora`
+        });
+        await transaction.save();
 
         res.json({ success: true, message: 'Saldo zaktualizowane', newBalance: user.vpln });
     } catch (err) {
@@ -415,6 +425,22 @@ app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
     } catch (err) {
         console.error('Błąd usuwania użytkownika:', err);
         res.status(500).json({ error: 'Błąd serwera.' });
+    }
+});
+
+// D. Pobieranie pełnej historii transakcji (NOWE)
+app.get('/api/admin/transactions', authenticateAdmin, async (req, res) => {
+    try {
+        // Pobieramy wszystkie transakcje, sortujemy od najnowszych
+        // Używamy .populate(), aby dociągnąć nazwę i avatar użytkownika z kolekcji Users
+        const transactions = await Transaction.find()
+            .sort({ createdAt: -1, date: -1 }) // Upewniamy się, że najnowsze są na górze
+            .populate('userId', 'username email avatar'); 
+            
+        res.json(transactions);
+    } catch (err) {
+        console.error('Błąd pobierania transakcji:', err);
+        res.status(500).json({ error: 'Błąd serwera przy pobieraniu historii.' });
     }
 });
 
