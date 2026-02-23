@@ -11,7 +11,8 @@ require('dotenv').config();
 const User = require('./models/User');
 const InfoBar = require('./models/InfoBar'); 
 const Transaction = require('./models/Transaction'); 
-const Listing = require('./models/Listing'); // <--- DODANO MODEL OGŁOSZEŃ
+const Listing = require('./models/Listing'); 
+const DiscountCode = require('./models/DiscountCode'); // <--- DODANY MODEL KODÓW RABATOWYCH
 const { initDiscordBot, updateDiscordStats, sendWelcomeDM, sendAdminOTP, sendAdminSecurityAlert } = require('./discordBot'); 
 
 const app = express();
@@ -104,26 +105,58 @@ app.get('/admin3443', (req, res) => res.sendFile(path.join(__dirname, 'public', 
 // SEKCJA SKLEP UŻYTKOWNIKA (Market)
 // ---------------------------------------------------------
 
-// --- ZAKUP WERYFIKACJI ---
+// --- SPRAWDZANIE KODU RABATOWEGO ---
+app.get('/api/shop/check-discount', authenticateToken, async (req, res) => {
+    try {
+        const codeString = req.query.code;
+        if (!codeString) return res.status(400).json({ error: 'Brak kodu.' });
+
+        const discount = await DiscountCode.findOne({ code: codeString.toUpperCase() });
+
+        if (!discount) return res.status(404).json({ error: 'Taki kod nie istnieje.' });
+        if (discount.expiresAt && discount.expiresAt < new Date()) return res.status(400).json({ error: 'Kod wygasł.' });
+        if (discount.maxUses !== null && discount.currentUses >= discount.maxUses) return res.status(400).json({ error: 'Wykorzystano limit użyć kodu.' });
+
+        res.json({ code: discount.code, discountPercent: discount.discountPercent });
+    } catch (err) {
+        console.error('Błąd sprawdzania kodu:', err);
+        res.status(500).json({ error: 'Błąd serwera.' });
+    }
+});
+
+// --- ZAKUP WERYFIKACJI (Z OBSŁUGĄ KODU) ---
 app.post('/api/shop/buy-verification', authenticateToken, async (req, res) => {
     try {
+        const { discountCode } = req.body;
         const user = await User.findById(req.user.id);
+        
         if (!user) return res.status(404).json({ error: 'Użytkownik nie istnieje.' });
-        
-        if (user.vpln < VERIFICATION_PRICE) {
+        if (user.verificationStatus === 'pending') return res.status(400).json({ error: 'Twoje zgłoszenie jest już przetwarzane.' });
+        if (user.verificationStatus === 'active') return res.status(400).json({ error: 'Posiadasz już aktywną weryfikację.' });
+
+        let finalPrice = VERIFICATION_PRICE;
+        let discountApplied = null;
+        let savedAmount = 0;
+
+        // WALIDACJA KODU RABATOWEGO
+        if (discountCode) {
+            discountApplied = await DiscountCode.findOne({ code: discountCode.toUpperCase() });
+            
+            if (!discountApplied) return res.status(400).json({ error: 'Podany kod rabatowy nie istnieje.' });
+            if (discountApplied.expiresAt && discountApplied.expiresAt < new Date()) return res.status(400).json({ error: 'Kod rabatowy wygasł.' });
+            if (discountApplied.maxUses !== null && discountApplied.currentUses >= discountApplied.maxUses) return res.status(400).json({ error: 'Wykorzystano limit użyć tego kodu.' });
+
+            savedAmount = finalPrice * (discountApplied.discountPercent / 100);
+            finalPrice = finalPrice - savedAmount;
+        }
+
+        // SPRAWDZENIE SALDA (JUŻ Z UWZGLĘDNIENIEM ZNIŻKI)
+        if (user.vpln < finalPrice) {
             return res.status(400).json({ error: 'Niewystarczające środki vPLN.' });
-        }
-        
-        if (user.verificationStatus === 'pending') {
-            return res.status(400).json({ error: 'Twoje zgłoszenie jest już przetwarzane.' });
-        }
-        
-        if (user.verificationStatus === 'active') {
-            return res.status(400).json({ error: 'Posiadasz już aktywną weryfikację.' });
         }
 
         // Pobranie opłaty
-        user.vpln -= VERIFICATION_PRICE;
+        user.vpln -= finalPrice;
         user.verificationStatus = 'pending';
 
         // ZAPIS TRANSAKCJI DO HISTORII
@@ -131,12 +164,19 @@ app.post('/api/shop/buy-verification', authenticateToken, async (req, res) => {
             userId: user._id,
             type: 'spent',
             currency: 'vPLN',
-            amount: -VERIFICATION_PRICE, // zapis na minusie dla wydatku w sklepie
-            description: 'Zakup znaczka weryfikacji'
+            amount: -finalPrice, // zapis na minusie dla wydatku w sklepie
+            description: discountApplied ? `Zakup weryfikacji (Użyto kodu: ${discountApplied.code})` : 'Zakup weryfikacji'
         });
 
         await user.save();
-        await transaction.save(); // Zapisujemy ślad po wydatku!
+        await transaction.save(); 
+
+        // AKTUALIZACJA STATYSTYK KODU RABATOWEGO
+        if (discountApplied) {
+            discountApplied.currentUses += 1;
+            discountApplied.totalSaved += savedAmount;
+            await discountApplied.save();
+        }
 
         res.json({ success: true, message: 'Zakupiono pomyślnie. Oczekiwanie na akceptację admina.' });
     } catch (err) {
@@ -226,7 +266,7 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
         const activePortfolios = 0; // Tymczasowe 0
 
         // 9. Ogłoszenia zleceń
-        const jobAds = await Listing.countDocuments({ type: 'job' }); // <-- Zaktualizowano!
+        const jobAds = await Listing.countDocuments({ type: 'job' });
 
         res.json({
             totalUsers,
@@ -381,7 +421,7 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
     }
 });
 
-// B. Zmiana salda użytkownika (vPLN) - ZAKTUALIZOWANE O ZAPIS TRANSAKCJI
+// B. Zmiana salda użytkownika (vPLN)
 app.post('/api/admin/users/:id/balance', authenticateAdmin, async (req, res) => {
     try {
         const { amount } = req.body; // amount może być dodatnie lub ujemne
@@ -428,19 +468,88 @@ app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
     }
 });
 
-// D. Pobieranie pełnej historii transakcji (NOWE)
+// D. Pobieranie pełnej historii transakcji
 app.get('/api/admin/transactions', authenticateAdmin, async (req, res) => {
     try {
-        // Pobieramy wszystkie transakcje, sortujemy od najnowszych
-        // Używamy .populate(), aby dociągnąć nazwę i avatar użytkownika z kolekcji Users
         const transactions = await Transaction.find()
-            .sort({ createdAt: -1, date: -1 }) // Upewniamy się, że najnowsze są na górze
+            .sort({ createdAt: -1, date: -1 }) 
             .populate('userId', 'username email avatar'); 
             
         res.json(transactions);
     } catch (err) {
         console.error('Błąd pobierania transakcji:', err);
         res.status(500).json({ error: 'Błąd serwera przy pobieraniu historii.' });
+    }
+});
+
+// --- ZARZĄDZANIE KODAMI RABATOWYMI ---
+
+// A. Pobieranie listy kodów
+app.get('/api/admin/discount-codes', authenticateAdmin, async (req, res) => {
+    try {
+        const codes = await DiscountCode.find().sort({ createdAt: -1 });
+        res.json(codes);
+    } catch (err) {
+        console.error('Błąd pobierania kodów:', err);
+        res.status(500).json({ error: 'Błąd serwera.' });
+    }
+});
+
+// B. Tworzenie nowego kodu
+app.post('/api/admin/discount-codes', authenticateAdmin, async (req, res) => {
+    try {
+        const { code, discountPercent, maxUses, durationStr } = req.body;
+        
+        if (!code || !discountPercent) {
+            return res.status(400).json({ error: 'Kod i procent zniżki są wymagane.' });
+        }
+
+        // Parsowanie czasu trwania (np. "30min", "1d", "2t", "1mc")
+        let expiresAt = null;
+        if (durationStr) {
+            const regex = /^(\d+)(min|h|d|t|mc)$/;
+            const match = durationStr.trim().toLowerCase().match(regex);
+            
+            if (!match) return res.status(400).json({ error: 'Zły format czasu (użyj: min, h, d, t, mc).' });
+            
+            const val = parseInt(match[1]);
+            const unit = match[2];
+            const now = new Date();
+            
+            if (unit === 'min') now.setMinutes(now.getMinutes() + val);
+            if (unit === 'h') now.setHours(now.getHours() + val);
+            if (unit === 'd') now.setDate(now.getDate() + val);
+            if (unit === 't') now.setDate(now.getDate() + (val * 7));
+            if (unit === 'mc') now.setMonth(now.getMonth() + val);
+            
+            expiresAt = now;
+        }
+
+        const newCode = new DiscountCode({
+            code: code.toUpperCase(),
+            discountPercent: Number(discountPercent),
+            maxUses: maxUses ? Number(maxUses) : null,
+            expiresAt
+        });
+
+        await newCode.save();
+        res.status(201).json({ success: true, message: 'Kod został utworzony.', discountCode: newCode });
+    } catch (err) {
+        if (err.code === 11000) return res.status(400).json({ error: 'Taki kod już istnieje.' });
+        console.error('Błąd tworzenia kodu:', err);
+        res.status(500).json({ error: 'Błąd serwera.' });
+    }
+});
+
+// C. Usuwanie kodu
+app.delete('/api/admin/discount-codes/:id', authenticateAdmin, async (req, res) => {
+    try {
+        const deleted = await DiscountCode.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ error: 'Kod nie istnieje.' });
+        res.json({ success: true, message: 'Kod usunięty pomyślnie.' });
+    } catch (err) {
+        console.error('Błąd usuwania kodu:', err);
+        res.status(500).json({ error: 'Błąd serwera.' });
     }
 });
 
