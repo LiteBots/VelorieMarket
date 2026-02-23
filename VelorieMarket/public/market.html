@@ -328,7 +328,7 @@
 
              <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                
-               <div class="shop-card rounded-3xl p-6 flex flex-col h-full">
+               <div class="shop-card rounded-3xl p-6 flex flex-col h-full relative">
                  <div class="mb-4 flex items-center justify-between">
                    <div class="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-400">
                      <i data-lucide="shield-check" class="w-7 h-7"></i>
@@ -336,12 +336,25 @@
                    <span class="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-lg">TRUSTED</span>
                  </div>
                  <h3 class="text-lg font-bold mb-2">Weryfikacja Profilu</h3>
-                 <div class="text-2xl font-black mb-4">29.99 <span class="text-xs text-white/40 font-normal">vPLN / mies.</span></div>
-                 <p class="text-xs text-white/60 mb-6 leading-relaxed">
+                 
+                 <div class="mb-4 flex items-baseline gap-2">
+                    <span id="price-verification" class="text-2xl font-black">29.99</span>
+                    <span class="text-xs text-white/40 font-normal">vPLN / mies.</span>
+                    <span id="price-original-verification" class="text-xs text-white/30 line-through hidden">29.99</span>
+                 </div>
+                 
+                 <p class="text-xs text-white/60 mb-6 leading-relaxed flex-1">
                    Zyskaj plakietkę "Zweryfikowany", która buduje ogromne zaufanie wśród zleceniodawców. 
                    <br><br>
                    <span class="text-amber-400/80 font-semibold italic">⚠️ Uwaga: Kupno subskrypcji to tylko pierwszy krok. Profil musi zostać ręcznie zweryfikowany przez administrację VelorieMarket (czas oczekiwania do 48h). Sam znaczek bez weryfikacji nie zostanie nadany.</span>
                  </p>
+
+                 <div id="discount-container" class="mb-4 flex gap-2">
+                    <input type="text" id="discount-code-input" placeholder="Wpisz kod rabatowy" class="v-input text-xs uppercase w-full font-bold" />
+                    <button onclick="applyDiscountCode('verification')" class="btn-ghost px-4 rounded-xl text-xs font-bold hover:text-[var(--accent)] transition">Użyj</button>
+                 </div>
+                 <p id="discount-msg-verification" class="text-[10px] font-bold text-green-400 mb-4 hidden"></p>
+
                  <button onclick="buyVerification()" id="btn-buy-verification" class="mt-auto btn-ghost w-full py-3 rounded-xl font-bold text-sm">Złóż wniosek (29.99 vPLN)</button>
                </div>
 
@@ -460,9 +473,14 @@
                 buyVerBtn.classList.add('cursor-not-allowed', 'opacity-50', 'text-green-400');
                 buyVerBtn.onclick = null;
             } else {
-                buyVerBtn.textContent = 'Złóż wniosek (29.99 vPLN)';
-                buyVerBtn.classList.remove('cursor-not-allowed', 'opacity-50', 'text-green-400');
-                buyVerBtn.onclick = buyVerification;
+                // Jeśli nie aktywne, zostawia domyślne. Logika przycisku nadpisuje ten tekst po zastosowaniu kodu
+                if(!document.getElementById('discount-msg-verification').classList.contains('hidden')){
+                    // Kod rabatowy już użyty, zachowaj tekst
+                } else {
+                    buyVerBtn.textContent = 'Złóż wniosek (29.99 vPLN)';
+                    buyVerBtn.classList.remove('cursor-not-allowed', 'opacity-50', 'text-green-400');
+                    buyVerBtn.onclick = buyVerification;
+                }
             }
 
             if (userData.avatar) {
@@ -482,20 +500,79 @@
         }
     }
 
-    // === ZAKUP WERYFIKACJI (API) ===
-    async function buyVerification() {
-        if(!confirm("Czy na pewno chcesz złożyć wniosek o weryfikację konta za 29.99 vPLN?")) return;
+    // === OBSŁUGA KODU RABATOWEGO ===
+    let activeDiscount = null; // Przechowuje obiekt: { code, percent }
+
+    async function applyDiscountCode(productType) {
+        const input = document.getElementById('discount-code-input');
+        const code = input.value.trim().toUpperCase();
+        
+        if (!code) return showToast("Wpisz kod rabatowy", "error");
 
         try {
+            // Strzał do API, żeby sprawdzić, czy kod jest ważny (nowy endpoint)
+            const response = await fetch(`/api/shop/check-discount?code=${code}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                activeDiscount = { code: data.code, percent: data.discountPercent };
+                
+                // Aktualizacja UI
+                const basePrice = 29.99;
+                const newPrice = (basePrice - (basePrice * (data.discountPercent / 100))).toFixed(2);
+                
+                document.getElementById('price-verification').textContent = newPrice;
+                document.getElementById('price-verification').classList.add('text-green-400');
+                document.getElementById('price-original-verification').classList.remove('hidden');
+                
+                const btnBuy = document.getElementById('btn-buy-verification');
+                if(!btnBuy.classList.contains('cursor-not-allowed')) {
+                   btnBuy.textContent = `Złóż wniosek (${newPrice} vPLN)`;
+                }
+
+                const msgEl = document.getElementById('discount-msg-verification');
+                msgEl.textContent = `Zastosowano zniżkę -${data.discountPercent}%!`;
+                msgEl.classList.remove('hidden');
+                
+                input.disabled = true;
+                showToast("Kod został zaaplikowany!", "success");
+            } else {
+                showToast(data.error || "Kod jest nieprawidłowy", "error");
+                input.value = '';
+            }
+        } catch (err) {
+            showToast("Błąd sprawdzania kodu", "error");
+        }
+    }
+
+    // === ZAKUP WERYFIKACJI (API) ===
+    async function buyVerification() {
+        let priceText = document.getElementById('price-verification').textContent;
+        if(!confirm(`Czy na pewno chcesz złożyć wniosek o weryfikację konta za ${priceText} vPLN?`)) return;
+
+        try {
+            const payload = activeDiscount ? { discountCode: activeDiscount.code } : {};
+
             const response = await fetch('/api/shop/buy-verification', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify(payload)
             });
 
             const data = await response.json();
 
             if (response.ok) {
                 showToast(data.message, "success");
+                
+                // Zresetowanie widoku kodu po udanym zakupie
+                document.getElementById('discount-container').classList.add('hidden');
+                activeDiscount = null;
+
                 fetchUserData(); // Odświeża portfel po zakupie
             } else {
                 showToast(data.error, "error");
