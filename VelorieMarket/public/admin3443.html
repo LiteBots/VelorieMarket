@@ -143,6 +143,9 @@
       <button onclick="switchAdminTab('finanse')" id="nav-finanse" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
         <i data-lucide="banknote" class="h-4 w-4"></i> Finanse
       </button>
+      <button onclick="switchAdminTab('kody')" id="nav-kody" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
+        <i data-lucide="ticket" class="h-4 w-4"></i> Kody rabatowe
+      </button>
       <button onclick="switchAdminTab('ogloszenia')" id="nav-ogloszenia" class="w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium text-white/70 hover:bg-white/5">
         <i data-lucide="layers" class="h-4 w-4"></i> Ogłoszenia
       </button>
@@ -404,6 +407,48 @@
             </thead>
             <tbody id="transactions-table-body" class="divide-y divide-white/5">
               </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-kody" class="admin-view-hidden space-y-6">
+      <div class="flex flex-col md:flex-row justify-between items-end gap-4">
+        <div>
+            <h2 class="text-3xl font-black tracking-tight">Kody Rabatowe</h2>
+            <p class="text-sm text-white/50">Zarządzaj zniżkami i śledź ile użytkownicy zaoszczędzili.</p>
+        </div>
+      </div>
+      
+      <div class="glass p-6 rounded-3xl border border-[var(--accent2)]/30">
+        <h3 class="text-sm font-bold uppercase text-white/60 mb-4 tracking-widest">Utwórz nowy kod</h3>
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <input type="text" id="code-name" placeholder="np. START20" class="v-input text-sm uppercase font-bold" />
+          <input type="number" id="code-percent" placeholder="Zniżka % (np. 20)" class="v-input text-sm" />
+          <input type="number" id="code-uses" placeholder="Max użyć (puste = ∞)" class="v-input text-sm" />
+          <input type="text" id="code-duration" placeholder="Czas (np. 30min, 1d, 1mc)" class="v-input text-sm" />
+          <button onclick="createDiscountCode()" class="btn-primary rounded-xl text-sm font-bold flex items-center justify-center gap-2">
+            <i data-lucide="plus" class="h-4 w-4"></i> Utwórz
+          </button>
+        </div>
+        <p class="text-xs text-white/40 mt-3">Formaty czasu: <b>min</b> (minuty), <b>h</b> (godziny), <b>d</b> (dni), <b>t</b> (tygodnie), <b>mc</b> (miesiące).</p>
+      </div>
+      
+      <div class="glass rounded-3xl overflow-hidden border border-white/5">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse whitespace-nowrap">
+            <thead>
+              <tr class="bg-white/5 text-[10px] uppercase tracking-widest font-bold text-white/40">
+                <th class="px-6 py-4">Kod</th>
+                <th class="px-6 py-4">Zniżka</th>
+                <th class="px-6 py-4">Wykorzystano</th>
+                <th class="px-6 py-4">Wygasa</th>
+                <th class="px-6 py-4 text-green-400">Zaoszczędzono</th>
+                <th class="px-6 py-4 text-right">Akcje</th>
+              </tr>
+            </thead>
+            <tbody id="codes-table-body" class="divide-y divide-white/5">
+            </tbody>
           </table>
         </div>
       </div>
@@ -683,6 +728,8 @@
           body: JSON.stringify({ amount: type === 'add' ? amount : -amount })
         });
         
+        const data = await res.json();
+        
         if (res.ok) {
           await fetchUsersFromDB(); 
           const updatedUser = allUsers.find(u => u._id === selectedUserId);
@@ -692,8 +739,12 @@
           }
           document.getElementById('vpln-amount').value = '';
           showToast(type === 'add' ? "Dodano środki!" : "Odjęto środki!");
+        } else {
+          showToast(data.error || "Błąd podczas zapisu na serwerze", true);
         }
-      } catch (err) { showToast("Błąd zapisu salda", true); }
+      } catch (err) { 
+          showToast("Krytyczny błąd połączenia z API", true); 
+      }
     }
 
     // 5. USUWANIE (API)
@@ -898,7 +949,7 @@
       const activeBtn = document.getElementById(`nav-${tabName}`);
       activeBtn.className = "w-full text-left px-4 py-3 rounded-xl transition flex items-center gap-3 text-sm font-medium bg-[var(--accent)]/10 text-[var(--accent)] glow-card";
 
-      const views = ['dashboard', 'pasek', 'weryfikacje', 'blokada', 'uzytkownicy', 'finanse', 'ogloszenia'];
+      const views = ['dashboard', 'pasek', 'weryfikacje', 'blokada', 'uzytkownicy', 'finanse', 'ogloszenia', 'kody'];
       views.forEach(v => document.getElementById(`view-${v}`).classList.add('admin-view-hidden'));
       document.getElementById(`view-${tabName}`).classList.remove('admin-view-hidden');
       
@@ -912,6 +963,7 @@
       if(tabName === 'weryfikacje') fetchVerifications();
       if(tabName === 'pasek') loadInfoBarData();
       if(tabName === 'finanse') fetchTransactions();
+      if(tabName === 'kody') fetchDiscountCodes();
     }
 
     // --- LOGIKA PASKA INFORMACYJNEGO ---
@@ -1077,6 +1129,96 @@
         return userName.includes(lowerQ) || desc.includes(lowerQ) || type.includes(lowerQ);
       });
       renderTransactionsTable(filtered);
+    }
+
+    // --- ZAKŁADKA: KODY RABATOWE ---
+    async function fetchDiscountCodes() {
+      const token = localStorage.getItem('adminToken');
+      try {
+        const res = await fetch('/api/admin/discount-codes', { headers: { 'Authorization': `Bearer ${token}` } });
+        const codes = await res.json();
+        renderDiscountCodesTable(codes);
+      } catch (err) {
+        showToast("Błąd pobierania kodów", true);
+      }
+    }
+
+    function renderDiscountCodesTable(codes) {
+      const tbody = document.getElementById('codes-table-body');
+      if(codes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-white/30">Brak aktywnych kodów rabatowych.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = codes.map(c => {
+        const isExpired = c.expiresAt && new Date(c.expiresAt) < new Date();
+        const expiryText = c.expiresAt ? new Date(c.expiresAt).toLocaleString('pl-PL', {dateStyle: 'short', timeStyle: 'short'}) : '<span class="text-xl">∞</span>';
+        const limitText = c.maxUses ? `${c.currentUses} / ${c.maxUses}` : `${c.currentUses} / ∞`;
+        
+        return `
+          <tr class="hover:bg-white/[0.02] transition ${isExpired ? 'opacity-50 grayscale' : ''}">
+            <td class="px-6 py-4 font-black tracking-widest text-[var(--accent)]">${c.code}</td>
+            <td class="px-6 py-4 font-bold text-white/80">-${c.discountPercent}%</td>
+            <td class="px-6 py-4 text-sm text-white/60">${limitText}</td>
+            <td class="px-6 py-4 text-xs ${isExpired ? 'text-red-400' : 'text-white/60'}">${isExpired ? 'Wygasł' : expiryText}</td>
+            <td class="px-6 py-4 font-black text-green-400">${Number(c.totalSaved).toFixed(2)} vPLN</td>
+            <td class="px-6 py-4 text-right">
+              <button onclick="deleteDiscountCode('${c._id}')" class="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition">
+                <i data-lucide="trash-2" class="h-4 w-4"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    async function createDiscountCode() {
+      const code = document.getElementById('code-name').value;
+      const discountPercent = document.getElementById('code-percent').value;
+      const maxUses = document.getElementById('code-uses').value;
+      const durationStr = document.getElementById('code-duration').value;
+      const token = localStorage.getItem('adminToken');
+
+      if (!code || !discountPercent) return showToast("Kod i zniżka są wymagane", true);
+
+      try {
+        const res = await fetch('/api/admin/discount-codes', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, discountPercent, maxUses, durationStr })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast("Kod rabatowy został utworzony!");
+          document.getElementById('code-name').value = '';
+          document.getElementById('code-percent').value = '';
+          document.getElementById('code-uses').value = '';
+          document.getElementById('code-duration').value = '';
+          fetchDiscountCodes();
+        } else {
+          showToast(data.error || "Błąd podczas tworzenia", true);
+        }
+      } catch (err) {
+        showToast("Błąd sieci", true);
+      }
+    }
+
+    async function deleteDiscountCode(id) {
+      const token = localStorage.getItem('adminToken');
+      try {
+        const res = await fetch(`/api/admin/discount-codes/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+          showToast("Kod usunięty!");
+          fetchDiscountCodes();
+        } else {
+            const data = await res.json();
+            showToast(data.error || "Błąd", true);
+        }
+      } catch (err) {
+        showToast("Błąd przy usuwaniu", true);
+      }
     }
 
     window.onload = () => {
